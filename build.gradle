@@ -15,7 +15,7 @@ repositories {
 sourceSets {
   main {
     groovy {
-      srcDirs = ['src/jenkins/server', 'var']
+      srcDirs = ['src/main/jenkins/server', 'vars']
     }
   }
 }
