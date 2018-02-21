@@ -1,0 +1,2 @@
+ #!/bin/bash
+ curl -k  -X POST https://che:6777e7eb358ff4ba5518cc351acdd1ef@jenkins.apgsga.ch/job/Patch5439/3/wfapi/inputSubmit?inputId=Docok --data-urlencode json='{"parameter": []}' -H "Jenkins-Crumb:85c24051b4c1dc6eee8c8f4cb25687ba" -H "Content-Type:application/x-www-form-urlencoded;charset=UTF-8"

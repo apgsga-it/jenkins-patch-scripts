@@ -1,0 +1,30 @@
+# Gradle
+# ------
+**/.gradle
+**/build
+
+# Eclipse
+# -------
+**/*.classpath
+**/*.project
+**/.settings
+**/bin
+**/.metadata/
+.recommenders
+
+# Maven
+# --------
+**/target
+
+# macOS
+# ----
+.DS_Store
+**/.DS_Store
+
+# CVS
+# -----
+
+/CVS/*
+**/CVS/*
+.cvsignore
+*/.cvsignore

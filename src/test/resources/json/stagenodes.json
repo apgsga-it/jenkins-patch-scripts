@@ -1,0 +1,289 @@
+{
+	"_links": {
+		"self": {
+			"href": "/job/PipelineTestwithParameters/173/execution/node/5/wfapi/describe"
+		}
+	},
+	"id": "5",
+	"name": "Display Properties",
+	"execNode": "",
+	"status": "SUCCESS",
+	"startTimeMillis": 1508416648568,
+	"durationMillis": 51,
+	"pauseDurationMillis": 0,
+	"stageFlowNodes": [
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/8/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/8/wfapi/log"
+				}
+			},
+			"id": "8",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "09069",
+			"startTimeMillis": 1508416648588,
+			"durationMillis": 0,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"7"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/9/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/9/wfapi/log"
+				}
+			},
+			"id": "9",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "1066",
+			"startTimeMillis": 1508416648588,
+			"durationMillis": 1,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"8"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/10/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/10/wfapi/log"
+				}
+			},
+			"id": "10",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "1065",
+			"startTimeMillis": 1508416648589,
+			"durationMillis": 0,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"9"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/11/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/11/wfapi/log"
+				}
+			},
+			"id": "11",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "9.0.6",
+			"startTimeMillis": 1508416648589,
+			"durationMillis": 1,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"10"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/12/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/12/wfapi/log"
+				}
+			},
+			"id": "12",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "ADMIN-UIMIG",
+			"startTimeMillis": 1508416648590,
+			"durationMillis": 0,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"11"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/13/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/13/wfapi/log"
+				}
+			},
+			"id": "13",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "it21_release_9_0_6_admin_uimig",
+			"startTimeMillis": 1508416648590,
+			"durationMillis": 1,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"12"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/14/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/14/wfapi/log"
+				}
+			},
+			"id": "14",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "/var/local/cvs/root",
+			"startTimeMillis": 1508416648591,
+			"durationMillis": 5,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"13"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/15/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/15/wfapi/log"
+				}
+			},
+			"id": "15",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "com.affichage.it21.vk.faktura.ui",
+			"startTimeMillis": 1508416648596,
+			"durationMillis": 0,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"14"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/16/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/16/wfapi/log"
+				}
+			},
+			"id": "16",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "com.affichage.it21.vk:faktura-ui",
+			"startTimeMillis": 1508416648596,
+			"durationMillis": 5,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"15"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/17/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/17/wfapi/log"
+				}
+			},
+			"id": "17",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "com.affichage.datetime.utils",
+			"startTimeMillis": 1508416648601,
+			"durationMillis": 1,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"16"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/18/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/18/wfapi/log"
+				}
+			},
+			"id": "18",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "com.affichage.datetime:datetime-utils",
+			"startTimeMillis": 1508416648602,
+			"durationMillis": 6,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"17"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/19/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/19/wfapi/log"
+				}
+			},
+			"id": "19",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "com.affichage.it21.domainwerte",
+			"startTimeMillis": 1508416648608,
+			"durationMillis": 1,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"18"
+			]
+		},
+		{
+			"_links": {
+				"self": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/20/wfapi/describe"
+				},
+				"log": {
+					"href": "/job/PipelineTestwithParameters/173/execution/node/20/wfapi/log"
+				}
+			},
+			"id": "20",
+			"name": "Print Message",
+			"execNode": "",
+			"status": "SUCCESS",
+			"parameterDescription": "com.affichage:dao-domainwerte",
+			"startTimeMillis": 1508416648609,
+			"durationMillis": 0,
+			"pauseDurationMillis": 0,
+			"parentNodes": [
+				"19"
+			]
+		}
+	]
+}

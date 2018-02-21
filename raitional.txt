@@ -1,0 +1,41 @@
+* Motivation 
+
+Patch Ibus Microservices -> All? No problem
+Patch Ui Microservice -> All? Nicht feasbile 
+
+* Build Ablauf Ist
+
+Snapshot Builds
+Mauelles Checkin in Designer 
+
+Vorteile : 
+Automatisches Builden der Downstream Dependencies
+PatchOMat : tägliches!!!! Patchen 
+Einfach?! 
+
+Nachteile 
+Keine Tracebility vom Source code repository zu deployten produktiv Artefakten
+Umständlicher Tooling Stack mit viel maueller Redundanz
+Compile "Fehler" unter Umständen erst 
+
+* Multi Project Builds 
+Maven Versuche 
+Gradle Versuche 
+Mehr Fragen als Antworten : Modularisierung = Multiproject Build Grenzen? Alles oder nichts 
+Monolitische Builds 
+
+Schlussendlich: Wir haben viel zu verlieren
+
+
+* Aktueller Ansatz 
+
+Stärken beibehalten / Schwächen Adressieren
+
+1. Dependency Management 
+Maven bom pom reflektiert immer die aktuellen Versionen, auch der selbst gebauten Artefakten pro Zielumgebung
+
+2. Patch = Dynamisch zusammengestellter Multiprojekt Build für ein Zielprodukt , zb It21Ui
+Jedes CVS Module erhält in Verlauf des Patch Buildes eine neue eindeutige Versionsnummer
+Das Maven bom pom wird laufend nachgeführt
+Die zu installierenden Artefakte sind reine Assembly Jobs 
+
