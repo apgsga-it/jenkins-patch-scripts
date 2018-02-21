@@ -1,4 +1,5 @@
 apply plugin: 'groovy'
+apply plugin: 'eclipse'
 
 // In this section you declare where to find the dependencies of your project
 
@@ -11,12 +12,6 @@ repositories {
 		maven { url "http://repo.maven.apache.org/maven2" }
 	}
 
-
-dependencies {
-   	compile group: 'org.codehaus.groovy' , name: 'groovy-all', version: '2.2.1'
-
-}
-
 sourceSets {
   main {
     groovy {
@@ -24,3 +19,8 @@ sourceSets {
     }
   }
 }
+dependencies {
+   	compile group: 'org.codehaus.groovy' , name: 'groovy-all', version: '2.4.9'
+
+}
+

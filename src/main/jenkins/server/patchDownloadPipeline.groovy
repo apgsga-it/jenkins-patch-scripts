@@ -1,5 +1,5 @@
 #!groovy
-library 'patch-global-functions'​
+library 'patch-global-functions'
 import groovy.json.JsonSlurperClassic
 properties([
 	parameters([
