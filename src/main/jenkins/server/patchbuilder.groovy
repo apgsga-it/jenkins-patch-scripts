@@ -6,7 +6,7 @@ pipelineJob (jobName) {
 	concurrentBuild(false)
 	definition {
 		cps {
-			script(readFileFromWorkspace('jenkins-patch-scripts/src/main/jenkins/server/patchProdPipeline.groovy'))
+			script(readFileFromWorkspace('src/main/jenkins/server/patchProdPipeline.groovy'))
 			sandbox(false)
 		}
 	}
@@ -21,7 +21,7 @@ pipelineJob (downLoadJobName) {
 	concurrentBuild(false)
 	definition {
 		cps {
-			script(readFileFromWorkspace('jenkins-patch-scripts/src/main/jenkins/server/patchDownloadPipeline.groovy'))
+			script(readFileFromWorkspace('src/main/jenkins/server/patchDownloadPipeline.groovy'))
 			sandbox(false)
 		}
 	}
