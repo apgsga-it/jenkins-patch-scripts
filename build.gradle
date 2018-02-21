@@ -1,0 +1,26 @@
+apply plugin: 'groovy'
+
+// In this section you declare where to find the dependencies of your project
+
+repositories {
+		mavenLocal()
+		maven { url "http://mavenrepo.apgsga.ch/nexus/content/groups/public/" }
+		maven { url "http://mavenrepo.apgsga.ch/nexus/content/repositories/releases/" }
+		maven { url "http://mavenrepo.apgsga.ch/nexus/content/repositories/snapshots/" }
+		maven { url "http://mavenrepo.apgsga.ch/nexus/content/groups/public-snapshots/" }
+		maven { url "http://repo.maven.apache.org/maven2" }
+	}
+
+
+dependencies {
+   	compile group: 'org.codehaus.groovy' , name: 'groovy-all', version: '2.2.1'
+
+}
+
+sourceSets {
+  main {
+    groovy {
+      srcDirs = ['src/jenkins/server', 'var']
+    }
+  }
+}
