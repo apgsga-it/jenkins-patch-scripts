@@ -154,10 +154,10 @@ def updateBom(patchConfig,module) {
 
 def assembleDeploymentArtefacts(patchConfig) {
 	parallel 'ui-server-assembly':{
-		node { assemble(patchConfig, "it21-ui-pkg-client")}
+		node { assemble(patchConfig, "it21-ui-pkg-server")}
 		node { buildDockerImage(patchConfig) }
 	}, 'ui-client-assembly':{
-		node {assemble(patchConfig, "it21-ui-pkg-server")}
+		node {assemble(patchConfig, "it21-ui-pkg-client")}
 	}
 }
 
