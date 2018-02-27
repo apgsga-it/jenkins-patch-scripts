@@ -98,7 +98,7 @@ def checkoutModules(patchConfig) {
 	patchConfig.mavenArtifacts.each {
 		coFromTagcvs(patchConfig,tag,it.name)
 	}
-	coFromBranchCvs(patchConfig, 'dm-version-manager')
+	coFromBranchCvs(patchConfig, 'it21-ui-bundle')
 }
 
 def coFromBranchCvs(patchConfig, moduleName) {
@@ -117,9 +117,9 @@ def generateVersionProperties(patchConfig) {
 	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	def previousVersion = mavenVersionNumber(patchConfig,patchConfig.lastRevision)
 	echo "$buildVersion"
-	dir ("dm-version-manager") {
+	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean generateVersionProperties publish publishToMavenLocal -Pversion=${previousVersion} -PpublishVersion=${buildVersion} -PworkDir=${WORKSPACE}/work"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion}"
 	}
 }
 
@@ -145,19 +145,19 @@ def updateBom(patchConfig,module) {
 	echo "Update Bom for artifact " + module.artifact + " for Revision: " + patchConfig.revision
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
-	dir ("dm-version-manager") {
+	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean updateVersionProperties publish publishToMavenLocal -Pversion=${buildVersion} -Partifact=${module.artifact} -PworkDir=${WORKSPACE}/work"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.artifact}"
 	}
 }
 
 
 def assembleDeploymentArtefacts(patchConfig) {
 	parallel 'ui-server-assembly':{
-		node { assemble(patchConfig, "it21-jadas-service")}
+		node { assemble(patchConfig, "it21-ui-pkg-client")}
 		node { buildDockerImage(patchConfig) }
 	}, 'ui-client-assembly':{
-		node {assemble(patchConfig, "it21-ui-package")}
+		node {assemble(patchConfig, "it21-ui-pkg-server")}
 	}
 }
 
@@ -183,10 +183,9 @@ def buildDockerImage(patchConfig) {
 def assemble(patchConfig, assemblyName) {
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
-	coFromBranchCvs(patchConfig, assemblyName)
-	dir ("${assemblyName}") {
+	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew generateVersionProperties assemble publish -Pversion=${buildVersion}"
+		sh "./gradlew  ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
 	}
 }
 
