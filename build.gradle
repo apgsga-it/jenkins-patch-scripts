@@ -5,12 +5,14 @@ apply plugin: 'eclipse'
 
 repositories {
 		mavenLocal()
-		maven { url "http://mavenrepo.apgsga.ch/nexus/content/groups/public/" }
-		maven { url "http://mavenrepo.apgsga.ch/nexus/content/repositories/releases/" }
-		maven { url "http://mavenrepo.apgsga.ch/nexus/content/repositories/snapshots/" }
-		maven { url "http://mavenrepo.apgsga.ch/nexus/content/groups/public-snapshots/" }
-		maven { url "http://repo.maven.apache.org/maven2" }
-	}
+		maven { 
+		  credentials {
+            	username "$repoUser"
+            	password "$repoPassword"
+        	}
+			url "${mavenRepoBaseUrl}/repo" 
+		}
+}
 
 sourceSets {
   main {
