@@ -54,7 +54,7 @@ Expand-Archive "${downloadedFileName}" "${downloadFilePath}${tempExtractFolder}"
 Write-Output "Extraction done."
 $finalFolder = getFinalFolderName
 Write-Output "${tempExtractFolder} renamed into ${finalFolder}"
-Rename-Item $tempExtractFolder $finalFolder
+Rename-Item $tempExtractFolder "${downloadFilePath}\${finalFolder}"
 Write-Output "Renaming done, next GUI will be started from ${finalFolder}"
 
 Write-Output "install_it21Gui script finished!"
