@@ -29,19 +29,19 @@ $Username = 'dev'
 $Password = 'dev1234'
 #$downloadFilePath = "${PSScriptRoot}\"
 $downloadFilePath = "C:\Software\it21shares\it21_${target}\"
-$downloadedFileName = "it21gui-dist.zip"
-$downloadInProgressFileName = "it21gui-dist.zip.download"
+$downloadedFileName = "${downloadFilePath}it21gui-dist.zip"
+$downloadInProgressFileName = "${downloadFilePath}it21gui-dist.zip.download"
 $WebClient = New-Object System.Net.WebClient
 $WebClient.Credentials = New-Object System.Net.Networkcredential($Username, $Password)
 
-if(Test-Path "${downloadFilePath}${downloadedFileName}") {
-	Write-Output "Old ${downloadFilePath}${downloadedFileName} file will be deleted..."
-	Remove-Item "${downloadFilePath}${downloadedFileName}"
-	Write-Output "${downloadFilePath}${downloadedFileName} deleted!"
+if(Test-Path "${downloadedFileName}") {
+	Write-Output "Old ${downloadedFileName} file will be deleted..."
+	Remove-Item "${downloadedFileName}"
+	Write-Output "${downloadedFileName} deleted!"
 }
 
-Write-Output "Starting download ... (${downloadFilePath}${downloadInProgressFileName})"
-$WebClient.DownloadFile( $url, "${downloadFilePath}${downloadInProgressFileName}" )
+Write-Output "Starting download ... (${downloadInProgressFileName})"
+$WebClient.DownloadFile( $url, "${downloadInProgressFileName}" )
 
 Write-Output "Download done."
 Write-Output "${downloadInProgressFileName} getting renamed into ${downloadedFileName}"
@@ -49,8 +49,8 @@ Rename-Item $downloadInProgressFileName $downloadedFileName
 
 $tempExtractFolder = getTemporaryFolderName
 
-Write-Output "${downloadFilePath}${downloadedFileName} will be extracted to ${downloadFilePath}${tempExtractFolder}"
-Expand-Archive "${downloadFilePath}${downloadedFileName}" "${downloadFilePath}${tempExtractFolder}"
+Write-Output "${downloadedFileName} will be extracted to ${downloadFilePath}${tempExtractFolder}"
+Expand-Archive "${downloadedFileName}" "${downloadFilePath}${tempExtractFolder}"
 Write-Output "Extraction done."
 $finalFolder = getFinalFolderName
 Write-Output "${tempExtractFolder} renamed into ${finalFolder}"
