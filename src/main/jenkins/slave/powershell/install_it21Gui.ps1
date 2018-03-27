@@ -16,6 +16,8 @@ function getCurrentDatetimeformated() {
 	return Get-Date -format "yyyyMMddHHmmss"
 }
 
+Write-Output "install_it21Gui script started!"
+
 # TODO JHE(23.03.2018): Get username and password from somewhere else ... parameter? env variable?
 $Username = 'dev'
 $Password = 'dev1234'
@@ -47,3 +49,5 @@ $finalFolder = getFinalFolderName
 Write-Output "${tempExtractFolder} renamed into ${finalFolder}"
 Rename-Item $tempExtractFolder $finalFolder
 Write-Output "Renaming done, next GUI will be started from ${finalFolder}"
+
+Write-Output "install_it21Gui script finished!"
