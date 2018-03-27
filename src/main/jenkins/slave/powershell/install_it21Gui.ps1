@@ -35,6 +35,8 @@ $downloadInProgressFileName = "${downloadFilePath}it21gui-dist.zip.download"
 $WebClient = New-Object System.Net.WebClient
 $WebClient.Credentials = New-Object System.Net.Networkcredential($Username, $Password)
 
+invoke-expression -Command C:\temp\init_install_it21gui.ps1
+
 if(Test-Path "${downloadedFileName}") {
 	Write-Output "Old ${downloadedFileName} file will be deleted..."
 	Remove-Item "${downloadedFileName}"
