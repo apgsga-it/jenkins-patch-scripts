@@ -28,7 +28,8 @@ Write-Output "install_it21Gui script started!"
 $Username = 'dev'
 $Password = 'dev1234'
 #$downloadFilePath = "${PSScriptRoot}\"
-$downloadFilePath = "C:\Software\it21shares\it21_${target}\"
+#$downloadFilePath = "C:\Software\it21shares\it21_${target}\"
+$downloadFilePath = "\\gui-${target}.apgsga.ch\it21_${target}\"
 $downloadedFileName = "${downloadFilePath}it21gui-dist.zip"
 $downloadInProgressFileName = "${downloadFilePath}it21gui-dist.zip.download"
 $WebClient = New-Object System.Net.WebClient
