@@ -1,5 +1,11 @@
 param(
-	[String]$url
+	[parameter(Mandatory=$true)]
+	[String]
+	$url,
+	
+	[parameter(Mandatory=$true)]
+	[String]
+	$target
 )
 
 function getFinalFolderName() {
@@ -21,7 +27,8 @@ Write-Output "install_it21Gui script started!"
 # TODO JHE(23.03.2018): Get username and password from somewhere else ... parameter? env variable?
 $Username = 'dev'
 $Password = 'dev1234'
-$downloadFilePath = "${PSScriptRoot}\"
+#$downloadFilePath = "${PSScriptRoot}\"
+$downloadFilePath = "C:\Software\it21shares\it21_${target}\"
 $downloadedFileName = "it21gui-dist.zip"
 $downloadInProgressFileName = "it21gui-dist.zip.download"
 $WebClient = New-Object System.Net.WebClient
