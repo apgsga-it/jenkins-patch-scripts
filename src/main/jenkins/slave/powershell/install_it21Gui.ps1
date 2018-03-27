@@ -57,4 +57,8 @@ Write-Output "${tempExtractFolder} renamed into ${finalFolder}"
 Rename-Item "${downloadFilePath}\${tempExtractFolder}" "${downloadFilePath}\${finalFolder}"
 Write-Output "Renaming done, next GUI will be started from ${finalFolder}"
 
+Write-Output "Cleaning up share folder, deleting ZIP..."
+Remove-Item $downloadedFileName
+Write-Output "${downloadedFileName} deleted!"
+
 Write-Output "install_it21Gui script finished!"
