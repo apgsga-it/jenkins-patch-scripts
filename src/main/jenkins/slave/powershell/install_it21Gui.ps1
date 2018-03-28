@@ -35,7 +35,7 @@ $downloadInProgressFileName = "${downloadFilePath}it21gui-dist.zip.download"
 $WebClient = New-Object System.Net.WebClient
 $WebClient.Credentials = New-Object System.Net.Networkcredential($Username, $Password)
 
-invoke-expression -Command C:\temp\init_install_it21gui.ps1
+invoke-expression -Command "C:\Software\initAndClean\init_install_${target}_it21gui.ps1"
 
 if(Test-Path "${downloadedFileName}") {
 	Write-Output "Old ${downloadedFileName} file will be deleted..."
@@ -63,5 +63,7 @@ Write-Output "Renaming done, next GUI will be started from ${finalFolder}"
 Write-Output "Cleaning up share folder, deleting ZIP..."
 Remove-Item $downloadedFileName
 Write-Output "${downloadedFileName} deleted!"
+
+invoke-expression -Command "C:\Software\initAndClean\clean_install_${target}_it21gui.ps1"
 
 Write-Output "install_it21Gui script finished!"
