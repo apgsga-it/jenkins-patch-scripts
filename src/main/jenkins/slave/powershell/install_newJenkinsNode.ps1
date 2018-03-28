@@ -18,10 +18,6 @@ param(
 	
 	[parameter(Mandatory=$true)]
 	[String]
-	$sharesHomeFolder,
-	
-	[parameter(Mandatory=$true)]
-	[String]
 	$slavesHomeFolder
 )
 
@@ -36,9 +32,6 @@ Rename-Item "${slavesHomeFolder}\${nodeName}\JenkinsWinAgent.exe.config" "${slav
 (Get-Content "${slavesHomeFolder}\${nodeName}\JenkinsWinAgent${nodeName}.xml").replace('[secret]', "${secret}") | Set-Content "${slavesHomeFolder}\${nodeName}\JenkinsWinAgent${nodeName}.xml"
 (Get-Content "${slavesHomeFolder}\${nodeName}\JenkinsWinAgent${nodeName}.xml").replace('[workdir]', "${workDir}") | Set-Content "${slavesHomeFolder}\${nodeName}\JenkinsWinAgent${nodeName}.xml"
 
-Expand-Archive "startScripts.zip" "${sharesHomeFolder}\it21_${nodeName}"
-
 $serviceInstaller = "${slavesHomeFolder}\${nodeName}\JenkinsWinAgent${nodeName}.exe"
 & $serviceInstaller "uninstall"
 & $serviceInstaller "install"
-
