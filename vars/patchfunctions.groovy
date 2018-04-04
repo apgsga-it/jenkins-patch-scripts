@@ -198,6 +198,10 @@ def installDeploymentArtifacts(patchConfig) {
 	}
 }
 
+def notify(target,toState) {
+	echo "Notifying ${target} to ${toState}"
+}
+
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
 		echo "Don't know how to install ${artifact} of ${type} on ${patchConfig.installationTarget}  : TODO "

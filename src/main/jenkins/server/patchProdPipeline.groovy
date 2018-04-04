@@ -32,12 +32,14 @@ targets.each { target ->
 			patchfunctions.assembleDeploymentArtefacts(patchConfig)
 		}
 	}
+	notify(target,"Installationsbereit")
 	stage("Approve ${target} Installation") {
 			patchfunctions.approveInstallation(patchConfig)	
 	}
 	stage("${target} Installation") {
 		patchfunctions.installDeploymentArtifacts(patchConfig) 
 	}
+	notify(target,"Installation")
 }
 
 
