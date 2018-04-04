@@ -9,6 +9,7 @@ def tagName(patchConfig) {
 
 def targetIndicator(patchConfig, target) {
 	def targetInd = '';
+	// TODO (che, 4.4.2018) : needs to be configurable
 	if (target.equals('CHPI211')) {
 		targetInd = 'P'
 	}
@@ -198,8 +199,25 @@ def installDeploymentArtifacts(patchConfig) {
 	}
 }
 
-def notify(target,toState) {
+def notify(target,toState,patchConfig) {
 	echo "Notifying ${target} to ${toState}"
+	def targetToState = mapToState(target,toState)
+	def notCmd = "/opt/apgops/jenkins_persist_patch_status.sh ${patchConfig.patchNummer} ${targetToState}"
+	echo "Executeing ${notCmd}"
+	// sh ${notCmd}
+	
+}
+
+def mapToState(target,toState) {
+	// TODO (che, uge, 04.04.2018) : needs to be configurable
+	// TODO (che, uge, 04.04.2018) : first Mapping needs to be Verified
+	if (target.equals('CHEI211')) {
+		return "Produktins${toState}"
+	}
+	if (target.equals('CHEI212')) {
+		return "Informatiktest${toState}"
+	}
+	// TODO (che, uge, 04.04.2018 ) Errorhandling 
 }
 
 def install(patchConfig, type, artifact,extension) {

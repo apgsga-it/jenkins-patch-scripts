@@ -21,7 +21,7 @@ patchConfig.dockerBuildExtention = "tar.gz"
 // Mainline
 
 //targets = ['CHTI211','CHPI211']
-targets = ['CHEI212','CHEI211'] // CHE,3.1 For Testing purposes
+targets = ['CHEI212','CHEI211'] // CHE,3.1 For Testing purposes, needs to externalized
 targets.each { target ->
 	patchfunctions.targetIndicator(patchConfig,target)
 	stage("${target} Build & Assembly") {
@@ -31,15 +31,15 @@ targets.each { target ->
 		stage("${target} Assembly" ) {
 			patchfunctions.assembleDeploymentArtefacts(patchConfig)
 		}
+		patchfunctions.notify(target,"Installationsbereit", patchConfig)
 	}
-	notify(target,"Installationsbereit")
 	stage("Approve ${target} Installation") {
 			patchfunctions.approveInstallation(patchConfig)	
 	}
 	stage("${target} Installation") {
 		patchfunctions.installDeploymentArtifacts(patchConfig) 
+		patchfunctions.notify(target,"Installation", patchConfig)
 	}
-	notify(target,"Installation")
 }
 
 
