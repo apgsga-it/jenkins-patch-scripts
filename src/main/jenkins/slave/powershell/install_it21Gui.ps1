@@ -64,6 +64,9 @@ Write-Output "Cleaning up share folder, deleting ZIP..."
 Remove-Item $downloadedFileName
 Write-Output "${downloadedFileName} deleted!"
 
+Write-Output "Copying OPS file into conf folder..."
+Copy-Item "C:\config\${target}\it21-gui\serviceurl.properties" "${downloadFilePath}\${finalFolder}\conf"
+
 invoke-expression -Command "C:\Software\initAndClean\clean_install_${target}_it21gui.ps1"
 
 Write-Output "install_it21Gui script finished!"
