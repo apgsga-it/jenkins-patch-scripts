@@ -264,3 +264,10 @@ def initiateArtifactoryConnection() {
 	server.password = 'dev1234'
 	return server
 }
+
+def extractZip(downloadedZip,target) {
+	def files = findFiles(glob: '**/${downloadedZip}')
+	def currentDateAndTime = new Date().format('yyyyMMddHHmmss')
+	def extractedFolderName = "java_gui_${currentDateAndTime}"
+	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}"
+}
