@@ -256,12 +256,6 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 			 ]
 	}"""
 	artifactoryServer.download(downloadSpec)
-	
-	
-	// For testing purpose
-	def files = findFiles(glob: "**/${zip}")
-	echo "For testing, file which has been downloaded was:"
-	echo "${files[0].path}"
 }
 
 def initiateArtifactoryConnection() {
@@ -271,10 +265,22 @@ def initiateArtifactoryConnection() {
 	return server
 }
 
-def extractZip(downloadedZip,target) {
+def extractZip(downloadedZip,target,extractedFolderName) {
 	echo "Looking for following file : ${downloadedZip}"
 	def files = findFiles(glob: "**/${downloadedZip}")
-	def currentDateAndTime = new Date().format('yyyyMMddHHmmss')
-	def extractedFolderName = "java_gui_${currentDateAndTime}"
 	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}"
+}
+
+def renameExtractedZip(target,extractedFolderName) {
+	fileOperations ([
+		folderRenameOperation(source: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}")
+	])
+}
+
+def copyOpsResources(target,extractedFolderName) {
+	dir("C:\\config\\${target}\\it21-gui") {
+		fileOperations ([
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}\\conf")
+		])
+	}
 }

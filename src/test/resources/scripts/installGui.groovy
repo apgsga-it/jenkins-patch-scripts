@@ -13,7 +13,14 @@ stage("Testing installation of GUI on specific node") {
 		
 		def artifactoryServer = patchfunctions.initiateArtifactoryConnection()
 		patchfunctions.downloadGuiZipToBeInstalled(artifactoryServer,zip)
-		patchfunctions.extractZip(zip,target)
+		
+		
+		def currentDateAndTime = new Date().format('yyyyMMddHHmmss')
+		def extractedFolderName = "java_gui_${currentDateAndTime}"
+		
+		patchfunctions.extractZip(zip,target,extractedFolderName)
+		patchfunctions.renameExtractedZip(target,extractedFolderName)
+		patchfunctions.copyOpsResources(target,extractedFolderName)
 		
 		
 		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
