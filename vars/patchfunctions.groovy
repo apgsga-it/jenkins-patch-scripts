@@ -84,7 +84,7 @@ def saveRevisions(patchConfig) {
 	
 }
 def buildAndReleaseModules(patchConfig) {
-	patchConfig.modules.each { buildAndReleaseModule(patchConfig,it) }
+	patchConfig.mavenArtifacts.each { buildAndReleaseModule(patchConfig,it) }
 }
 
 def buildAndReleaseModule(patchConfig,module) {
