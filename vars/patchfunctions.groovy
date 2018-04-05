@@ -39,8 +39,8 @@ def approveInstallation(patchConfig) {
 
 def patchBuilds(patchConfig) {
 	deleteDir()
-	checkoutModules(patchConfig)
 	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
+		checkoutModules(patchConfig)
 		retrieveRevisions(patchConfig)
 		generateVersionProperties(patchConfig)
 		buildAndReleaseModules(patchConfig)
