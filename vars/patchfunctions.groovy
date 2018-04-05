@@ -249,3 +249,47 @@ def jadasServiceDropName(patchConfig) {
 	return "${artifactName}-${buildVersion}.${extension}"
 }
 
+def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
+	def downloadSpec = """{
+              "files": [
+                    {
+                      "pattern": "snapshots/*${zip}",
+		 			  "target": "download/"
+	   				}
+			 ]
+	}"""
+	artifactoryServer.download(downloadSpec)
+}
+
+def initiateArtifactoryConnection() {
+	def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
+
+	//TODO JHE(05.04.2018) : Where should we best store the credentialsId ?	
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '05e78d62-4ce3-4a9f-bab2-2c0bf5806954',
+		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+
+		server.username = "${USERNAME}"
+		server.password = "${PASSWORD}"
+	}
+	
+	return server
+}
+
+def extractZip(downloadedZip,target,extractedFolderName) {
+	def files = findFiles(glob: "**/${downloadedZip}")
+	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}"
+}
+
+def renameExtractedZip(target,extractedFolderName) {
+	fileOperations ([
+		folderRenameOperation(source: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}")
+	])
+}
+
+def copyOpsResources(target,extractedFolderName) {
+	dir("C:\\config\\${target}\\it21-gui") {
+		fileOperations ([
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}\\conf")
+		])
+	}
+}
