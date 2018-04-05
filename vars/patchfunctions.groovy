@@ -255,7 +255,13 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 	   				}
 			 ]
 	}"""
-	artifactoryServer.download(downloadSpec)	
+	artifactoryServer.download(downloadSpec)
+	
+	
+	// For testing purpose
+	def files = findFiles(glob: '**/${zip}')
+	echo "For testing, file which has been downloaded was:"
+	echo "${files[0].path}"
 }
 
 def initiateArtifactoryConnection() {

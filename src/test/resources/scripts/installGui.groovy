@@ -10,15 +10,10 @@ stage("Testing installation of GUI on specific node") {
 		// Will probably be removed, but for now we need to initiate the connection on \\gui-chei212.apgsga.ch ...
 		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\init_install_${target}_it21gui.ps1\"")
 		
-		echo "Starting a testing installation of GUI on specific node ..."
-		
-		echo "Trying to call a funtion from patchFunctions.groovy..."
 		
 		def artifactoryServer = patchfunctions.initiateArtifactoryConnection()
 		patchfunctions.downloadGuiZipToBeInstalled(artifactoryServer,zip)
 		patchfunctions.extractZip(zip,target)
-		
-		echo "Testing installation of GUI on specific node done!"
 		
 		
 		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
