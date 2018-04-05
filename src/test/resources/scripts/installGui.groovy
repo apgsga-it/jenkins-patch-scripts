@@ -15,7 +15,7 @@ stage("Testing installation of GUI on specific node") {
 		echo "Trying to call a funtion from patchFunctions.groovy..."
 		
 		def artifactoryServer = patchFunctions.initiateArtifactoryConnection()
-		patchfunctions.downloadGuiZipToBeInstalled(artifactoryServer,"it21gui-dist-zip-9.0.6.ADMIN-UIMIG-20180404.063723-15.zip")
+		patchFunctions.downloadGuiZipToBeInstalled(artifactoryServer,"it21gui-dist-zip-9.0.6.ADMIN-UIMIG-20180404.063723-15.zip")
 		
 		echo "Testing installation of GUI on specific node done!"
 		
