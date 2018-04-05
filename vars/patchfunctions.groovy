@@ -153,7 +153,7 @@ def updateBom(patchConfig,module) {
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.artifactId}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId}"
 	}
 }
 
