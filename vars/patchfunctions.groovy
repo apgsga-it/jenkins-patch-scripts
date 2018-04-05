@@ -246,3 +246,6 @@ def jadasServiceDropName(patchConfig) {
 	return "${artifactName}-${buildVersion}.${extension}"
 }
 
+def getGuiZipToBeInstalled() {
+	echo "Getting ZIP to be installed"
+}
