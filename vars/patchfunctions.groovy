@@ -259,14 +259,23 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 }
 
 def initiateArtifactoryConnection() {
-	def server = Artifactory.server 'artifactory4t4apgsga' // needs to be configured on Jenkins
-	server.username = 'dev'
-	server.password = 'dev1234'
+	def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
+	
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '05e78d62-4ce3-4a9f-bab2-2c0bf5806954',
+		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+
+
+		echo "${USERNAME}"
+		echo "${PASSWORD}"
+		server.username = "${USERNAME}" //'dev' //TODO JHE: Need to be taken from external
+		server.password = "${PASSWORD}" //TODO JHE: Need to be taken from external
+	}
+	
+	
 	return server
 }
 
 def extractZip(downloadedZip,target,extractedFolderName) {
-	echo "Looking for following file : ${downloadedZip}"
 	def files = findFiles(glob: "**/${downloadedZip}")
 	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}"
 }
