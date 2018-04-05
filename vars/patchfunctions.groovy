@@ -246,6 +246,21 @@ def jadasServiceDropName(patchConfig) {
 	return "${artifactName}-${buildVersion}.${extension}"
 }
 
-def getGuiZipToBeInstalled() {
-	echo "Getting ZIP to be installed"
+def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
+	def downloadSpec = """{
+              "files": [
+                    {
+                      "pattern": "snapshots/*${zip}",
+		 			  "target": "download/"
+	   				}
+			 ]
+	}"""
+	artifactoryServer.download(downloadSpec)	
+}
+
+def initiateArtifactoryConnection() {
+	def server = Artifactory.server 'artifactory4t4apgsga' // needs to be configured on Jenkins
+	server.username = 'dev'
+	server.password = 'dev1234'
+	return server
 }
