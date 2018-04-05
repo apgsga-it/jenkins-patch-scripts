@@ -160,6 +160,7 @@ def updateBom(patchConfig,module) {
 
 def assembleDeploymentArtefacts(patchConfig) {
 	node { 
+		coFromBranchCvs(patchConfig, 'it21-ui-bundle')
 		assemble(patchConfig, "it21-ui-pkg-server")
 		buildDockerImage(patchConfig) 
 		assemble(patchConfig, "it21-ui-pkg-client")
