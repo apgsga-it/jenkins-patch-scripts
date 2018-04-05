@@ -260,17 +260,14 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 
 def initiateArtifactoryConnection() {
 	def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
-	
+
+	//TODO JHE(05.04.2018) : Where should we best store the credentialsId ?	
 	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '05e78d62-4ce3-4a9f-bab2-2c0bf5806954',
 		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 
-
-		echo "${USERNAME}"
-		echo "${PASSWORD}"
-		server.username = "${USERNAME}" //'dev' //TODO JHE: Need to be taken from external
-		server.password = "${PASSWORD}" //TODO JHE: Need to be taken from external
+		server.username = "${USERNAME}"
+		server.password = "${PASSWORD}"
 	}
-	
 	
 	return server
 }
