@@ -273,7 +273,7 @@ def initiateArtifactoryConnection() {
 
 def extractZip(downloadedZip,target) {
 	echo "Looking for following file : ${downloadedZip}"
-	def files = findFiles(glob: '**/${downloadedZip}')
+	def files = findFiles(glob: "**/${downloadedZip}")
 	def currentDateAndTime = new Date().format('yyyyMMddHHmmss')
 	def extractedFolderName = "java_gui_${currentDateAndTime}"
 	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}"
