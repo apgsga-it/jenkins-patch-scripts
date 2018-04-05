@@ -92,6 +92,8 @@ def buildAndReleaseModule(patchConfig,module) {
 	releaseModule(patchConfig,module)
 	buildModule(patchConfig,module)
 	updateBom(patchConfig,module)
+	echo "buildAndReleaseModule : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart + " done."
+	
 }
 
 
