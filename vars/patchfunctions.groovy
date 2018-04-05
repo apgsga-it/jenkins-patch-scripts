@@ -88,11 +88,11 @@ def buildAndReleaseModules(patchConfig) {
 }
 
 def buildAndReleaseModule(patchConfig,module) {
-	echo "buildAndReleaseModule : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
+	echo "buildAndReleaseModule : " + module.name 
 	releaseModule(patchConfig,module)
 	buildModule(patchConfig,module)
 	updateBom(patchConfig,module)
-	echo "buildAndReleaseModule : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart + " done."
+	echo "buildAndReleaseModule : " + module.name 
 	
 }
 
@@ -141,6 +141,8 @@ def buildModule(patchConfig,module) {
 		echo "Building Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
 		def mvnCommand = 'mvn deploy'
 		echo "${mvnCommand}"
+		withMaven( maven: 'apache-maven-3.5.0') { sh "mvn help:effective-settings" }
+		withMaven( maven: 'apache-maven-3.5.0') { sh "mvn help:effective-pom" }
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
 }
