@@ -249,7 +249,7 @@ def install(patchConfig, type, artifact,extension) {
 			def currentDateAndTime = new Date().format('yyyyMMddHHmmss')
 			def extractedFolderName = "java_gui_${currentDateAndTime}"
 			
-			extractZip(downloadedZip,patchConfig.installationTarget,extractedFolderName)
+			extractZip(zip,patchConfig.installationTarget,extractedFolderName)
 			
 			// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
 			powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
