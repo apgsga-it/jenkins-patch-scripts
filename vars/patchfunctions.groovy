@@ -265,7 +265,9 @@ def installGUI(patchConfig,artifact,extension) {
 		
 		def extractedFolderName = guiExtractedFolderName()
 		
-		extractZip(zip,patchConfig.installationTarget,extractedFolderName)
+		extractZip(zip,patchConfig,extractedFolderName)
+		renameExtractedZip(patchConfig,extractedFolderName)
+		copyOpsResources(patchConfig,extractedFolderName)
 		
 		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
 		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
@@ -313,21 +315,21 @@ def initiateArtifactoryConnection() {
 	return server
 }
 
-def extractZip(downloadedZip,target,extractedFolderName) {
+def extractZip(downloadedZip,patchConfig,extractedFolderName) {
 	def files = findFiles(glob: "**/${downloadedZip}")
-	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}"
+	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}"
 }
 
-def renameExtractedZip(target,extractedFolderName) {
+def renameExtractedZip(patchConfig,extractedFolderName) {
 	fileOperations ([
-		folderRenameOperation(source: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}")
+		folderRenameOperation(source: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}")
 	])
 }
 
-def copyOpsResources(target,extractedFolderName) {
-	dir("C:\\config\\${target}\\it21-gui") {
+def copyOpsResources(patchConfig,extractedFolderName) {
+	dir("C:\\config\\${patchConfig.installationTarget}\\it21-gui") {
 		fileOperations ([
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}\\conf")
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}\\conf")
 		])
 	}
 }
