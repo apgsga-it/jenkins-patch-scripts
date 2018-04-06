@@ -183,7 +183,8 @@ def buildDockerImage(patchConfig) {
 		sh "${mvnCommand}"
 		sh "${mvnCommandCopy}"
 	}
-	sh "${dockerBuild}"
+	//sh "${dockerBuild}"
+	echo "Docker jadas-service build disabled for now as we are having diskspace problem..."
 }
 
 def assemble(patchConfig, assemblyName) {
