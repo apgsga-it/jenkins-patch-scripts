@@ -183,8 +183,7 @@ def buildDockerImage(patchConfig) {
 		sh "${mvnCommand}"
 		sh "${mvnCommandCopy}"
 	}
-	//sh "${dockerBuild}"
-	echo "Docker jadas-service build disabled for now as we are having diskspace problem..."
+	sh "${dockerBuild}"
 }
 
 def assemble(patchConfig, assemblyName) {
@@ -201,8 +200,7 @@ def installDeploymentArtifacts(patchConfig) {
 		parallel 'ui-client-deployment': {
 			node {install(patchConfig,"client","it21gui-dist-zip","zip")}
 		}, 'ui-server-deployment': {
-			//node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
-			echo "Docker jadas-service installation disabled for now as we are having diskspace problem..."
+			node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
 		}
 	}
 }
