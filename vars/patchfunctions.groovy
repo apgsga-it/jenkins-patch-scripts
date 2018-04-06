@@ -228,8 +228,34 @@ def mapToState(target,toState) {
 
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
-		echo "Don't know how to install ${artifact} of ${type} on ${patchConfig.installationTarget}  : TODO "
-		return;
+		
+		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+			echo "GUI can currently only be installed on CHEI212. ${patchConfig.installationTarget} not supported yet."
+			return
+		}
+
+		//TODO JHE: put all this in a separtated function
+		node("Apg_jdv_CHEI212") {
+			// Will probably be removed, but for now we need to initiate the connection on \\gui-chei212.apgsga.ch ...
+			powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\init_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+			
+			def artifactoryServer = initiateArtifactoryConnection()
+			
+			//TODO JHE: zip should of course not be hardcoded, but note sure we have everything now in patchConfig to dynamically build the identifier.
+			def zip = "it21gui-dist-zip-9.0.6.ADMIN-UIMIG-T-44.zip"
+			downloadGuiZipToBeInstalled(artifactoryServer,zip)
+			
+			//TODO JHE: get this from a function
+			def currentDateAndTime = new Date().format('yyyyMMddHHmmss')
+			def extractedFolderName = "java_gui_${currentDateAndTime}"
+			
+			extractZip(downloadedZip,patchConfig.installationTarget,extractedFolderName)
+			
+			// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
+			powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+		}
+				
+				
 	}
 
 	if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
@@ -256,7 +282,7 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 	def downloadSpec = """{
               "files": [
                     {
-                      "pattern": "snapshots/*${zip}",
+                      "pattern": "releases/*${zip}",
 		 			  "target": "download/"
 	   				}
 			 ]
