@@ -249,7 +249,8 @@ def install(patchConfig, type, artifact,extension) {
 }
 
 def installGUI(patchConfig,artifact,extension) {
-	node("apg-jdv-e-001") {
+	node("apg-jdv-e-001") { //TODO JHE: Getting the node name should be more dynamic...
+		
 		// Will probably be removed, but for now we need to initiate the connection on \\gui-chei212.apgsga.ch ...
 		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\init_install_${patchConfig.installationTarget}_it21gui.ps1\"")
 		
