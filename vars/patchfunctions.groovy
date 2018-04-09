@@ -324,11 +324,12 @@ def extractGuiZip(downloadedZip,patchConfig,extractedFolderName) {
 
 def copyCitrixBatchFile(patchConfig,extractedFolderName) {
 	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
-	dir("\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}")
-	fileOperations ( [
-		fileCopyOperation(flattenFiles: true, excludes: '', includes: 'start_it21_gui_run.bat', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"),
-		fileDeleteOperation('start_it21_gui_run.bat','')
-	])
+	dir("\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}") {
+		fileOperations ( [
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: 'start_it21_gui_run.bat', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"),
+			fileDeleteOperation('start_it21_gui_run.bat','')
+		])
+	}
 }
 
 def renameExtractedGuiZip(patchConfig,extractedFolderName) {
