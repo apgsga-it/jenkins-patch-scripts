@@ -267,6 +267,7 @@ def installGUI(patchConfig,artifact,extension) {
 		extractGuiZip(zip,patchConfig,extractedFolderName)
 		renameExtractedGuiZip(patchConfig,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedFolderName)
+		copyCitrixBatchFile(patchConfig,extractedFolderName)
 		
 		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
 		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
@@ -317,6 +318,17 @@ def initiateArtifactoryConnection() {
 def extractGuiZip(downloadedZip,patchConfig,extractedFolderName) {
 	def files = findFiles(glob: "**/${downloadedZip}")
 	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}"
+	
+
+}
+
+def copyCitrixBatchFile(patchConfig,extractedFolderName) {
+	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
+	dir("\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}")
+	fileOperations ( [
+		fileCopyOperation(flattenFiles: true, excludes: '', includes: 'start_it21_gui_run.bat', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"),
+		fileDeleteOperation('start_it21_gui_run.bat','')
+	])
 }
 
 def renameExtractedGuiZip(patchConfig,extractedFolderName) {
