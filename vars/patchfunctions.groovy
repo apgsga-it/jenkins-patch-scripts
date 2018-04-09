@@ -264,9 +264,9 @@ def installGUI(patchConfig,artifact,extension) {
 		
 		def extractedFolderName = guiExtractedFolderName()
 		
-		extractZip(zip,patchConfig,extractedFolderName)
-		renameExtractedZip(patchConfig,extractedFolderName)
-		copyOpsResources(patchConfig,extractedFolderName)
+		extractGuiZip(zip,patchConfig,extractedFolderName)
+		renameExtractedGuiZip(patchConfig,extractedFolderName)
+		copyGuiOpsResources(patchConfig,extractedFolderName)
 		
 		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
 		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
@@ -314,18 +314,18 @@ def initiateArtifactoryConnection() {
 	return server
 }
 
-def extractZip(downloadedZip,patchConfig,extractedFolderName) {
+def extractGuiZip(downloadedZip,patchConfig,extractedFolderName) {
 	def files = findFiles(glob: "**/${downloadedZip}")
 	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}"
 }
 
-def renameExtractedZip(patchConfig,extractedFolderName) {
+def renameExtractedGuiZip(patchConfig,extractedFolderName) {
 	fileOperations ([
 		folderRenameOperation(source: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}")
 	])
 }
 
-def copyOpsResources(patchConfig,extractedFolderName) {
+def copyGuiOpsResources(patchConfig,extractedFolderName) {
 	dir("C:\\config\\${patchConfig.installationTarget}\\it21-gui") {
 		fileOperations ([
 			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}\\conf")
