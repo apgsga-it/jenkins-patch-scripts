@@ -236,16 +236,18 @@ def install(patchConfig, type, artifact,extension) {
 
 		installGUI(patchConfig,artifact,extension)				
 	}
-
-	if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
-		echo "Don't know how to install services apart from jadas-service : TODO"
-		return
+	else {
+		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
+			echo "Don't know how to install services apart from jadas-service : TODO"
+			return
+		}
+	
+		def dropName = jadasServiceDropName(patchConfig)
+		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER} ${patchConfig.installationTarget}"
+		echo dockerDeploy
+		sh "${dockerDeploy}"
 	}
-
-	def dropName = jadasServiceDropName(patchConfig)
-	def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER} ${patchConfig.installationTarget}"
-	echo dockerDeploy
-	sh "${dockerDeploy}"
+	
 }
 
 def installGUI(patchConfig,artifact,extension) {
