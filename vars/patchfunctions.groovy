@@ -327,7 +327,7 @@ def copyCitrixBatchFile(patchConfig,extractedFolderName) {
 	dir("\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}") {
 		fileOperations ( [
 			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"),
-			fileDeleteOperation('start_it21_gui_run.bat','')
+			fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')
 		])
 	}
 }
