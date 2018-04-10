@@ -197,9 +197,9 @@ def assemble(patchConfig, assemblyName) {
 
 def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Install") {
-		parallel 'ui-server-deployment': {
-			node {install(patchConfig,"client","com.affichage.it21:it21gui-dist-zip","zip")}
-		}, 'ui-client-deployment': {
+		parallel 'ui-client-deployment': {
+			node {install(patchConfig,"client","it21gui-dist-zip","zip")}
+		}, 'ui-server-deployment': {
 			node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
 		}
 	}
@@ -228,19 +228,58 @@ def mapToState(target,toState) {
 
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
-		echo "Don't know how to install ${artifact} of ${type} on ${patchConfig.installationTarget}  : TODO "
-		return;
-	}
+		
+		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+			echo "GUI can currently only be installed on CHEI212. ${patchConfig.installationTarget} not supported yet."
+			return
+		}
 
-	if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
-		echo "Don't know how to install services apart from jadas-service : TODO"
-		return
+		installGUI(patchConfig,artifact,extension)				
 	}
+	else {
+		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
+			echo "Don't know how to install services apart from jadas-service : TODO"
+			return
+		}
+	
+		def dropName = jadasServiceDropName(patchConfig)
+		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER} ${patchConfig.installationTarget}"
+		echo dockerDeploy
+		sh "${dockerDeploy}"
+	}
+	
+}
 
-	def dropName = jadasServiceDropName(patchConfig)
-	def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER} ${patchConfig.installationTarget}"
-	echo dockerDeploy
-	sh "${dockerDeploy}"
+def installGUI(patchConfig,artifact,extension) {
+	node("apg-jdv-e-001") { //TODO JHE: Getting the node name should be more dynamic...
+		
+		// Will probably be removed, but for now we need to initiate the connection on \\gui-chei212.apgsga.ch ...
+		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\init_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+		
+		def artifactoryServer = initiateArtifactoryConnection()
+		
+		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
+		def zip = "${artifact}-${buildVersion}.${extension}"
+		
+		//TODO JHE: here we should probably pass the repo type as well -> snapshot or relaease, althought it might always be relaease...
+		downloadGuiZipToBeInstalled(artifactoryServer,zip)
+		
+		def extractedFolderName = guiExtractedFolderName()
+		
+		extractGuiZip(zip,patchConfig,extractedFolderName)
+		renameExtractedGuiZip(patchConfig,extractedFolderName)
+		copyGuiOpsResources(patchConfig,extractedFolderName)
+		copyCitrixBatchFile(patchConfig,extractedFolderName)
+		
+		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
+		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+	}
+}
+
+def guiExtractedFolderName() {
+	def currentDateAndTime = new Date().format('yyyyMMddHHmmss')
+	def extractedFolderName = "java_gui_${currentDateAndTime}"
+	return extractedFolderName
 }
 
 def jadasServiceDropName(patchConfig) {
@@ -256,7 +295,7 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 	def downloadSpec = """{
               "files": [
                     {
-                      "pattern": "snapshots/*${zip}",
+                      "pattern": "releases/*${zip}",
 		 			  "target": "download/"
 	   				}
 			 ]
@@ -278,21 +317,33 @@ def initiateArtifactoryConnection() {
 	return server
 }
 
-def extractZip(downloadedZip,target,extractedFolderName) {
+def extractGuiZip(downloadedZip,patchConfig,extractedFolderName) {
 	def files = findFiles(glob: "**/${downloadedZip}")
-	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}"
+	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}"
+	
+
 }
 
-def renameExtractedZip(target,extractedFolderName) {
+def copyCitrixBatchFile(patchConfig,extractedFolderName) {
+	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
+	dir("\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}") {
+		fileOperations ( [
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"),
+			fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')
+		])
+	}
+}
+
+def renameExtractedGuiZip(patchConfig,extractedFolderName) {
 	fileOperations ([
-		folderRenameOperation(source: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}")
+		folderRenameOperation(source: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}")
 	])
 }
 
-def copyOpsResources(target,extractedFolderName) {
-	dir("C:\\config\\${target}\\it21-gui") {
+def copyGuiOpsResources(patchConfig,extractedFolderName) {
+	dir("C:\\config\\${patchConfig.installationTarget}\\it21-gui") {
 		fileOperations ([
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${target}.apgsga.ch\\it21_${target}\\${extractedFolderName}\\conf")
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}\\conf")
 		])
 	}
 }
