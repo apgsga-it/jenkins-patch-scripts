@@ -217,11 +217,17 @@ def notify(target,toState,patchConfig) {
 def mapToState(target,toState) {
 	// TODO (che, uge, 04.04.2018) : needs to be configurable
 	// TODO (che, uge, 04.04.2018) : first Mapping needs to be Verified
-	if (target.equals('CHEI211')) {
-		return "Produktins${toState}"
+	if (target.equals('CHEI211') && toState.equals("Installationsbereit")) {
+		return "Produktion${toState}"
 	}
-	if (target.equals('CHEI212')) {
-		return "Informatiktest${toState}"
+	if (target.equals('CHEI212') && toState.equals("Installation")) {
+		return "Produktions${toState}"
+	}
+	if (target.equals('CHEI212') && toState.equals("Installationsbereit")) {
+		return "Entwicklung${toState}"
+	}
+	if (target.equals('CHEI212') && toState.equals("Installation")) {
+		return "Informationtest${toState}"
 	}
 	// TODO (che, uge, 04.04.2018 ) Errorhandling 
 }
