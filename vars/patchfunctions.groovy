@@ -210,7 +210,7 @@ def notify(target,toState,patchConfig) {
 	def targetToState = mapToState(target,toState)
 	def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db"
 	echo "Executeing ${notCmd}"
-	sh ${notCmd}
+	sh "${notCmd}"
 	
 }
 
