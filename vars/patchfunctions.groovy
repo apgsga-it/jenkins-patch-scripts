@@ -141,8 +141,6 @@ def buildModule(patchConfig,module) {
 		echo "Building Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
 		def mvnCommand = 'mvn deploy'
 		echo "${mvnCommand}"
-		withMaven( maven: 'apache-maven-3.5.0') { sh "mvn help:effective-settings" }
-		withMaven( maven: 'apache-maven-3.5.0') { sh "mvn help:effective-pom" }
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
 }
