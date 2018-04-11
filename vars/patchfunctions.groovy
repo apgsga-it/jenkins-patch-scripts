@@ -251,10 +251,16 @@ def install(patchConfig, type, artifact,extension) {
 }
 
 def installGUI(patchConfig,artifact,extension) {
-	node("apg-jdv-e-001") { //TODO JHE: Getting the node name should be more dynamic...
+	node(env.JENKINS_NODE_DEV) {
 		
-		// Will probably be removed, but for now we need to initiate the connection on \\gui-chei212.apgsga.ch ...
-		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\init_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+		def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
+		
+		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+			usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+	
+			// Mount the share drive
+			powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
+		}
 		
 		def artifactoryServer = initiateArtifactoryConnection()
 		
@@ -266,13 +272,13 @@ def installGUI(patchConfig,artifact,extension) {
 		
 		def extractedFolderName = guiExtractedFolderName()
 		
-		extractGuiZip(zip,patchConfig,extractedFolderName)
-		renameExtractedGuiZip(patchConfig,extractedFolderName)
-		copyGuiOpsResources(patchConfig,extractedFolderName)
-		copyCitrixBatchFile(patchConfig,extractedFolderName)
+		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
+		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		
-		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
-		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+		// Unmount the share drive
+		powershell("net use ${extractedGuiPath} /delete")
 	}
 }
 
@@ -304,10 +310,10 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 }
 
 def initiateArtifactoryConnection() {
-	def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
+	//def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
+	def server = Artifactory.server env.ARTIFACTORY_SERVER_ID
 
-	//TODO JHE(05.04.2018) : Where should we best store the credentialsId ?	
-	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '05e78d62-4ce3-4a9f-bab2-2c0bf5806954',
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactoryDev',
 		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 
 		server.username = "${USERNAME}"
@@ -317,33 +323,33 @@ def initiateArtifactoryConnection() {
 	return server
 }
 
-def extractGuiZip(downloadedZip,patchConfig,extractedFolderName) {
+def extractGuiZip(downloadedZip,extractedGuiPath,extractedFolderName) {
 	def files = findFiles(glob: "**/${downloadedZip}")
-	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}"
+	unzip zipFile: "${files[0].path}", dir: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}"
 	
 
 }
 
-def copyCitrixBatchFile(patchConfig,extractedFolderName) {
+def copyCitrixBatchFile(extractedGuiPath,extractedFolderName) {
 	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
-	dir("\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}") {
+	dir("${extractedGuiPath}\\${extractedFolderName}") {
 		fileOperations ( [
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"),
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "${extractedGuiPath}"),
 			fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')
 		])
 	}
 }
 
-def renameExtractedGuiZip(patchConfig,extractedFolderName) {
+def renameExtractedGuiZip(extractedGuiPath,extractedFolderName) {
 	fileOperations ([
-		folderRenameOperation(source: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}")
+		folderRenameOperation(source: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}", destination: "${extractedGuiPath}\\${extractedFolderName}")
 	])
 }
 
-def copyGuiOpsResources(patchConfig,extractedFolderName) {
+def copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName) {
 	dir("C:\\config\\${patchConfig.installationTarget}\\it21-gui") {
 		fileOperations ([
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}\\conf")
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\${extractedFolderName}\\conf")
 		])
 	}
 }
