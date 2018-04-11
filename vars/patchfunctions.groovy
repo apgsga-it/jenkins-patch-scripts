@@ -310,7 +310,8 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 }
 
 def initiateArtifactoryConnection() {
-	def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
+	//def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
+	def server = Artifactory.server env.ARTIFACTORY_SERVER_ID
 
 	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactoryDev',
 		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
