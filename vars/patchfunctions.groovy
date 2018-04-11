@@ -253,8 +253,12 @@ def install(patchConfig, type, artifact,extension) {
 def installGUI(patchConfig,artifact,extension) {
 	node("apg-jdv-e-001") { //TODO JHE: Getting the node name should be more dynamic...
 		
-		// Will probably be removed, but for now we need to initiate the connection on \\gui-chei212.apgsga.ch ...
-		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\init_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+			usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+	
+			// Mount the share drive
+			powershell("net use \\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget} ${PASSWORD} /USER:${USERNAME}")
+		}
 		
 		def artifactoryServer = initiateArtifactoryConnection()
 		
@@ -271,8 +275,8 @@ def installGUI(patchConfig,artifact,extension) {
 		copyGuiOpsResources(patchConfig,extractedFolderName)
 		copyCitrixBatchFile(patchConfig,extractedFolderName)
 		
-		// Will probably be removed, but we call a script to reset the connection which was initiated on \\gui-chei212.apgsga.ch
-		powershell("invoke-expression -Command \"C:\\Software\\initAndClean\\clean_install_${patchConfig.installationTarget}_it21gui.ps1\"")
+		// Unmount the share drive
+		powershell("net use \\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget} /delete")
 	}
 }
 
@@ -306,8 +310,7 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 def initiateArtifactoryConnection() {
 	def server = Artifactory.server 'artifactory4t4apgsga' // prerequisite: needs to be configured on Jenkins
 
-	//TODO JHE(05.04.2018) : Where should we best store the credentialsId ?	
-	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '05e78d62-4ce3-4a9f-bab2-2c0bf5806954',
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactoryDev',
 		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 
 		server.username = "${USERNAME}"
