@@ -253,11 +253,13 @@ def install(patchConfig, type, artifact,extension) {
 def installGUI(patchConfig,artifact,extension) {
 	node("apg-jdv-e-001") { //TODO JHE: Getting the node name should be more dynamic...
 		
+		def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
+		
 		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
 			usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 	
 			// Mount the share drive
-			powershell("net use \\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget} ${PASSWORD} /USER:${USERNAME}")
+			powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
 		}
 		
 		def artifactoryServer = initiateArtifactoryConnection()
@@ -270,13 +272,13 @@ def installGUI(patchConfig,artifact,extension) {
 		
 		def extractedFolderName = guiExtractedFolderName()
 		
-		extractGuiZip(zip,patchConfig,extractedFolderName)
-		renameExtractedGuiZip(patchConfig,extractedFolderName)
-		copyGuiOpsResources(patchConfig,extractedFolderName)
-		copyCitrixBatchFile(patchConfig,extractedFolderName)
+		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
+		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		
 		// Unmount the share drive
-		powershell("net use \\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget} /delete")
+		powershell("net use ${extractedGuiPath} /delete")
 	}
 }
 
@@ -320,33 +322,33 @@ def initiateArtifactoryConnection() {
 	return server
 }
 
-def extractGuiZip(downloadedZip,patchConfig,extractedFolderName) {
+def extractGuiZip(downloadedZip,extractedGuiPath,extractedFolderName) {
 	def files = findFiles(glob: "**/${downloadedZip}")
-	unzip zipFile: "${files[0].path}", dir: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}"
+	unzip zipFile: "${files[0].path}", dir: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}"
 	
 
 }
 
-def copyCitrixBatchFile(patchConfig,extractedFolderName) {
+def copyCitrixBatchFile(extractedGuiPath,extractedFolderName) {
 	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
-	dir("\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}") {
+	dir("${extractedGuiPath}\\${extractedFolderName}") {
 		fileOperations ( [
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"),
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "${extractedGuiPath}"),
 			fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')
 		])
 	}
 }
 
-def renameExtractedGuiZip(patchConfig,extractedFolderName) {
+def renameExtractedGuiZip(extractedGuiPath,extractedFolderName) {
 	fileOperations ([
-		folderRenameOperation(source: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\getting_extracted_${extractedFolderName}", destination: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}")
+		folderRenameOperation(source: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}", destination: "${extractedGuiPath}\\${extractedFolderName}")
 	])
 }
 
-def copyGuiOpsResources(patchConfig,extractedFolderName) {
+def copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName) {
 	dir("C:\\config\\${patchConfig.installationTarget}\\it21-gui") {
 		fileOperations ([
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}\\${extractedFolderName}\\conf")
+			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\${extractedFolderName}\\conf")
 		])
 	}
 }
