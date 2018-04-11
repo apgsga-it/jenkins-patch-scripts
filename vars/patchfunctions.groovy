@@ -208,9 +208,9 @@ def installDeploymentArtifacts(patchConfig) {
 def notify(target,toState,patchConfig) {
 	echo "Notifying ${target} to ${toState}"
 	def targetToState = mapToState(target,toState)
-	def notCmd = "/opt/apgops/jenkins_persist_patch_status.sh ${patchConfig.patchNummer} ${targetToState}"
+	def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db"
 	echo "Executeing ${notCmd}"
-	// sh ${notCmd}
+	sh ${notCmd}
 	
 }
 
