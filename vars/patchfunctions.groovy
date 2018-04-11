@@ -251,7 +251,7 @@ def install(patchConfig, type, artifact,extension) {
 }
 
 def installGUI(patchConfig,artifact,extension) {
-	node("apg-jdv-e-001") { //TODO JHE: Getting the node name should be more dynamic...
+	node(env.JENKINS_NODE_DEV) {
 		
 		def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
 		
