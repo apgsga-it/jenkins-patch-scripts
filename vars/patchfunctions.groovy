@@ -181,7 +181,7 @@ def buildDockerImage(patchConfig) {
 		sh "${mvnCommand}"
 		sh "${mvnCommandCopy}"
 	}
-	
+	// TODO (che,12.4) : Tempory Fix for JAVA8MIG-327
 	sh 'rm -f /var/docker/build/jadas-service/sw/*.gz'
 	sh "${dockerBuild}"
 }
