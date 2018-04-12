@@ -181,6 +181,8 @@ def buildDockerImage(patchConfig) {
 		sh "${mvnCommand}"
 		sh "${mvnCommandCopy}"
 	}
+	
+	sh 'rm -f /var/docker/build/jadas-service/sw/*.gz'
 	sh "${dockerBuild}"
 }
 
