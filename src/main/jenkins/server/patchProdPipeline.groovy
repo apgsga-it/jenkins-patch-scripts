@@ -31,13 +31,17 @@ targets.each { target ->
 		stage("${target} Assembly" ) {
 			patchfunctions.assembleDeploymentArtefacts(patchConfig)
 		}
-		patchfunctions.notify(target,"Installationsbereit", patchConfig)
+		stage("${target} Installationsbereit Notification") {
+			patchfunctions.notify(target,"Installationsbereit", patchConfig)
+		}
 	}
 	stage("Approve ${target} Installation") {
 			patchfunctions.approveInstallation(patchConfig)	
 	}
 	stage("${target} Installation") {
 		patchfunctions.installDeploymentArtifacts(patchConfig) 
+	}
+	stage("${target} Installation Notification") {
 		patchfunctions.notify(target,"Installation", patchConfig)
 	}
 }
