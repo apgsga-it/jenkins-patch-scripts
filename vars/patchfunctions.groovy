@@ -220,7 +220,7 @@ def mapToState(target,toState) {
 	if (target.equals('CHEI211') && toState.equals("Installationsbereit")) {
 		return "Produktion${toState}"
 	}
-	if (target.equals('CHEI212') && toState.equals("Installation")) {
+	if (target.equals('CHEI211') && toState.equals("Installation")) {
 		return "Produktions${toState.uncapitalize()}"
 	}
 	if (target.equals('CHEI212') && toState.equals("Installationsbereit")) {
