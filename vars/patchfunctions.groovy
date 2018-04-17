@@ -228,13 +228,13 @@ def mapToState(target,toState) {
 		return "Produktion${toState}"
 	}
 	if (target.equals('CHEI211') && toState.equals("Installation")) {
-		return "Produktions${toState.uncapitalize()}"
+		return "Produktion"
 	}
 	if (target.equals('CHEI212') && toState.equals("Installationsbereit")) {
-		return "Entwicklung${toState}"
+		return "Informatiktest${toState}"
 	}
 	if (target.equals('CHEI212') && toState.equals("Installation")) {
-		return "Informatiktest${toState.uncapitalize()}"
+		return "Informatiktest"
 	}
 	// TODO (che, uge, 04.04.2018 ) Errorhandling
 }
