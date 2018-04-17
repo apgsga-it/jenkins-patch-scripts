@@ -1,7 +1,5 @@
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
-// Functions
-import groovy.transform.EqualsAndHashCode
 
 def tagName(patchConfig) {
 	patchConfig.patchTag
@@ -30,6 +28,11 @@ def mavenVersionNumber(patchConfig,revision) {
 	mavenVersion
 }
 
+def approveBuild(patchConfig) {
+	timeout(time:5, unit:'DAYS') {
+		userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Build?" , submitter: 'svcjenkinsclient,che')
+	}
+}
 
 def approveInstallation(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
@@ -38,13 +41,15 @@ def approveInstallation(patchConfig) {
 }
 
 def patchBuilds(patchConfig) {
-	deleteDir()
-	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
-		checkoutModules(patchConfig)
-		retrieveRevisions(patchConfig)
-		generateVersionProperties(patchConfig)
-		buildAndReleaseModules(patchConfig)
-		saveRevisions(patchConfig)
+	node {
+		deleteDir()
+		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
+			checkoutModules(patchConfig)
+			retrieveRevisions(patchConfig)
+			generateVersionProperties(patchConfig)
+			buildAndReleaseModules(patchConfig)
+			saveRevisions(patchConfig)
+		}
 	}
 }
 
@@ -81,19 +86,19 @@ def saveRevisions(patchConfig) {
 	}
 	revisions.lastRevisions[patchConfig.installationTarget] = patchConfig.revision
 	new File(revisionFileName).write(new JsonBuilder(revisions).toPrettyString())
-	
+
 }
 def buildAndReleaseModules(patchConfig) {
 	patchConfig.mavenArtifacts.each { buildAndReleaseModule(patchConfig,it) }
 }
 
 def buildAndReleaseModule(patchConfig,module) {
-	echo "buildAndReleaseModule : " + module.name 
+	echo "buildAndReleaseModule : " + module.name
 	releaseModule(patchConfig,module)
 	buildModule(patchConfig,module)
 	updateBom(patchConfig,module)
-	echo "buildAndReleaseModule : " + module.name 
-	
+	echo "buildAndReleaseModule : " + module.name
+
 }
 
 
@@ -106,15 +111,11 @@ def checkoutModules(patchConfig) {
 }
 
 def coFromBranchCvs(patchConfig, moduleName) {
-	checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
-			[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.microServiceBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]
-		], skipChangeLog: false])
+	checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.microServiceBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
 
 }
 def coFromTagcvs(patchConfig,tag, moduleName) {
-	checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
-			[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]
-		], skipChangeLog: false])
+	checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
 }
 
 def generateVersionProperties(patchConfig) {
@@ -157,10 +158,10 @@ def updateBom(patchConfig,module) {
 
 
 def assembleDeploymentArtefacts(patchConfig) {
-	node { 
+	node {
 		coFromBranchCvs(patchConfig, 'it21-ui-bundle')
 		assemble(patchConfig, "it21-ui-pkg-server")
-		buildDockerImage(patchConfig) 
+		buildDockerImage(patchConfig)
 		assemble(patchConfig, "it21-ui-pkg-client")
 	}
 }
@@ -214,12 +215,15 @@ def notify(target,toState,patchConfig) {
 		sh "${notCmd}"
 		echo "Executeing ${notCmd} done"
 	}
-	
+
 }
 
 def mapToState(target,toState) {
 	// TODO (che, uge, 04.04.2018) : needs to be configurable
 	// TODO (che, uge, 04.04.2018) : first Mapping needs to be Verified
+	if (target.equals('Entwicklung') && toState.equals("Installationsbereit")) {
+		return "${target}${toState}"
+	}
 	if (target.equals('CHEI211') && toState.equals("Installationsbereit")) {
 		return "Produktion${toState}"
 	}
@@ -232,60 +236,60 @@ def mapToState(target,toState) {
 	if (target.equals('CHEI212') && toState.equals("Installation")) {
 		return "Informatiktest${toState.uncapitalize()}"
 	}
-	// TODO (che, uge, 04.04.2018 ) Errorhandling 
+	// TODO (che, uge, 04.04.2018 ) Errorhandling
 }
 
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
-		
+
 		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
 			echo "GUI can currently only be installed on CHEI212. ${patchConfig.installationTarget} not supported yet."
 			return
 		}
 
-		installGUI(patchConfig,artifact,extension)				
+		installGUI(patchConfig,artifact,extension)
 	}
 	else {
 		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
 			echo "Don't know how to install services apart from jadas-service : TODO"
 			return
 		}
-	
+
 		def dropName = jadasServiceDropName(patchConfig)
 		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER} ${patchConfig.installationTarget}"
 		echo dockerDeploy
 		sh "${dockerDeploy}"
 	}
-	
+
 }
 
 def installGUI(patchConfig,artifact,extension) {
 	node(env.JENKINS_NODE_DEV) {
-		
+
 		def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
-		
+
 		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
-			usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-	
+				usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+
 			// Mount the share drive
 			powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
 		}
-		
+
 		def artifactoryServer = initiateArtifactoryConnection()
-		
+
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 		def zip = "${artifact}-${buildVersion}.${extension}"
-		
+
 		//TODO JHE: here we should probably pass the repo type as well -> snapshot or relaease, althought it might always be relaease...
 		downloadGuiZipToBeInstalled(artifactoryServer,zip)
-		
+
 		def extractedFolderName = guiExtractedFolderName()
-		
+
 		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
-		
+
 		// Unmount the share drive
 		powershell("net use ${extractedGuiPath} /delete")
 	}
@@ -323,42 +327,35 @@ def initiateArtifactoryConnection() {
 	def server = Artifactory.server env.ARTIFACTORY_SERVER_ID
 
 	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactoryDev',
-		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+			usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 
 		server.username = "${USERNAME}"
 		server.password = "${PASSWORD}"
 	}
-	
+
 	return server
 }
 
 def extractGuiZip(downloadedZip,extractedGuiPath,extractedFolderName) {
 	def files = findFiles(glob: "**/${downloadedZip}")
 	unzip zipFile: "${files[0].path}", dir: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}"
-	
+
 
 }
 
 def copyCitrixBatchFile(extractedGuiPath,extractedFolderName) {
 	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
 	dir("${extractedGuiPath}\\${extractedFolderName}") {
-		fileOperations ( [
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "${extractedGuiPath}"),
-			fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')
-		])
+		fileOperations ( [fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "${extractedGuiPath}"), fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')])
 	}
 }
 
 def renameExtractedGuiZip(extractedGuiPath,extractedFolderName) {
-	fileOperations ([
-		folderRenameOperation(source: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}", destination: "${extractedGuiPath}\\${extractedFolderName}")
-	])
+	fileOperations ([folderRenameOperation(source: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}", destination: "${extractedGuiPath}\\${extractedFolderName}")])
 }
 
 def copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName) {
 	dir("C:\\config\\${patchConfig.installationTarget}\\it21-gui") {
-		fileOperations ([
-			fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\${extractedFolderName}\\conf")
-		])
+		fileOperations ([fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\${extractedFolderName}\\conf")])
 	}
 }
