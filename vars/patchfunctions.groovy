@@ -290,7 +290,7 @@ def installGUI(patchConfig,artifact,extension) {
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 
-		// Unmount the share drive
+		// Unmount the share drive 
 		powershell("net use ${extractedGuiPath} /delete")
 	}
 }
