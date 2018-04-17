@@ -21,7 +21,7 @@ patchConfig.dockerBuildExtention = "tar.gz"
 // Mainline
 // While mit Start der Pipeline bereits getagt ist 
 stage("Entwicklung Installationsbereit Notification") {
-	patchfunctions.notify("Entwicklung","Installation", patchConfig)
+	patchfunctions.notify("Entwicklung","Installationsbereit", patchConfig)
 }
 
 //targets = ['CHTI211','CHPI211']
