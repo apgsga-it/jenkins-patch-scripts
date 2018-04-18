@@ -1,5 +1,6 @@
 #!groovy
 library 'patch-global-functions'
+library 'patch-deployment-functions'
 import groovy.json.JsonSlurperClassic
 properties([
 	parameters([
@@ -31,5 +32,5 @@ stage("${target} Build & Assembly") {
 	}
 }
 stage("${target} Installation") {
-	node {patchfunctions.installDeploymentArtifacts(patchConfig)}
+	node {patchDeployment.installDeploymentArtifacts(patchConfig)}
 }

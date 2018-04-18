@@ -1,5 +1,6 @@
 #!groovy
 library 'patch-global-functions'
+library 'patch-deployment-functions'
 import groovy.json.JsonSlurperClassic
 properties([
 	parameters([
@@ -37,7 +38,7 @@ targets.each { target ->
 		patchfunctions.notify(target,"Installationsbereit", patchConfig)
 	}
 	stage("Approve ${target} Installation") { patchfunctions.approveInstallation(patchConfig)	 }
-	stage("${target} Installation") { patchfunctions.installDeploymentArtifacts(patchConfig)  }
+	stage("${target} Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
 	stage("${target} Installation Notification") {
 		patchfunctions.notify(target,"Installation", patchConfig)
 	}
