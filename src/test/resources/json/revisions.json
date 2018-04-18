@@ -1,9 +1,55 @@
 {
-    "lastRevisions": {
-        "CHEI212": "2"
-    },
-    "currentRevision": {
-        "P": 1,
-        "T": 3
-    }
+	"className": "com.apgsga.microservice.patch.api.impl.PatchBean",
+	"patchNummer": "5571",
+	"serviceName": "It21Ui",
+	"microServiceBranch": "it21_release_9_0_6_admin_uimig",
+	"dbPatchBranch": "Patch_0900C1_5571",
+	"prodBranch": "HEAD",
+	"patchTag": "Patch_0900C1_5571_1",
+	"tagNr": 1,
+	"installationTarget": null,
+	"baseVersionNumber": "9.0.6",
+	"revisionMnemoPart": "ADMIN-UIMIG",
+	"revisionNumber": null,
+	"lastRevisionNumber": null,
+	"dbObjects": [
+	],
+	"mavenArtifacts": [
+		{
+			"className": "com.apgsga.microservice.patch.api.impl.MavenArtifactBean",
+			"artifactId": "vk-utils",
+			"groupId": "com.affichage.it21",
+			"name": "com.affichage.it21.vk.utils",
+			"version": "9.0.6.ADMIN-UIMIG-SNAPSHOT",
+			"propertyChangeListeners": [
+			]
+		},
+		{
+			"className": "com.apgsga.microservice.patch.api.impl.MavenArtifactBean",
+			"artifactId": "datetime-utils",
+			"groupId": "com.affichage.datetime",
+			"name": "com.affichage.datetime.utils",
+			"version": "9.0.6.ADMIN-UIMIG-SNAPSHOT",
+			"propertyChangeListeners": [
+			]
+		},
+		{
+			"className": "com.apgsga.microservice.patch.api.impl.MavenArtifactBean",
+			"artifactId": "jgoodies-utils",
+			"groupId": "com.affichage.ui.utils",
+			"name": "com.affichage.ui.utils.jgoodies",
+			"version": "9.0.6.ADMIN-UIMIG-SNAPSHOT",
+			"propertyChangeListeners": [
+			]
+		}
+	],
+	"dbObjectsAsVcsPath": [
+	],
+	"mavenArtifactsAsVcsPath": [
+		"com.affichage.it21.vk.utils",
+		"com.affichage.datetime.utils",
+		"com.affichage.ui.utils.jgoodies"
+	],
+	"propertyChangeListeners": [
+	]
 }
