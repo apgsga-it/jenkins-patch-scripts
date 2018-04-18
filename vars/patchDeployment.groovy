@@ -1,3 +1,6 @@
+#!groovy
+library 'patch-global-functions'
+
 def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Install") {
 		parallel 'ui-client-deployment': {
@@ -24,7 +27,7 @@ def install(patchConfig, type, artifact,extension) {
 			return
 		}
 
-		def dropName = jadasServiceDropName(patchConfig)
+		def dropName = patchfunctions.jadasServiceDropName(patchConfig)
 		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER} ${patchConfig.installationTarget}"
 		echo dockerDeploy
 		sh "${dockerDeploy}"
@@ -46,7 +49,7 @@ def installGUI(patchConfig,artifact,extension) {
 
 		def artifactoryServer = initiateArtifactoryConnection()
 
-		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
+		def buildVersion =  patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
 		def zip = "${artifact}-${buildVersion}.${extension}"
 
 		//TODO JHE: here we should probably pass the repo type as well -> snapshot or relaease, althought it might always be relaease...
