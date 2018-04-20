@@ -13,12 +13,6 @@ def installDeploymentArtifacts(patchConfig) {
 
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
-
-		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
-			echo "GUI can currently only be installed on CHEI212. ${patchConfig.installationTarget} not supported yet."
-			return
-		}
-
 		installGUI(patchConfig,artifact,extension)
 	}
 	else {
@@ -38,7 +32,13 @@ def install(patchConfig, type, artifact,extension) {
 def installGUI(patchConfig,artifact,extension) {
 	node(env.JENKINS_INSTALLER) {
 
-		def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
+		// JHE (20.04.2018): This test will be removed as soon as the new target will be ready on Citrix. For now, if not CHEI212, we install on subfolders created on apg-jdv-e-001
+		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+			def extractedGuiPath = "C:\\Software\\tempIT21GUI\\${patchConfig.installationTarget}"
+		}
+		else {
+			def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
+		}
 
 		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
 				usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
