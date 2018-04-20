@@ -36,7 +36,7 @@ def install(patchConfig, type, artifact,extension) {
 }
 
 def installGUI(patchConfig,artifact,extension) {
-	node(env.JENKINS_NODE_DEV) {
+	node(env.JENKINS_INSTALLER) {
 
 		def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
 
