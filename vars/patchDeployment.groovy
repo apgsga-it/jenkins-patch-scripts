@@ -13,7 +13,9 @@ def installDeploymentArtifacts(patchConfig) {
 
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
-		installGUI(patchConfig,artifact,extension)
+		stage("installing GUI") {
+			installGUI(patchConfig,artifact,extension)
+		}
 	}
 	else {
 		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
@@ -61,11 +63,19 @@ def installGUI(patchConfig,artifact,extension) {
 		downloadGuiZipToBeInstalled(artifactoryServer,zip)
 
 		def extractedFolderName = guiExtractedFolderName()
-
-		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
-		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
-		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
-		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
+		
+		stage("extractGuiZip") {
+			extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		}
+		stage("renameExtractedGuiZip") {
+			renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+		}
+		stage("copyGuiOpsResources") {
+			copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
+		}
+		stage("copyCitrixBatchFile") {
+			copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
+		}
 
 		// Unmount the share drive
 		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
