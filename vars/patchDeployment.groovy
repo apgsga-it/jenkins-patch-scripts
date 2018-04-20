@@ -40,11 +40,14 @@ def installGUI(patchConfig,artifact,extension) {
 			def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
 		}
 
-		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
-				usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-
-			// Mount the share drive
-			powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
+		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
+		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+					usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+	
+				// Mount the share drive
+				powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
+			}
 		}
 
 		def artifactoryServer = initiateArtifactoryConnection()
@@ -63,7 +66,10 @@ def installGUI(patchConfig,artifact,extension) {
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 
 		// Unmount the share drive
-		powershell("net use ${extractedGuiPath} /delete")
+		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
+		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+			powershell("net use ${extractedGuiPath} /delete")
+		}
 	}
 }
 
