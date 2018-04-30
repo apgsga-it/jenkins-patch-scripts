@@ -13,13 +13,9 @@ def installDeploymentArtifacts(patchConfig) {
 
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
-
-		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
-			echo "GUI can currently only be installed on CHEI212. ${patchConfig.installationTarget} not supported yet."
-			return
+		stage("installing GUI") {
+			installGUI(patchConfig,artifact,extension)
 		}
-
-		installGUI(patchConfig,artifact,extension)
 	}
 	else {
 		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
@@ -36,15 +32,26 @@ def install(patchConfig, type, artifact,extension) {
 }
 
 def installGUI(patchConfig,artifact,extension) {
-	node(env.JENKINS_NODE_DEV) {
+	node(env.JENKINS_INSTALLER) {
+		
+		def extractedGuiPath = ""
 
-		def extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
+		// JHE (20.04.2018): This test will be removed as soon as the new target will be ready on Citrix. For now, if not CHEI212, we install on subfolders created on apg-jdv-e-001
+		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212") && !patchConfig.installationTarget.equalsIgnoreCase("CHEI211")) {
+			extractedGuiPath = "C:\\Software\\tempIT21GUI\\${patchConfig.installationTarget}"
+		}
+		else {
+			extractedGuiPath = "\\\\service-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}_gui"
+		}
 
-		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
-				usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-
-			// Mount the share drive
-			powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
+		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
+		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212") || patchConfig.installationTarget.equalsIgnoreCase("CHEI211")) {
+			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+					usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+	
+				// Mount the share drive
+				powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
+			}
 		}
 
 		def artifactoryServer = initiateArtifactoryConnection()
@@ -56,14 +63,17 @@ def installGUI(patchConfig,artifact,extension) {
 		downloadGuiZipToBeInstalled(artifactoryServer,zip)
 
 		def extractedFolderName = guiExtractedFolderName()
-
+		
 		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 
 		// Unmount the share drive
-		powershell("net use ${extractedGuiPath} /delete")
+		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
+		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212") || patchConfig.installationTarget.equalsIgnoreCase("CHEI211")) {
+			powershell("net use ${extractedGuiPath} /delete")
+		}
 	}
 }
 
