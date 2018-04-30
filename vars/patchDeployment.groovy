@@ -37,7 +37,7 @@ def installGUI(patchConfig,artifact,extension) {
 		def extractedGuiPath = ""
 
 		// JHE (20.04.2018): This test will be removed as soon as the new target will be ready on Citrix. For now, if not CHEI212, we install on subfolders created on apg-jdv-e-001
-		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+		if(!patchConfig.installationTarget.equalsIgnoreCase("CHEI212") && !patchConfig.installationTarget.equalsIgnoreCase("CHEI211")) {
 			extractedGuiPath = "C:\\Software\\tempIT21GUI\\${patchConfig.installationTarget}"
 		}
 		else {
