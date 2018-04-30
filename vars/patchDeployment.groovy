@@ -45,7 +45,7 @@ def installGUI(patchConfig,artifact,extension) {
 		}
 
 		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
-		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212") || patchConfig.installationTarget.equalsIgnoreCase("CHEI211")) {
 			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
 					usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 	
@@ -71,7 +71,7 @@ def installGUI(patchConfig,artifact,extension) {
 
 		// Unmount the share drive
 		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
-		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212")) {
+		if(patchConfig.installationTarget.equalsIgnoreCase("CHEI212") || patchConfig.installationTarget.equalsIgnoreCase("CHEI211")) {
 			powershell("net use ${extractedGuiPath} /delete")
 		}
 	}
