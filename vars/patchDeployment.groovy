@@ -64,18 +64,10 @@ def installGUI(patchConfig,artifact,extension) {
 
 		def extractedFolderName = guiExtractedFolderName()
 		
-		stage("extractGuiZip") {
-			extractGuiZip(zip,extractedGuiPath,extractedFolderName)
-		}
-		stage("renameExtractedGuiZip") {
-			renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
-		}
-		stage("copyGuiOpsResources") {
-			copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
-		}
-		stage("copyCitrixBatchFile") {
-			copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
-		}
+		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
+		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 
 		// Unmount the share drive
 		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
