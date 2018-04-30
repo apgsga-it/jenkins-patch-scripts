@@ -41,7 +41,7 @@ def installGUI(patchConfig,artifact,extension) {
 			extractedGuiPath = "C:\\Software\\tempIT21GUI\\${patchConfig.installationTarget}"
 		}
 		else {
-			extractedGuiPath = "\\\\gui-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}"
+			extractedGuiPath = "\\\\service-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}_gui"
 		}
 
 		// JHE (20.04.2018): test to be removed as soon as Citrix is ready to install GUI on new folders
