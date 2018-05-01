@@ -2,8 +2,8 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 
 def loadTargetsMap() {
-	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG : "/etc/opt/apg-patch-service-common/TargetSystemMappings.json"
-	def targetSystemFile = new File(env.PATCH_SERVICE_COMMON_CONFIG)
+	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/var/opt/apg-patch-service-common/TargetSystemMappings.json"
+	def targetSystemFile = new File(configFileLocation)
 	assert targetSystemFile.exists()
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
