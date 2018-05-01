@@ -27,7 +27,7 @@ println "TargetSystemsMap : ${targetSystemsMap} "
 // While mit Start der Pipeline bereits getagt ist
 
 def target = targetSystemsMap.get('Entwicklung')
-stage("${target.envName} ${target.targetName}) Installationsbereit Notification") {
+stage("${target.envName} (${target.targetName}) Installationsbereit Notification") {
 	patchfunctions.notify(target,"Installationsbereit", patchConfig)
 }
 
