@@ -7,7 +7,7 @@ def loadTargetsMap() {
 	assert targetSystemFile.exists()
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
-	jsonSystemTargets.targetSystems.each( { target -> targetSystemMap.put(target.name, new Expando(envName:target.name,targetName:target.target,typeInd:target.typeInd))})
+	jsonSystemTargets.targetSystems.each( { target -> targetSystemMap.put(target.name, [envName:target.name,targetName:target.target,typeInd:target.typeInd])})
 	println targetSystemMap
 	targetSystemMap
 }
