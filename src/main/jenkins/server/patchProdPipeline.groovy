@@ -21,11 +21,14 @@ patchConfig.dockerBuildExtention = "tar.gz"
 
 // Load Target System Mappings
 def targetSystemsMap = patchfunctions.loadTargetsMap()
+println "TargetSystemsMap : ${targetSystemsMap} " 
+
 // Mainline
 // While mit Start der Pipeline bereits getagt ist
 
-stage("Entwicklung Installationsbereit Notification") {
-	patchfunctions.notify("Entwicklung","Installationsbereit", patchConfig)
+def target = targetSystemsMap.get('Entwicklung')
+stage("${target.envName} ${target.name}) Installationsbereit Notification") {
+	patchfunctions.notify(target,"Installationsbereit", patchConfig)
 }
 
 [
