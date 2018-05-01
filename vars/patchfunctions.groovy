@@ -7,7 +7,7 @@ def loadTargetsMap() {
 	assert targetSystemFile.exists()
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
-	jsonSystemTargets.targetSystems.each( { target -> targetSystemMap.put("$target.name", new Expando(envName:"$target.name",targetName:"${target.target}",typeInd:"${target.typeInd}"))})
+	jsonSystemTargets.targetSystems.each( { target -> targetSystemMap.put(target.name, new Expando(envName:target.name,targetName:target.target,typeInd:target.typeInd))})
 	println targetSystemMap
 	targetSystemMap
 }
@@ -68,7 +68,7 @@ def retrieveRevisions(patchConfig) {
 	if (revisionFile.exists()) {
 		revisions = new JsonSlurper().parseText(revisionFile.text)
 	}
-	patchConfig.revision = revisions.currentRevision[patchConfig.targetBean.typeInd]
+	patchConfig.revision = revisions.currentRevision[patchConfig.targetInd]
 	patchConfig.lastRevision = revisions.lastRevisions.get(patchConfig.installationTarget,'SNAPSHOT')
 }
 
@@ -81,7 +81,7 @@ def saveRevisions(patchConfig) {
 	if (revisionFile.exists()) {
 		revisions = new JsonSlurper().parseText(revisionFile.text)
 	}
-	revisions.currentRevision[patchConfig.targetBean.typeInd]++
+	revisions.currentRevision[patchConfig.targetInd]++
 	revisions.lastRevisions[patchConfig.installationTarget] = patchConfig.revision
 	new File(revisionFileName).write(new JsonBuilder(revisions).toPrettyString())
 

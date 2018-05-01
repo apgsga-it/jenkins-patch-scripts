@@ -29,8 +29,8 @@ stage("Entwicklung Installationsbereit Notification") {
 }
 
 [
-	"Integrationstest",
-	"Produktion"
+	'Integrationstest',
+	'Produktion'
 ].each { envName ->
 	target = targetSystemsMap.get(envName)
 	patchfunctions.targetIndicator(patchConfig,target)
