@@ -27,25 +27,26 @@ println "TargetSystemsMap : ${targetSystemsMap} "
 // While mit Start der Pipeline bereits getagt ist
 
 def target = targetSystemsMap.get('Entwicklung')
-stage("${target.envName} ${target.name}) Installationsbereit Notification") {
+stage("${target.envName} ${target.targetName}) Installationsbereit Notification") {
 	patchfunctions.notify(target,"Installationsbereit", patchConfig)
 }
 
 [
-	'Integrationstest',
+	'Informatiktest',
 	'Produktion'
 ].each { envName ->
 	target = targetSystemsMap.get(envName)
+	assert target != null
 	patchfunctions.targetIndicator(patchConfig,target)
-	stage("Approve ${envName} (${target.name}) Build & Assembly") { patchfunctions.approveBuild(patchConfig) }
-	stage("${envName} (${target.name}) Build" ) { patchfunctions.patchBuilds(patchConfig)  }
-	stage("${envName} (${target.name}) Assembly" ) { patchfunctions.assembleDeploymentArtefacts(patchConfig) }
-	stage("${envName} (${target.name}) Installationsbereit Notification") {
+	stage("Approve ${envName} (${target.targetName}) Build & Assembly") { patchfunctions.approveBuild(patchConfig) }
+	stage("${envName} (${target.targetName}) Build" ) { patchfunctions.patchBuilds(patchConfig)  }
+	stage("${envName} (${target.targetName}) Assembly" ) { patchfunctions.assembleDeploymentArtefacts(patchConfig) }
+	stage("${envName} (${target.targetName}) Installationsbereit Notification") {
 		patchfunctions.notify(target,"Installationsbereit", patchConfig)
 	}
-	stage("Approve ${envName} (${target.name}) Installation") { patchfunctions.approveInstallation(patchConfig)	 }
-	stage("${envName} (${target.name}) Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
-	stage("${envName} (${target.name}) Installation Notification") {
+	stage("Approve ${envName} (${target.targetName}) Installation") { patchfunctions.approveInstallation(patchConfig)	 }
+	stage("${envName} (${target.targetName}) Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
+	stage("${envName} (${target.targetName}) Installation Notification") {
 		patchfunctions.notify(target,"Installation", patchConfig)
 	}
 }
