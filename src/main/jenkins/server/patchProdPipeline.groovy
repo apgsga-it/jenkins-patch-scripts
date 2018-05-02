@@ -19,27 +19,34 @@ patchConfig.cvsroot = "/var/local/cvs/root"
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"
 
+// Load Target System Mappings
+def targetSystemsMap = patchfunctions.loadTargetsMap()
+println "TargetSystemsMap : ${targetSystemsMap} " 
+
 // Mainline
-// While mit Start der Pipeline bereits getagt ist 
-stage("Entwicklung Installationsbereit Notification") {
-	patchfunctions.notify("Entwicklung","Installationsbereit", patchConfig)
+// While mit Start der Pipeline bereits getagt ist
+
+def target = targetSystemsMap.get('Entwicklung')
+stage("${target.envName} (${target.targetName}) Installationsbereit Notification") {
+	patchfunctions.notify(target,"Installationsbereit", patchConfig)
 }
 
-//targets = ['CHTI211','CHPI211']
-targets = [
-	'CHEI212',
-	'CHEI211'] // CHE,3.1 For Testing purposes, needs to externalized
-targets.each { target ->
+[
+	'Informatiktest',
+	'Produktion'
+].each { envName ->
+	target = targetSystemsMap.get(envName)
+	assert target != null
 	patchfunctions.targetIndicator(patchConfig,target)
-	stage("Approve ${target} Build & Assembly") { patchfunctions.approveBuild(patchConfig) }
-	stage("${target} Build" ) { patchfunctions.patchBuilds(patchConfig)  }
-	stage("${target} Assembly" ) { patchfunctions.assembleDeploymentArtefacts(patchConfig) }
-	stage("${target} Installationsbereit Notification") {
+	stage("Approve ${envName} (${target.targetName}) Build & Assembly") { patchfunctions.approveBuild(patchConfig) }
+	stage("${envName} (${target.targetName}) Build" ) { patchfunctions.patchBuilds(patchConfig)  }
+	stage("${envName} (${target.targetName}) Assembly" ) { patchfunctions.assembleDeploymentArtefacts(patchConfig) }
+	stage("${envName} (${target.targetName}) Installationsbereit Notification") {
 		patchfunctions.notify(target,"Installationsbereit", patchConfig)
 	}
-	stage("Approve ${target} Installation") { patchfunctions.approveInstallation(patchConfig)	 }
-	stage("${target} Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
-	stage("${target} Installation Notification") {
+	stage("Approve ${envName} (${target.targetName}) Installation") { patchfunctions.approveInstallation(patchConfig)	 }
+	stage("${envName} (${target.targetName}) Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
+	stage("${envName} (${target.targetName}) Installation Notification") {
 		patchfunctions.notify(target,"Installation", patchConfig)
 	}
 }

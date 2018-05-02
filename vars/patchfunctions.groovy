@@ -1,21 +1,27 @@
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 
+def loadTargetsMap() {
+	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/var/opt/apg-patch-common/TargetSystemMappings.json"
+	def targetSystemFile = new File(configFileLocation)
+	assert targetSystemFile.exists()
+	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
+	def targetSystemMap = [:]
+	jsonSystemTargets.targetSystems.each( { target -> targetSystemMap.put(target.name, [envName:target.name,targetName:target.target,typeInd:target.typeInd])})
+	println targetSystemMap
+	targetSystemMap
+}
+
 def tagName(patchConfig) {
 	patchConfig.patchTag
 }
 
+// TODO (che, 1.5 ) : we don't really need this anymore , but for the moment
 def targetIndicator(patchConfig, target) {
-	def targetInd = '';
-	// TODO (che, 4.4.2018) : needs to be configurable
-	if (target.equals('CHPI211')) {
-		targetInd = 'P'
-	}
-	else {
-		targetInd = 'T'
-	}
-	patchConfig.installationTarget = target
-	patchConfig.targetInd = targetInd
+	patchConfig.targetBean = target
+	// TODO (che, 1.5) for back ward compatability, must be changed further down the line.
+	patchConfig.installationTarget = target.targetName
+	patchConfig.targetInd = target.typeInd
 }
 
 def mavenVersionNumber(patchConfig,revision) {
@@ -62,11 +68,7 @@ def retrieveRevisions(patchConfig) {
 	if (revisionFile.exists()) {
 		revisions = new JsonSlurper().parseText(revisionFile.text)
 	}
-	if (patchConfig.installationTarget.equals("CHPI211")) {
-		patchConfig.revision = revisions.currentRevision.P
-	} else {
-		patchConfig.revision = revisions.currentRevision.T
-	}
+	patchConfig.revision = revisions.currentRevision[patchConfig.targetInd]
 	patchConfig.lastRevision = revisions.lastRevisions.get(patchConfig.installationTarget,'SNAPSHOT')
 }
 
@@ -79,11 +81,7 @@ def saveRevisions(patchConfig) {
 	if (revisionFile.exists()) {
 		revisions = new JsonSlurper().parseText(revisionFile.text)
 	}
-	if (patchConfig.installationTarget.equals("CHPI211")) {
-		revisions.currentRevision.P++
-	} else {
-		revisions.currentRevision.T++
-	}
+	revisions.currentRevision[patchConfig.targetInd]++
 	revisions.lastRevisions[patchConfig.installationTarget] = patchConfig.revision
 	new File(revisionFileName).write(new JsonBuilder(revisions).toPrettyString())
 
@@ -182,8 +180,6 @@ def buildDockerImage(patchConfig) {
 		sh "${mvnCommand}"
 		sh "${mvnCommandCopy}"
 	}
-	// TODO (che,12.4) : Tempory Fix for JAVA8MIG-327
-	sh 'rm -f /var/docker/build/jadas-service/sw/*.gz'
 	sh "${dockerBuild}"
 }
 
@@ -210,22 +206,11 @@ def notify(target,toState,patchConfig) {
 }
 
 def mapToState(target,toState) {
-	// TODO (che, uge, 04.04.2018) : needs to be configurable
-	// TODO (che, uge, 04.04.2018) : first Mapping needs to be Verified
-	if (target.equals('Entwicklung') && toState.equals("Installationsbereit")) {
-		return "${target}${toState}"
+	if (toState.equals("Installationsbereit")) {
+		return "${target.envName}${toState}"
 	}
-	if (target.equals('CHEI211') && toState.equals("Installationsbereit")) {
-		return "Produktion${toState}"
-	}
-	if (target.equals('CHEI211') && toState.equals("Installation")) {
-		return "Produktion"
-	}
-	if (target.equals('CHEI212') && toState.equals("Installationsbereit")) {
-		return "Informatiktest${toState}"
-	}
-	if (target.equals('CHEI212') && toState.equals("Installation")) {
-		return "Informatiktest"
+	if (toState.equals("Installation")) {
+		return "${target.envName}"
 	}
 	// TODO (che, uge, 04.04.2018 ) Errorhandling
 }

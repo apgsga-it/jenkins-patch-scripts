@@ -21,7 +21,9 @@ patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-di
 patchConfig.dockerBuildExtention = "tar.gz"
 
 // Mainline
-def target = patchConfig.installationTarget
+// TODO (che, 1.5 ) : probably should also be read from targets configuration
+// Same contract as with patchProdPipeline
+def target = new Expando(envName:"Download",targetName:patchConfig.installationTarget,typeInd:"T")
 patchfunctions.targetIndicator(patchConfig,target)
 stage("${target} Build & Assembly") {
 	stage("${target} Build" ) {
