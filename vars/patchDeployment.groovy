@@ -13,9 +13,7 @@ def installDeploymentArtifacts(patchConfig) {
 
 def install(patchConfig, type, artifact,extension) {
 	if (!type.equals("docker")) {
-		stage("installing GUI") {
-			installGUI(patchConfig,artifact,extension)
-		}
+		installGUI(patchConfig,artifact,extension)
 	}
 	else {
 		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
