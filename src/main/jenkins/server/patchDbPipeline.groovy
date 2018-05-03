@@ -38,12 +38,21 @@ stage("${target.envName} (${target.targetName}) Installationsbereit Notification
 patchfunctions.targetIndicator(patchConfig,target)
 stage("${target} Build & Assembly") {
 	stage("${target} Build" ) {
-		echo "Building object for DB ... TODO ..."
+		// checkout what's on patchConfig.dbPatchBranch : checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.microServiceBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
+		
+		echo "Building object for DB, for now basically a checkout of ${patchConfig.dbPatchBranch} CVS branch"
+	//	checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.dbPatchBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
 	}
 	stage("${target} Assembly" ) {
+		
+		// ZIP what has been checked out
+		// publish it on Artifactory
+		
 		echo "Assembly object for DB ... TODO ..."
 	}
 }
 stage("${target} Installation") {
+	
+	// should occur on a node, stash and unstash
 	echo "Installing DB Object ... TODO ..."
 }
