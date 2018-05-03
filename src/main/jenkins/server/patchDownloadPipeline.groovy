@@ -24,7 +24,7 @@ patchConfig.dockerBuildExtention = "tar.gz"
 def target = [envName:"Download",targetName:patchConfig.installationTarget,typeInd:"T"]
 patchfunctions.targetIndicator(patchConfig,target)
 stage("${target.targetName} Build & Assembly") {
-	stage("${target} Build" ) {
+	stage("${target.targetName} Build" ) {
 		node {patchfunctions.patchBuilds(patchConfig)}
 	}
 	stage("${target.targetName} Assembly" ) {
