@@ -23,6 +23,9 @@ patchConfig.cvsroot = "/var/local/cvs/root"
 // Mainline
 def target = [envName:"Download",targetName:patchConfig.installationTarget,typeInd:"T"]
 patchfunctions.targetIndicator(patchConfig,target)
+// TODO( che, 4.5) , why seperate build and assembly for db objects?
+// Is'nt check-out and install?
+// At least for the Integration Prototype
 stage("${target.targetName} Build & Assembly") {
 	stage("${target.targetName} Build" ) {
 		node {
@@ -30,8 +33,7 @@ stage("${target.targetName} Build & Assembly") {
 			
 			echo "Building object for DB, for now basically a checkout of ${patchConfig.dbPatchBranch} CVS branch"
 			// get all what's in dbObjectsAsVcsPath
-			// TODO( che, 4.5) , why seperate build and assembly for db objects?
-			// Is'nt check-out and install? 
+		
 			def dbObjects = patchConfig.dbObjectsAsVcsPath
 			echo "Following DB Objects will be checked out : ${dbObjects}"
 			
