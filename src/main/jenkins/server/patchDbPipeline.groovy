@@ -15,16 +15,26 @@ properties([
 
 // Parameter
 
+// Parameter
 def patchConfig = new JsonSlurperClassic().parseText(params.PARAMETER)
 echo patchConfig.toString()
 patchConfig.cvsroot = "/var/local/cvs/root"
-
-// TODO JHE: Not sure we'll need these 2 properties ...
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"
 
+// Load Target System Mappings
+def targetSystemsMap = patchfunctions.loadTargetsMap()
+println "TargetSystemsMap : ${targetSystemsMap} " 
+
+// Mainline
+// While mit Start der Pipeline bereits getagt ist
+
+def target = targetSystemsMap.get('Entwicklung')
+stage("${target.envName} (${target.targetName}) Installationsbereit Notification") {
+	patchfunctions.notify(target,"Installationsbereit", patchConfig)
+}
+
 //Main line
-def target = patchConfig.installationTarget
 patchfunctions.targetIndicator(patchConfig,target)
 stage("${target} Build & Assembly") {
 	stage("${target} Build" ) {
