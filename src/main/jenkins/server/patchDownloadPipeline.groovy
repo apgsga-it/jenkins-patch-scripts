@@ -23,14 +23,14 @@ patchConfig.dockerBuildExtention = "tar.gz"
 // Mainline
 def target = [envName:"Download",targetName:patchConfig.installationTarget,typeInd:"T"]
 patchfunctions.targetIndicator(patchConfig,target)
-stage("${target} Build & Assembly") {
+stage("${target.targetName} Build & Assembly") {
 	stage("${target} Build" ) {
 		node {patchfunctions.patchBuilds(patchConfig)}
 	}
-	stage("${target} Assembly" ) {
+	stage("${target.targetName} Assembly" ) {
 		node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
 	}
 }
-stage("${target} Installation") {
+stage("${target.targetName} Installation") {
 	node {patchDeployment.installDeploymentArtifacts(patchConfig)}
 }
