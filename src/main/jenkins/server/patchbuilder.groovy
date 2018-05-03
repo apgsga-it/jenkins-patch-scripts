@@ -1,6 +1,7 @@
 def patchName = "Patch${patchnumber}"
 def jobName = patchName
 def downLoadJobName = jobName + "Download"
+def dbJobName = jobName + "Db"
 pipelineJob (jobName) {
 	authenticationToken(patchName)
 	concurrentBuild(false)
@@ -27,6 +28,21 @@ pipelineJob (downLoadJobName) {
 	}
 	logRotator(5,10,5,-1)
 	description("*Download* Patch Pipeline for : ${patchName}")
+	parameters {
+		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
+	}
+}
+pipelineJob (dbJobName) {
+	authenticationToken(dbJobName)
+	concurrentBuild(false)
+	definition {
+		cps {
+			script(readFileFromWorkspace('src/main/jenkins/server/patchDbPipeline.groovy'))
+			sandbox(false)
+		}
+	}
+	logRotator(5,10,5,-1)
+	description("*DB* Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
 	}
