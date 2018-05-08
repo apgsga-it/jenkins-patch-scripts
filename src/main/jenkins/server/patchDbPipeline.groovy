@@ -44,6 +44,11 @@ stage("${target.targetName} Build & Assembly") {
 	}
 	stage("${target.targetName} Assembly" ) {
 		
+		// Stashing all SQL from workspace
+		node {
+			stash name: "sqls", includes: "**/*.sql"
+		}
+		
 		node (env.JENKINS_INSTALLER){
 			echo "Trying to create folder on cm-linux..."
 			
@@ -67,8 +72,13 @@ stage("${target.targetName} Build & Assembly") {
 			installPatchContent += "popd"
 			//TODO JHE: This file should be store on Git ?!? Or somewhere else? Or ok to generate all its content dynamically ?!?!
 			fileOperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\install_patch.bat", fileContent: installPatchContent)])
+			
+			// Unstashing into patch folder
+			dir("\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}") {
+				unstash "sqls"
+			}
 		}
-		
+
 	}
 }
 stage("${target.targetName} Installation") {
