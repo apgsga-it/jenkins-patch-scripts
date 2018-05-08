@@ -53,7 +53,20 @@ stage("${target.targetName} Build & Assembly") {
 			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}")])
 			// config folder has to be empty
 			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\config")])
-			fileOperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\cm_properties.txt")])
+			def cmPropertiesContent = "config_name:${newFolderName}\r\npatch_name:${newFolderName}\r\ntag_name:${newFolderName}"
+			fileOperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
+			def configInfoContent = "config_name:${newFolderName}"
+			fileOperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\config_info.txt", fileContent: configInfoContent)])
+			
+			def installPatchContent = "@echo off\r\n"
+			// TODO JHE: 0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
+			installPatchContent += "@echo *** Installation von Patch 0900C_${patchConfig.patchNummer} [Build von TODO get YYYY/MM/dd-HH:mm:ss]\r\n"
+			installPatchContent += "set /p v_params=Geben Sie die Zielumgebung ein: \r\n"
+			installPatchContent += "pushd %~dp0 \r\n\r\n"
+			installPatchContent += "cmd /c \\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
+			installPatchContent += "popd"
+			//TODO JHE: This file should be store on Git ?!? Or somewhere else? Or ok to generate all its content dynamically ?!?!
+			fileOperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\install_patch.bat", fileContent: installPatchContent)])
 		}
 		
 	}
