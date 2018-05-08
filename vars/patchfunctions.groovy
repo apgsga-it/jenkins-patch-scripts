@@ -228,7 +228,7 @@ def jadasServiceDropName(patchConfig) {
 def cleanWorkspaceAndMovejob(patchConfig) {
 	node {
 		// Clean workspace
-		//cleanWs()
+		cleanWs()
 						
 		// Rename and move jobs
 		def JOB_PATTERN = "Patch${patchConfig.patchNummer}"; //find all jobs starting with "MY_JOB".
