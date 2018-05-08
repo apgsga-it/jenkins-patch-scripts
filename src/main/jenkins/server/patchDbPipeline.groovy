@@ -53,7 +53,7 @@ stage("${target.targetName} Build & Assembly") {
 			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}")])
 			// config folder has to be empty
 			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\config")])
-			fileoperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\cm_properties.txt")])
+			fileOperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\cm_properties.txt")])
 		}
 		
 	}
