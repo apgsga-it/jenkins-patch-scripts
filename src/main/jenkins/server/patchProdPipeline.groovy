@@ -52,13 +52,7 @@ stage("${target.envName} (${target.targetName}) Installationsbereit Notification
 	
 	if(envName.equalsIgnoreCase("produktion")) {
 		stage("${envName} (${target.targetName}) Cleaning up Jenkins workspace") {
-			node {
-				cleanWs()
-			}
+			patchfunctions.cleanWorkspaceAndMovejob(patchConfig)
 		}
 	}
 }
-
-
-
-

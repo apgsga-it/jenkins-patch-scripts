@@ -1,5 +1,6 @@
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import hudson.model.*
 
 def loadTargetsMap() {
 	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/var/opt/apg-patch-common/TargetSystemMappings.json"
@@ -222,4 +223,29 @@ def jadasServiceDropName(patchConfig) {
 	def pos = artifact.indexOf(':')
 	def artifactName = artifact.substring(pos+1)
 	return "${artifactName}-${buildVersion}.${extension}"
+}
+
+def cleanWorkspaceAndMovejob(patchConfig) {
+	node {
+		// Clean workspace
+		cleanWs()
+						
+		// Rename and move jobs
+		def JOB_PATTERN = "Patch${patchConfig.patchNummer}"; //find all jobs starting with "MY_JOB".
+		def NEW_PART = "PROD_"
+		(Hudson.instance.items.findAll { job -> job.name =~ JOB_PATTERN }).each { job_to_update ->
+			def NEW_JOB_NAME = NEW_PART + job_to_update.name
+			echo("Updating job " + job_to_update.name);
+			echo("New name: " + NEW_JOB_NAME);
+			job_to_update.renameTo(NEW_JOB_NAME);
+			echo("Updated name: " + job_to_update.name);
+				
+			echo("Now moving ${NEW_JOB_NAME} under productive Patch view")
+			def productivePatchView = hudson.model.Hudson.instance.getView('ProductivePatches')
+			productivePatchView.doAddJobToView(NEW_JOB_NAME)
+			// JHE (08.05.2018): the below is not necessary. Patches view list job based on Regex, not by direclty including jobs.
+			//def patchView = hudson.model.Hudson.instance.getView('Patches')
+			//myView2.doRemoveJobFromView(NEW_JOB_NAME)
+		}
+	}
 }
