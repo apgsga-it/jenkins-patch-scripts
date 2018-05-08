@@ -36,8 +36,6 @@ stage("${target.targetName} Build & Assembly") {
 			def dbObjects = patchConfig.dbObjectsAsVcsPath
 			echo "Following DB Objects will be checked out : ${dbObjects}"
 			
-			def dbObjectsAsList = []
-			
 			dbObjects.each{ dbo ->
 				echo "Checking out = ${dbo}"	
 				checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.dbPatchBranch, useHeadIfNotFound: false],  modules: [[localName: dbo, remoteName: dbo]]]]]], skipChangeLog: false])
@@ -46,11 +44,15 @@ stage("${target.targetName} Build & Assembly") {
 	}
 	stage("${target.targetName} Assembly" ) {
 		
-		// ZIP what has been checked out
-		// publish it on Artifactory
-		// TODO (che, 4.5 ) : Maybe yes, but ok Artifactory is really a binary Repository.
-		// I think for the db text files stash and unstash would ok?
-		echo "Assembly object for DB ... TODO ..."
+		node (env.JENKINS_INSTALLER){
+			echo "Trying to create folder on cm-linux..."
+			
+			// TODO JHE:  cm-linux.apgsga.ch needs to be resolved as parameter
+			//			  probably dbPatchBranch is not the correct place to take the name from. But for now, patchConfig doesn't contain 0900C1 alone...
+			def newFolderName = patchConfig.dbPatchBranch.replace("it21", "test")
+			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}")])
+		}
+		
 	}
 }
 stage("${target.targetName} Installation") {
