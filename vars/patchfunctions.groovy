@@ -231,7 +231,7 @@ def cleanWorkspaceAndMovejob(patchConfig) {
 		cleanWs()
 						
 		// Rename and move jobs
-		def JOB_PATTERN = "Patch${patchConfig.patchNummer}"; //find all jobs starting with "MY_JOB".
+		def JOB_PATTERN = "Patch${patchConfig.patchNummer}"; //find all jobs starting with "PatchXXXX".
 		def NEW_PART = "PROD_"
 		(Hudson.instance.items.findAll { job -> job.name =~ JOB_PATTERN }).each { job_to_update ->
 			def NEW_JOB_NAME = NEW_PART + job_to_update.name
