@@ -49,7 +49,7 @@ stage("${target.targetName} Build & Assembly") {
 			
 			// TODO JHE:  cm-linux.apgsga.ch needs to be resolved as parameter
 			//			  probably dbPatchBranch is not the correct place to take the name from. But for now, patchConfig doesn't contain 0900C1 alone...
-			def newFolderName = patchConfig.dbPatchBranch.replace("it21", "test")
+			def newFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
 			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}")])
 		}
 		
