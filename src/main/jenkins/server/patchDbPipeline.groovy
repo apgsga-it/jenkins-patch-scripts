@@ -51,6 +51,9 @@ stage("${target.targetName} Build & Assembly") {
 			//			  probably dbPatchBranch is not the correct place to take the name from. But for now, patchConfig doesn't contain 0900C1 alone...
 			def newFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
 			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}")])
+			// config folder has to be empty
+			fileOperations ([folderCreateOperation(folderPath: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\config")])
+			fileoperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\cm_properties.txt")])
 		}
 		
 	}
