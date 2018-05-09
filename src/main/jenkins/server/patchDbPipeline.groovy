@@ -76,7 +76,7 @@ stage("${target.targetName} Build & Assembly") {
 			installPatchContent += "@echo *** Installation von Patch 0900C_${patchConfig.patchNummer} [Build von TODO get YYYY/MM/dd-HH:mm:ss]\r\n"
 			installPatchContent += "set /p v_params=Geben Sie die Zielumgebung ein: \r\n"
 			installPatchContent += "pushd %~dp0 \r\n\r\n"
-			installPatchContent += "cmd /c \\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
+			installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
 			installPatchContent += "popd"
 			//TODO JHE: This file should be store on Git ?!? Or somewhere else? Or ok to generate all its content dynamically ?!?!
 			fileOperations ([fileCreateOperation(fileName: "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}\\install_patch.bat", fileContent: installPatchContent)])
