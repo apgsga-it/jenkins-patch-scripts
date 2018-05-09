@@ -50,6 +50,14 @@ stage("${target.targetName} Build & Assembly") {
 		}
 		
 		node (env.JENKINS_INSTALLER){
+			
+			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+				usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+
+					// Mount the share drive
+					powershell("net use \\\\cm-linux.apgsga.ch ${PASSWORD} /USER:${USERNAME}")
+				}
+			
 			echo "Trying to create folder on cm-linux..."
 			
 			// TODO JHE:  cm-linux.apgsga.ch needs to be resolved as parameter
