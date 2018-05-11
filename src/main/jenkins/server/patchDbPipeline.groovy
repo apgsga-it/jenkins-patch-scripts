@@ -28,11 +28,13 @@ patchfunctions.targetIndicator(patchConfig,target)
 // At least for the Integration Prototype
 stage("${target.targetName} Build & Assembly") {
 	
-	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
-		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-
-			// Mount the share drive
-			powershell("net use \\\\cm-linux.apgsga.ch ${PASSWORD} /USER:${USERNAME}")
+	node (env.JENKINS_INSTALLER){
+		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+			usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+	
+				// Mount the share drive
+				powershell("net use \\\\cm-linux.apgsga.ch ${PASSWORD} /USER:${USERNAME}")
+		}
 	}
 		
 	stage("${target.targetName} Build" ) {
