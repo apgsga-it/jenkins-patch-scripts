@@ -27,6 +27,14 @@ patchfunctions.targetIndicator(patchConfig,target)
 // Is'nt check-out and install?
 // At least for the Integration Prototype
 stage("${target.targetName} Build & Assembly") {
+	
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+		usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+
+			// Mount the share drive
+			powershell("net use \\\\cm-linux.apgsga.ch ${PASSWORD} /USER:${USERNAME}")
+	}
+		
 	stage("${target.targetName} Build" ) {
 		def node = node {
 			
@@ -51,12 +59,6 @@ stage("${target.targetName} Build & Assembly") {
 		
 		node (env.JENKINS_INSTALLER){
 			
-			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
-				usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-
-					// Mount the share drive
-					powershell("net use \\\\cm-linux.apgsga.ch ${PASSWORD} /USER:${USERNAME}")
-				}
 			
 			echo "Trying to create folder on cm-linux..."
 			
@@ -85,12 +87,21 @@ stage("${target.targetName} Build & Assembly") {
 			dir("\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}") {
 				unstash "sqls"
 			}
+			
+			//Now we can execute command to instll the DB objects
+			
 		}
 
 	}
 }
 stage("${target.targetName} Installation") {
 	
-	// should occur on a node, stash and unstash
-	echo "Installing DB Object ... TODO ..."
+	node (env.JENKINS_INSTALLER){
+		bat("net use x: \\\\cm-linux.apgsga.ch\\cm_winproc_root /persistent:yes")
+		bat("pushd %~dp0")
+		// TODO JHE: Replace CHEI212 with target ${target.targetName}
+		echo "Forcing simulation on CHEI212, normally it would have been on ${target.targetName}"
+		bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\it21.bat installer patch chei212")
+		bat("popd")
+	}
 }
