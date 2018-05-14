@@ -99,7 +99,7 @@ stage("${target.targetName} Build & Assembly") {
 stage("${target.targetName} Installation") {
 	
 	node (env.JENKINS_INSTALLER){
-		def newFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
+		def newFolderName = "\\\\cm-linux.apgsga.ch\\cm_patch_download\\${patchConfig.dbPatchBranch.replace('Patch', 'test')}"
 		// TODO JHE: Replace CHEI212 with target ${target.targetName}
 		echo "Forcing simulation on CHEI212, normally it would have been on chei212"
 		bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${newFolderName} chei212")
