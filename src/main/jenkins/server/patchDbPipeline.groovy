@@ -99,6 +99,7 @@ stage("${target.targetName} Build & Assembly") {
 stage("${target.targetName} Installation") {
 	
 	node (env.JENKINS_INSTALLER){
+		def newFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
 		// TODO JHE: to be checked if /delete is really needed, but I had cases where I was getting following error: "The local device name is already in use"
 		dir("\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}") {
 			bat("net use x: /delete")
