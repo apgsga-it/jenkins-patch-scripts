@@ -100,12 +100,14 @@ stage("${target.targetName} Installation") {
 	
 	node (env.JENKINS_INSTALLER){
 		// TODO JHE: to be checked if /delete is really needed, but I had cases where I was getting following error: "The local device name is already in use"
-		bat("net use x: /delete")
-		bat("net use x: \\\\cm-linux.apgsga.ch\\cm_winproc_root /persistent:yes")
-		bat("pushd %~dp0")
-		// TODO JHE: Replace CHEI212 with target ${target.targetName}
-		echo "Forcing simulation on CHEI212, normally it would have been on ${target.targetName}"
-		bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\it21.bat installer patch chei212")
-		bat("popd")
+		dir("\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}") {
+			bat("net use x: /delete")
+			bat("net use x: \\\\cm-linux.apgsga.ch\\cm_winproc_root /persistent:yes")
+			bat("pushd %~dp0")
+			// TODO JHE: Replace CHEI212 with target ${target.targetName}
+			echo "Forcing simulation on CHEI212, normally it would have been on ${target.targetName}"
+			bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\it21.bat installer patch chei212")
+			bat("popd")
+		}
 	}
 }
