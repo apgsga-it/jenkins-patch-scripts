@@ -40,7 +40,7 @@ stage("${target.targetName} Build & Assembly") {
 	
 	// TODO JHE:  cm-linux.apgsga.ch needs to be resolved as parameter
 	//			  probably dbPatchBranch is not the correct place to take the name from. But for now, patchConfig doesn't contain 0900C1 alone...
-	def rootDbFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
+	def PatchDbFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
 	
 	
 	node (env.JENKINS_INSTALLER){
@@ -63,11 +63,11 @@ stage("${target.targetName} Build & Assembly") {
 			
 			
 			// First clean any existing db folder... Needed??, and do we want this??
-			fileOperations ([folderDeleteOperation(folderPath: "${rootDbFolderName}")])
-			fileOperations ([folderCreateOperation(folderPath: "${rootDbFolderName}")])
+			fileOperations ([folderDeleteOperation(folderPath: "${PatchDbFolderName}")])
+			fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}")])
 			
 			// Do the checkout direction in the folder which will then be zipped
-			dir(rootDbFolderName) {
+			dir(PatchDbFolderName) {
 				dbObjects.each{ dbo ->
 					echo "Checking out = ${dbo}"	
 					checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.dbPatchBranch, useHeadIfNotFound: false],  modules: [[localName: dbo, remoteName: dbo]]]]]], skipChangeLog: false])
@@ -75,13 +75,13 @@ stage("${target.targetName} Build & Assembly") {
 			}
 			
 			// config folder has to be empty
-			fileOperations ([folderCreateOperation(folderPath: "${rootDbFolderName}\\config")])
+			fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")])
 			// Done in order for the config folder to be taken into account when we create the ZIP...
-			fileOperations ([fileCreateOperation(fileName: "${rootDbFolderName}\\config\\dummy.txt", fileContent: "")])
-			def cmPropertiesContent = "config_name:${rootDbFolderName}\r\npatch_name:${rootDbFolderName}\r\ntag_name:${rootDbFolderName}"
-			fileOperations ([fileCreateOperation(fileName: "${rootDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
-			def configInfoContent = "config_name:${rootDbFolderName}"
-			fileOperations ([fileCreateOperation(fileName: "${rootDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
+			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")])
+			def cmPropertiesContent = "config_name:${PatchDbFolderName}\r\npatch_name:${PatchDbFolderName}\r\ntag_name:${PatchDbFolderName}"
+			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
+			def configInfoContent = "config_name:${PatchDbFolderName}"
+			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
 			
 			def installPatchContent = "@echo off\r\n"
 			// TODO JHE: 0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
@@ -91,7 +91,7 @@ stage("${target.targetName} Build & Assembly") {
 			installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
 			installPatchContent += "popd"
 			//TODO JHE: This file should be store on Git ?!? Or somewhere else? Or ok to generate all its content dynamically ?!?!
-			fileOperations ([fileCreateOperation(fileName: "${rootDbFolderName}\\install_patch.bat", fileContent: installPatchContent)])
+			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)])
 			
 		}
 	}
@@ -101,9 +101,9 @@ stage("${target.targetName} Build & Assembly") {
 		// TODO JHE: Here we actually only want to ZIP and deploy on Artifactoy (or on cm-linux)
 		node {
 			//TODO JHE: decide what the ZIP name should be ... for now it's the same as within \\cm-linux.apgsga.ch\cm_build_repo
-			def zipName = "${rootDbFolderName}.zip"
+			def zipName = "${PatchDbFolderName}.zip"
 			fileOperations ([fileDeleteOperation(includes: zipName)])
-			zip zipFile: zipName, glob: "${rootDbFolderName}/**"
+			zip zipFile: zipName, glob: "${PatchDbFolderName}/**"
 			
 				
 			// TODO JHE: Target should better be a subfolder within releases ... like "db"
@@ -118,33 +118,9 @@ stage("${target.targetName} Build & Assembly") {
 			server.upload(uploadSpec)
 			
 		}
-		
-		
-		// Stashing all SQL from workspace
-//		node {
-//			stash name: "sqls", includes: "**/*.sql"
-//		}
-		
-		/*
-		node (env.JENKINS_INSTALLER){
-			
-			
-			echo "Trying to create folder on cm-linux..."
-			
-
-			
-			// Unstashing into patch folder
-			dir("\\\\cm-linux.apgsga.ch\\cm_patch_download\\${newFolderName}") {
-				unstash "sqls"
-			}
-			
-			//Now we can execute command to instll the DB objects
-			
-		}
-		*/
-
 	}
 }
+
 stage("${target.targetName} Installation") {
 	
 	def server = Artifactory.server env.ARTIFACTORY_SERVER_ID
@@ -159,20 +135,16 @@ stage("${target.targetName} Installation") {
 	
 	// TODO JHE:  cm-linux.apgsga.ch needs to be resolved as parameter
 	//			  probably dbPatchBranch is not the correct place to take the name from. But for now, patchConfig doesn't contain 0900C1 alone...
-	def rootDbFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
+	def patchDbFolderName = patchConfig.dbPatchBranch.replace("Patch", "test")
 	
 	node (env.JENKINS_INSTALLER){
 		
-		
-		
 		def cmDownloadPath = "\\\\cm-linux.apgsga.ch\\cm_patch_download"
-		
-		//fileOperations ([folderCreateOperation(folderPath: "${extractedFolderName}")])
 		
 		def downloadSpec = """{
               "files": [
                     {
-                     "pattern": "releases/*${rootDbFolderName}.zip",
+                     "pattern": "releases/*${patchDbFolderName}.zip",
 					 "target": "download/"
 					 }
 		   		]
@@ -180,17 +152,11 @@ stage("${target.targetName} Installation") {
 		server.download(downloadSpec)
 		
 		
-		unzip zipFile: "download/${rootDbFolderName}.zip"
-		fileOperations ([folderCopyOperation(sourceFolderPath: rootDbFolderName, destinationFolderPath: "${cmDownloadPath}\\${rootDbFolderName}")])
-		/*
-		fileOperations ([fileCopyOperation(flattenFiles: true, excludes: '', includes: "${extractedFolderName}\\${rootDbFolderName}\\**\\*", targetLocation: extractedFolderName)])
-		fileOperations ([fileDeleteOperation(includes: "${extractedFolderName}\\${rootDbFolderName}.zip")])
-		fileOperations ([folderDeleteOperation(folderPath: "${extractedFolderName}\\${rootDbFolderName}")])
-		*/
-		
+		unzip zipFile: "download/${patchDbFolderName}.zip"
+		fileOperations ([folderCopyOperation(sourceFolderPath: patchDbFolderName, destinationFolderPath: "${cmDownloadPath}\\${patchDbFolderName}")])
 		
 		// TODO JHE: Replace CHEI212 with target ${target.targetName}
 		echo "Forcing simulation on CHEI212, normally it would have been on chei212"
-		bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${cmDownloadPath}\\${rootDbFolderName} chei212")
+		bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${cmDownloadPath}\\${patchDbFolderName} chei212")
 	}
 }
