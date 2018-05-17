@@ -25,7 +25,7 @@ def dbAssemble(patchConfig) {
 }
 
 def publishDbAssemble(patchConfig) {
-	def server = patchDbFunctions.initiateArtifactoryConnection()
+	def server = patchDeployment.initiateArtifactoryConnection()
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	def zipName = "${patchDbFolderName}.zip"
 	fileOperations ([fileDeleteOperation(includes: zipName)])
