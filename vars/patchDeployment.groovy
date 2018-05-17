@@ -37,6 +37,7 @@ def install(patchConfig, type, artifact,extension) {
 
 def installDbPatch(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
+	def patchDbFolderName = patchDbFunctions.getCoPatchDbFolderName(patchConfig)
 	
 	node (env.JENKINS_INSTALLER){
 		
