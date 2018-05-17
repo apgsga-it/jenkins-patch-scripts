@@ -1,3 +1,6 @@
+#!groovy
+library 'patch-db-functions'
+
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import hudson.model.*
@@ -106,11 +109,15 @@ def checkoutModules(patchConfig) {
 	patchConfig.mavenArtifacts.each {
 		coFromTagcvs(patchConfig,tag,it.name)
 	}
-	coFromBranchCvs(patchConfig, 'it21-ui-bundle')
+	coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
 }
 
-def coFromBranchCvs(patchConfig, moduleName) {
-	checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.microServiceBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
+def coFromBranchCvs(patchConfig, moduleName, type) {
+	def cvsBranch = patchConfig.microServiceBranch
+	if(type.equals("db")) {
+		cvsBranch = patchConfig.dbPatchBranch
+	}
+	checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
 
 }
 def coFromTagcvs(patchConfig,tag, moduleName) {
@@ -158,7 +165,9 @@ def updateBom(patchConfig,module) {
 
 def assembleDeploymentArtefacts(patchConfig) {
 	node {
-		coFromBranchCvs(patchConfig, 'it21-ui-bundle')
+		patchDbFunctions.coDbModules(patchConfig)
+		patchDbFunctions.dbAssemble(patchConfig)
+		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
 		assemble(patchConfig, "it21-ui-pkg-server")
 		buildDockerImage(patchConfig)
 		assemble(patchConfig, "it21-ui-pkg-client")

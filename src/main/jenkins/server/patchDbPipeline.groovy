@@ -58,40 +58,40 @@ stage("${target.targetName} Build & Assembly") {
 			echo "Building object for DB, for now basically a checkout of ${patchConfig.dbPatchBranch} CVS branch"
 			// get all what's in dbObjectsAsVcsPath
 		
-			def dbObjects = patchConfig.dbObjectsAsVcsPath
-			echo "Following DB Objects will be checked out : ${dbObjects}"
+//			def dbObjects = patchConfig.dbObjectsAsVcsPath
+//			echo "Following DB Objects will be checked out : ${dbObjects}"
 			
 			
 			// First clean any existing db folder... Needed??, and do we want this??
-			fileOperations ([folderDeleteOperation(folderPath: "${PatchDbFolderName}")])
-			fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}")])
+//			fileOperations ([folderDeleteOperation(folderPath: "${PatchDbFolderName}")])
+//			fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}")])
 			
 			// Do the checkout direction in the folder which will then be zipped
-			dir(PatchDbFolderName) {
-				dbObjects.each{ dbo ->
-					echo "Checking out = ${dbo}"	
-					checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.dbPatchBranch, useHeadIfNotFound: false],  modules: [[localName: dbo, remoteName: dbo]]]]]], skipChangeLog: false])
-				}
-			}
+//			dir(PatchDbFolderName) {
+//				dbObjects.each{ dbo ->
+//					echo "Checking out = ${dbo}"	
+//					checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: patchConfig.dbPatchBranch, useHeadIfNotFound: false],  modules: [[localName: dbo, remoteName: dbo]]]]]], skipChangeLog: false])
+//				}
+//			}
 			
 			// config folder has to be empty
-			fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")])
-			// Done in order for the config folder to be taken into account when we create the ZIP...
-			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")])
-			def cmPropertiesContent = "config_name:${PatchDbFolderName}\r\npatch_name:${PatchDbFolderName}\r\ntag_name:${PatchDbFolderName}"
-			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
-			def configInfoContent = "config_name:${PatchDbFolderName}"
-			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
-			
-			def installPatchContent = "@echo off\r\n"
-			// TODO JHE: 0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
-			installPatchContent += "@echo *** Installation von Patch 0900C_${patchConfig.patchNummer} [Build von TODO get YYYY/MM/dd-HH:mm:ss]\r\n"
-			installPatchContent += "set /p v_params=Geben Sie die Zielumgebung ein: \r\n"
-			installPatchContent += "pushd %~dp0 \r\n\r\n"
-			installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
-			installPatchContent += "popd"
-			//TODO JHE: This file should be store on Git ?!? Or somewhere else? Or ok to generate all its content dynamically ?!?!
-			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)])
+//			fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")])
+//			// Done in order for the config folder to be taken into account when we create the ZIP...
+//			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")])
+//			def cmPropertiesContent = "config_name:${PatchDbFolderName}\r\npatch_name:${PatchDbFolderName}\r\ntag_name:${PatchDbFolderName}"
+//			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
+//			def configInfoContent = "config_name:${PatchDbFolderName}"
+//			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
+//			
+//			def installPatchContent = "@echo off\r\n"
+//			// TODO JHE: 0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
+//			installPatchContent += "@echo *** Installation von Patch 0900C_${patchConfig.patchNummer} [Build von TODO get YYYY/MM/dd-HH:mm:ss]\r\n"
+//			installPatchContent += "set /p v_params=Geben Sie die Zielumgebung ein: \r\n"
+//			installPatchContent += "pushd %~dp0 \r\n\r\n"
+//			installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
+//			installPatchContent += "popd"
+//			//TODO JHE: This file should be store on Git ?!? Or somewhere else? Or ok to generate all its content dynamically ?!?!
+//			fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)])
 			
 		}
 	}
@@ -99,25 +99,25 @@ stage("${target.targetName} Build & Assembly") {
 	stage("${target.targetName} Assembly" ) {
 		
 		// TODO JHE: Here we actually only want to ZIP and deploy on Artifactoy (or on cm-linux)
-		node {
-			//TODO JHE: decide what the ZIP name should be ... for now it's the same as within \\cm-linux.apgsga.ch\cm_build_repo
-			def zipName = "${PatchDbFolderName}.zip"
-			fileOperations ([fileDeleteOperation(includes: zipName)])
-			zip zipFile: zipName, glob: "${PatchDbFolderName}/**"
-			
-				
-			// TODO JHE: Target should better be a subfolder within releases ... like "db"
-			def uploadSpec = """{
-				"files": [
-				{
-					"pattern": "*.zip",
-					"target": "releases/"
-			  	}
-				]
-			}"""
-			server.upload(uploadSpec)
-			
-		}
+//		node {
+//			//TODO JHE: decide what the ZIP name should be ... for now it's the same as within \\cm-linux.apgsga.ch\cm_build_repo
+//			def zipName = "${PatchDbFolderName}.zip"
+//			fileOperations ([fileDeleteOperation(includes: zipName)])
+//			zip zipFile: zipName, glob: "${PatchDbFolderName}/**"
+//			
+//				
+//			// TODO JHE: Target should better be a subfolder within releases ... like "db"
+//			def uploadSpec = """{
+//				"files": [
+//				{
+//					"pattern": "*.zip",
+//					"target": "releases/"
+//			  	}
+//				]
+//			}"""
+//			server.upload(uploadSpec)
+//			
+//		}
 	}
 }
 
