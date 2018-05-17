@@ -45,7 +45,7 @@ def publishDbAssemble(patchConfig) {
 }
 
 def getCoPatchDbFolderName(patchConfig) {
-	return patchConfig.dbPatchBranch.replace("Patch", "test")
+	return "${patchConfig.dbPatchBranch.replace('Patch', 'test')}-${patchConfig.revisionMnemoPart}-${patchConfig.targetInd}-${patchConfig.revision}"
 }
 
 def coDbModules(patchConfig) {
