@@ -1,5 +1,6 @@
 #!groovy
 library 'patch-global-functions'
+library 'patch-db-functions'
 
 def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Install") {
@@ -7,13 +8,18 @@ def installDeploymentArtifacts(patchConfig) {
 			node {install(patchConfig,"client","it21gui-dist-zip","zip")}
 		}, 'ui-server-deployment': {
 			node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+		}, 'db-deployment': {
+			node {install(patchConfig,"db",patchDbFunctions.getCoPatchDbFolderName(patchConfig),"zip") }
 		}
 	}
 }
 
 def install(patchConfig, type, artifact,extension) {
-	if (!type.equals("docker")) {
+	if (type.equals("client")) {
 		installGUI(patchConfig,artifact,extension)
+	}
+	else if (type.equals("db")) {
+		installDbPatch(patchConfig,artifact,extension)
 	}
 	else {
 		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
@@ -27,6 +33,33 @@ def install(patchConfig, type, artifact,extension) {
 		sh "${dockerDeploy}"
 	}
 
+}
+
+def installDbPatch(patchConfig,artifact,extension) {
+	def server = initiateArtifactoryConnection()
+	
+	node (env.JENKINS_INSTALLER){
+		
+		def cmDownloadPath = "\\\\cm-linux.apgsga.ch\\cm_patch_download"
+		
+		def downloadSpec = """{
+              "files": [
+                    {
+                     "pattern": "releases/*${artifact}.${extension}",
+					 "target": "download/"
+					 }
+				   ]
+			}"""
+		server.download(downloadSpec)
+		
+		
+		unzip zipFile: "download/${artifact}.${extension}"
+		fileOperations ([folderCopyOperation(sourceFolderPath: artifact, destinationFolderPath: "${cmDownloadPath}\\${artifact}")])
+		
+		// TODO JHE: Replace CHEI212 with target ${target.targetName}
+		//echo "Forcing simulation on CHEI212, normally it would have been on chei212"
+		//bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${cmDownloadPath}\\${patchDbFolderName} chei212")
+	}
 }
 
 def installGUI(patchConfig,artifact,extension) {
