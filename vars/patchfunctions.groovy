@@ -226,7 +226,7 @@ def coDbModules(patchConfig) {
 	def tag = tagName(patchConfig)
 	dir(patchDbFolderName) {
 		dbObjects.each{ dbo ->
-			patchfunctions.coFromTagcvs(patchConfig,tag, dbo)
+			coFromTagcvs(patchConfig,tag, dbo)
 		}
 	}
 }
