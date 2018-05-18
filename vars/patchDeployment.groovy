@@ -1,6 +1,5 @@
 #!groovy
 library 'patch-global-functions'
-library 'patch-db-functions'
 
 def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Install") {
@@ -9,7 +8,7 @@ def installDeploymentArtifacts(patchConfig) {
 		}, 'ui-server-deployment': {
 			node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
 		}, 'db-deployment': {
-			node {install(patchConfig,"db",patchDbFunctions.getCoPatchDbFolderName(patchConfig),"zip") }
+			node {install(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip") }
 		}
 	}
 }
@@ -37,7 +36,7 @@ def install(patchConfig, type, artifact,extension) {
 
 def installDbPatch(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
-	def patchDbFolderName = patchDbFunctions.getCoPatchDbFolderName(patchConfig)
+	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
 	
 	node (env.JENKINS_INSTALLER){
 		
