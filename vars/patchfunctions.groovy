@@ -223,7 +223,7 @@ def coDbModules(patchConfig) {
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	fileOperations ([folderDeleteOperation(folderPath: "${patchDbFolderName}")])
 	fileOperations ([folderCreateOperation(folderPath: "${patchDbFolderName}")])
-	def tag = patchfunctions.tagName(patchConfig)
+	def tag = tagName(patchConfig)
 	dir(patchDbFolderName) {
 		dbObjects.each{ dbo ->
 			patchfunctions.coFromTagcvs(patchConfig,tag, dbo)
