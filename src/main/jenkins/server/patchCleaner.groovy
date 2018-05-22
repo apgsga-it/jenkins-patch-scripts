@@ -14,10 +14,21 @@ node {
 	patchJobs.each { job ->
 		
 		if(!job.name.equalsIgnoreCase("PatchBuilder") && !job.name.equalsIgnoreCase("PatchCleaner")) {
-			echo "Job name: ${job.name}"
 			
-			def status = job.getLastBuild()
-			def lastSuccesffulbuild = job.getLastSuccessfulBuild()
+			
+			if(!job.name.endsWith("Download")) {
+				def lastSuccesffulbuild = job.getLastSuccessfulBuild()
+				if(lastSuccesffulbuild != null) {
+					echo "Job ${job.name} successfully ended and will be moved"
+				}
+				else {
+					echo "Job ${job.name} not finish yet."
+				}
+			}
+			
+			
+			
+			
 			
 			
 		}
