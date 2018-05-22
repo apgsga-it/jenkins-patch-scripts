@@ -15,6 +15,11 @@ node {
 		
 		if(!job.name.equalsIgnoreCase("PatchBuilder") && !job.name.equalsIgnoreCase("PatchCleaner")) {
 			echo "Job name: ${job.name}"
+			
+			def status = job.getLastBuild()
+			def lastSuccesffulbuild = job.getLastSuccessfulBuild()
+			
+			
 		}
 	}
 	
