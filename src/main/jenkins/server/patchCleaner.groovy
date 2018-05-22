@@ -5,10 +5,12 @@ node {
 	//cleanWs()
 		
 	
-	def JOB_PATTERN = "Patch"; //find all jobs starting with "Patch".
-	
+	def JOB_PATTERN = "Patch" //find all jobs starting with "Patch".
+	def nbMovedjob = 0
 	
 	def patchView = hudson.model.Hudson.instance.getView('Patches')
+	def productivePatchView = hudson.model.Hudson.instance.getView('ProductivePatches')
+	
 	def patchJobs = patchView.getItems()
 		
 	patchJobs.each { job ->
@@ -20,17 +22,15 @@ node {
 				def lastSuccesffulbuild = job.getLastSuccessfulBuild()
 				if(lastSuccesffulbuild != null) {
 					echo "Job ${job.name} successfully ended and will be moved"
-				}
-				else {
-					echo "Job ${job.name} not finish yet."
+					nbMovedjob++
+					def NEW_JOB_NAME = "PROD_${job.name}"
+					
+					productivePatchView.doAddJobToView(NEW_JOB_NAME)
+					
+					patchView.doRemoveJobFromView("${job.name}Download")
+					
 				}
 			}
-			
-			
-			
-			
-			
-			
 		}
 	}
 	
@@ -63,4 +63,4 @@ node {
 	*/
 }
 
-echo "Patch cleaner ended and clean XX job(s)"
+echo "Patch cleaner ended and moved ${nbMovedjob} job(s)"
