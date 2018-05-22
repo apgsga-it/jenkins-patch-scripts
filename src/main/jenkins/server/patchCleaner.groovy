@@ -27,7 +27,7 @@ node {
 					
 					productivePatchView.doAddJobToView(NEW_JOB_NAME)
 					
-					patchView.doRemoveJobFromView("${job.name}Download")
+					//patchView.doRemoveJobFromView("${job.name}Download")
 					
 				}
 			}
