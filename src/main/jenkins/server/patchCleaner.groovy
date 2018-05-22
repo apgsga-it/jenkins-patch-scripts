@@ -1,12 +1,14 @@
 echo "Patch cleaner starting ..."
 
+def nbMovedjob = 0
+
 node {
 	// Clean workspace
 	//cleanWs()
 		
 	
 	def JOB_PATTERN = "Patch" //find all jobs starting with "Patch".
-	def nbMovedjob = 0
+	
 	
 	def patchView = hudson.model.Hudson.instance.getView('Patches')
 	def productivePatchView = hudson.model.Hudson.instance.getView('ProductivePatches')
