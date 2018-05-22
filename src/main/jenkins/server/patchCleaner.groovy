@@ -12,7 +12,10 @@ node {
 	def patchJobs = patchView.getItems()
 		
 	patchJobs.each { job ->
-		echo "Job name: ${job.name}"
+		
+		if(!job.name.equalsIgnoreCase("PatchBuilder") && !job.name.equalsIgnoreCase("PatchCleaner")) {
+			echo "Job name: ${job.name}"
+		}
 	}
 	
 	
