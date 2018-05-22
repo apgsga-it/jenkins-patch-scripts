@@ -217,6 +217,51 @@ def getCoPatchDbFolderName(patchConfig) {
 	return "${patchConfig.dbPatchBranch.replace('Patch', 'test')}-${patchConfig.revisionMnemoPart}-${patchConfig.targetInd}-${patchConfig.revision}"
 }
 
+def mergeDbObjectOnHead(patchConfig) {
+	
+	/*
+	 * JHE (22.05.2018): Within this function, we're calling 3 times a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
+	 * 					 coFromTagcvs method. So far I didn't find an equivalent build-in function allowing to do a merge.
+	 * 
+	 */
+	
+	echo "Following object will be merge from ${patchConfig.patchTag} to ${patchConfig.prodBranch}:"
+	echo "${patchConfig.dbObjectsAsVcsPath}"
+	
+	def dbObjects = patchConfig.dbObjectsAsVcsPath
+	def folder = ""
+	def tag = tagName(patchConfig)
+	def cvsRoot = patchConfig.cvsroot
+	
+	/*
+	 * JHE (22.05.2018): Not sure if we really want to separate the merge and the commit. Idea for separation is obviously that if we encounter an issue during merge, we
+	 * 					 don't commit anything. 
+	 * TODO JHE: verify the above is actually true? Do we really get an exception?? 
+	 * 
+	 */
+	
+	dbObjects.each{ dbo ->
+		coFromTagcvs(patchConfig,tag,dbo)
+		folder = dbo.substring(0,dbo.lastIndexOf("/"))
+		dir(folder) {
+			// Switch to head
+			sh "cvs -d${cvsRoot} up -A"
+			// Merge from tag
+			sh "cvs -d${cvsRoot} up -j ${tag}"
+			echo "${dbo} has been merged from ${tag} to head"
+		}
+	}
+	
+	dbObjects.each{ dbo ->
+		folder = dbo.substring(0,dbo.lastIndexOf("/"))
+		dir(folder) {
+			// Commit
+			sh "cvs -d${cvsRoot} commit -m'Commit of merged ${dbo} from ${tag} tag.'"
+			echo "${dbo} has been committed on head after beeing merged from ${tag}."
+		}
+	}
+}
+
 def coDbModules(patchConfig) {
 	def dbObjects = patchConfig.dbObjectsAsVcsPath
 	echo "Following DB Objects will be checked out : ${dbObjects}"

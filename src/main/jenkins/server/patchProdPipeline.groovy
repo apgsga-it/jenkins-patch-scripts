@@ -47,9 +47,13 @@ stage("${target.envName} (${target.targetName}) Installationsbereit Notification
 	stage("Approve ${envName} (${target.targetName}) Installation") { patchfunctions.approveInstallation(patchConfig)	 }
 	stage("${envName} (${target.targetName}) Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
 	stage("${envName} (${target.targetName}) Installation Notification") {
+		if(envName.equalsIgnoreCase("produktion")) {
+			patchfunctions.mergeDbObjectOnHead(patchConfig)
+		}
 		patchfunctions.notify(target,"Installation", patchConfig)
 	}
 	
+	//TODO JHE: this will be removed and done differently, see https://jira.apgsga.ch/browse/JAVA8MIG-180
 	if(envName.equalsIgnoreCase("produktion")) {
 		stage("${envName} (${target.targetName}) Cleaning up Jenkins workspace") {
 			patchfunctions.cleanWorkspaceAndMovejob(patchConfig)
