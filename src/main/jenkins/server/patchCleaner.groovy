@@ -33,7 +33,7 @@ node {
 					productivePatchView.doAddJobToView(NEW_JOB_NAME)
 					
 					patchJobs.each{ jobToBeDeleted -> 
-						if(jobToBeDeleted.equalsIgnoreCase(jobName + "Download")) {
+						if(jobToBeDeleted.name.equalsIgnoreCase(jobName + "Download")) {
 							jobToBeDeleted.delete()
 						}
 					}
