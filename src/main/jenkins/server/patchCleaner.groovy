@@ -17,13 +17,14 @@ node {
 		
 		if(!job.name.equalsIgnoreCase("PatchBuilder") && !job.name.equalsIgnoreCase("PatchCleaner")) {
 			
+			def jobName = job.name
 			
-			if(!job.name.endsWith("Download")) {
+			if(!jobName.endsWith("Download")) {
 				def lastSuccesffulbuild = job.getLastSuccessfulBuild()
 				if(lastSuccesffulbuild != null) {
-					echo "Job ${job.name} successfully ended and will be moved"
+					echo "Job ${jobName} successfully ended and will be moved"
 					nbMovedjob++
-					def NEW_JOB_NAME = "PROD_${job.name}"
+					def NEW_JOB_NAME = "PROD_${jobName}"
 					
 					productivePatchView.doAddJobToView(NEW_JOB_NAME)
 					
