@@ -220,7 +220,7 @@ def getCoPatchDbFolderName(patchConfig) {
 def mergeDbObjectOnHead(patchConfig) {
 	
 	/*
-	 * JHE (22.05.2018): Within this function, we're calling 3 times a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
+	 * JHE (22.05.2018): Within this function, we're calling a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
 	 * 					 coFromTagcvs method. So far I didn't find an equivalent build-in function allowing to do a merge.
 	 * 
 	 */
@@ -242,7 +242,9 @@ def mergeDbObjectOnHead(patchConfig) {
 		 */
 		
 		dbObjects.each{ dbo ->
-			coFromTagcvs(patchConfig,tag,dbo)
+			//coFromTagcvs(patchConfig,tag,dbo)
+			// JHE(22.05.2018): ideally we would like to use the coFromTagCvs method. But we need a .CVS in the checked out folders, which doesn't happen with our coFromTagCvs method.
+			sh "cvs -d${cvsRoot} co ${dbo}"
 			folder = dbo.substring(0,dbo.lastIndexOf("/"))
 			dir(folder) {
 				// Switch to head
