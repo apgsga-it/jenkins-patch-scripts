@@ -26,6 +26,8 @@ node {
 					nbMovedjob++
 					def NEW_JOB_NAME = "PROD_" + jobName
 					
+					job.renameTo(NEW_JOB_NAME)
+					
 					productivePatchView.doAddJobToView(NEW_JOB_NAME)
 					
 					//patchView.doRemoveJobFromView("${job.name}Download")
