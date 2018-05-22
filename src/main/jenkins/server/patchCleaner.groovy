@@ -23,8 +23,8 @@ node {
 				def lastSuccesffulbuild = job.getLastSuccessfulBuild()
 				if(lastSuccesffulbuild != null) {
 					echo "Job ${jobName} successfully ended and will be moved"
-					//nbMovedjob++
-					def NEW_JOB_NAME = "PROD_${jobName}"
+					nbMovedjob++
+					def NEW_JOB_NAME = "PROD_" + jobName
 					
 					productivePatchView.doAddJobToView(NEW_JOB_NAME)
 					
