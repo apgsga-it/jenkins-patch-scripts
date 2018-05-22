@@ -7,10 +7,14 @@ node {
 	
 	def JOB_PATTERN = "Patch"; //find all jobs starting with "Patch".
 	
-	(Hudson.instance.items.findAll { job -> job.name =~ JOB_PATTERN }).each { job_to_update ->
+	
+	def patchView = hudson.model.Hudson.instance.getView('Patches')
+	def patchJobs = patchView.getItems()
 		
-		echo("Updating job " + job_to_update.name);
+	patchJobs.each { job ->
+		echo "Job name: ${job.name}"
 	}
+	
 	
 	/*
 	// Rename and move jobs
