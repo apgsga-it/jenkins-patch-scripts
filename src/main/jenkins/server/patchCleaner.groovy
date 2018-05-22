@@ -14,7 +14,7 @@ node {
 	def productivePatchView = hudson.model.Hudson.instance.getView('ProductivePatches')
 	
 	def patchJobs = patchView.getItems()
-		
+	
 	patchJobs.each { job ->
 		
 		if(!job.name.equalsIgnoreCase("PatchBuilder") && !job.name.equalsIgnoreCase("PatchCleaner")) {
@@ -31,6 +31,12 @@ node {
 					job.renameTo(NEW_JOB_NAME)
 					
 					productivePatchView.doAddJobToView(NEW_JOB_NAME)
+					
+					patchJobs.each{ jobToBeDeleted -> 
+						if(jobToBeDeleted.equalsIgnoreCase(jobName + "Download")) {
+							jobToBeDeleted.delete()
+						}
+					}
 					
 					//patchView.doRemoveJobFromView("${job.name}Download")
 					
