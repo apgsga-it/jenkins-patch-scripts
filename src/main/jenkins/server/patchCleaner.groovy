@@ -58,7 +58,7 @@ node {
 			// We might have a null for a download job which would never have ran
 			if(lastSuccess != null) {
 				
-				def comparisonDate = new Date().plus(-14)
+				def comparisonDate = new Date()
 				def diff = lastSuccess.getTime() - comparisonDate
 				
 				
