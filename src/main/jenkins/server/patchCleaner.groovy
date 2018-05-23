@@ -2,12 +2,16 @@ echo "Patch cleaner starting ..."
 
 def nbMovedjob = 0
 
+def getProductivePatchView() {
+	return hudson.model.Hudson.instance.getView('ProductivePatches')
+}
+
 node {
 
-	stage("Cleaning patch job") {	
+	stage("Moving patch job") {	
 		def JOB_PATTERN = "Patch" //find all jobs starting with "Patch".
 		def patchView = hudson.model.Hudson.instance.getView('Patches')
-		def productivePatchView = hudson.model.Hudson.instance.getView('ProductivePatches')
+		def productivePatchView = getProductivePatchView()
 		def patchJobs = patchView.getItems()
 		
 		patchJobs.each { job ->
@@ -37,6 +41,23 @@ node {
 				}
 			}
 		}
+	}
+	
+	stage("Cleaning Workspaces") {
+		
+		/*
+		 * JHE (23.05.2018): We iterate over all jobs within "ProductivePatches" View. If a Job is there since more than 2 Weeks, then we clean its workspace
+		 */
+		
+		def productivePatchView = getProductivePatchView()
+		def productiveJobs = patchView.getItems()
+		
+		productiveJobs.each { job ->
+			def lastSuccess = job.getLastSuccessfulBuild()
+			def lastSuccessFormated = lastSuccess.getTime().format("YYYY-MMM-dd HH:MM:SS")
+			echo "Last success build for ${job.name} was on ${lastSuccessFormated}"
+		}
+		
 	}
 }
 
