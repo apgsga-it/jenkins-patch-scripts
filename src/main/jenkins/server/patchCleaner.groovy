@@ -25,9 +25,13 @@ node {
 					
 					productivePatchView.doAddJobToView(NEW_JOB_NAME)
 					
-					patchJobs.each{ jobToBeDeleted -> 
-						if(jobToBeDeleted.name.equalsIgnoreCase(jobName + "Download")) {
-							jobToBeDeleted.delete()
+					patchJobs.each{ downloadJob -> 
+						if(downloadJob.name.equalsIgnoreCase(jobName + "Download")) {
+							// JHE(23.05.2018): Not sure if we really want to delete the download job, for now, just move it as well.
+							//jobToBeDeleted.delete()
+							def NEW_DOWNLOADJOB_NAME = "PROD_" + downloadJob.name
+							downloadJob.renameTo(NEW_DOWNLOADJOB_NAME)
+							productivePatchView.doAddJobToView(NEW_DOWNLOADJOB_NAME)
 						}
 					}
 				}

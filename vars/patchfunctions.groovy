@@ -340,7 +340,7 @@ def jadasServiceDropName(patchConfig) {
 	return "${artifactName}-${buildVersion}.${extension}"
 }
 
-def cleanWorkspaceAndMovejob() {
+def cleanWorkspace() {
 	node {
 		// Clean workspace
 		cleanWs()
