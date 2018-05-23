@@ -57,8 +57,15 @@ node {
 			
 			// We might have a null for a download job which would never have ran
 			if(lastSuccess != null) {
+				
+				def comparisonDate = new Date().plus(-14)
+				def diff = lastSuccess.getTime() - comparisonDate
+				
+				
+				
 				def lastSuccessFormated = lastSuccess.getTime().format("YYYY-MMM-dd HH:MM:SS")
-				echo "Last success build for ${job.name} was on ${lastSuccessFormated}"
+				echo "Last success build for ${job.name} was on ${lastSuccessFormated}, workspace will be clean."
+				echo "Diff date = ${diff}"
 			}
 		}
 		
