@@ -61,11 +61,11 @@ node {
 				def comparisonDate = new Date()
 				def diff = (lastSuccess.getTime() - comparisonDate).abs()
 				
-				if(diff >= 1) {
+				//if(diff >= 1) {
 					def lastSuccessFormated = lastSuccess.getTime().format("YYYY-MMM-dd HH:MM:SS")
 					echo "Last success build for ${job.name} was on ${lastSuccessFormated}, workspace will be clean."
 					job.delete()
-				}
+				//}
 			}
 		}
 	}
