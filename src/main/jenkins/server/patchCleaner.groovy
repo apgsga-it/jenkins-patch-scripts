@@ -54,8 +54,12 @@ node {
 		
 		productiveJobs.each { job ->
 			def lastSuccess = job.getLastSuccessfulBuild()
-			def lastSuccessFormated = lastSuccess.getTime().format("YYYY-MMM-dd HH:MM:SS")
-			echo "Last success build for ${job.name} was on ${lastSuccessFormated}"
+			
+			// We might have a null for a download job which would never have ran
+			if(lastSuccess != null) {
+				def lastSuccessFormated = lastSuccess.getTime().format("YYYY-MMM-dd HH:MM:SS")
+				echo "Last success build for ${job.name} was on ${lastSuccessFormated}"
+			}
 		}
 		
 	}
