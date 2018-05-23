@@ -50,7 +50,7 @@ node {
 		 */
 		
 		def productivePatchView = getProductivePatchView()
-		def productiveJobs = patchView.getItems()
+		def productiveJobs = productivePatchView.getItems()
 		
 		productiveJobs.each { job ->
 			def lastSuccess = job.getLastSuccessfulBuild()
