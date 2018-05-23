@@ -52,8 +52,4 @@ stage("${target.envName} (${target.targetName}) Installationsbereit Notification
 		}
 		patchfunctions.notify(target,"Installation", patchConfig)
 	}
-	
-	stage("${envName} (${target.targetName}) Cleaning up Jenkins workspace") {
-		patchfunctions.cleanWorkspace()
-	}
 }

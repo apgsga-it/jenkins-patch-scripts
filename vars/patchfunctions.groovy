@@ -339,10 +339,3 @@ def jadasServiceDropName(patchConfig) {
 	def artifactName = artifact.substring(pos+1)
 	return "${artifactName}-${buildVersion}.${extension}"
 }
-
-def cleanWorkspace() {
-	node {
-		// Clean workspace
-		cleanWs()
-	}
-}
