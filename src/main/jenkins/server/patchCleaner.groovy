@@ -59,7 +59,7 @@ node {
 			if(lastSuccess != null) {
 				
 				def comparisonDate = new Date()
-				def diff = lastSuccess.getTime() - comparisonDate
+				def diff = (lastSuccess.getTime() - comparisonDate).abs()
 				
 				
 				
