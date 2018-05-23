@@ -64,7 +64,9 @@ node {
 				if(diff >= 1) {
 					def lastSuccessFormated = lastSuccess.getTime().format("YYYY-MMM-dd HH:MM:SS")
 					echo "Last success build for ${job.name} was on ${lastSuccessFormated}, workspace will be clean."
-					job.asItem().doDoWipeOutWorkspace()
+					job.items.each {item ->
+						echo "Item name : ${item.name}"
+					}
 				}
 			}
 		}
