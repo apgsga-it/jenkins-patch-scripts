@@ -63,30 +63,52 @@ def patchBuilds(patchConfig) {
 def retrieveRevisions(patchConfig) {
 	def revisionFileName = "${env.JENKINS_HOME}/userContent/PatchPipeline/data/Revisions.json"
 	def revisionFile = new File(revisionFileName)
-	def currentRevision = [P:1,T:1]
+	def currentRevision = [P:1,T:10000]
 	def lastRevision = [:]
 	def revisions = [lastRevisions:lastRevision, currentRevision:currentRevision]
 	if (revisionFile.exists()) {
 		revisions = new JsonSlurper().parseText(revisionFile.text)
 	}
-	patchConfig.revision = revisions.currentRevision[patchConfig.targetInd]
+	
+	if(patchConfig.targetInd.equals("P")) {
+		patchConfig.revision = revisions.currentRevision[patchConfig.targetInd]
+	}
+	else {
+		if(revisions.lastRevisions.get(patchConfig.installationTarget) == null) {
+			patchConfig.revision = revisions.currentRevision[patchConfig.targetInd]
+		}
+		else {
+			patchConfig.revision = revisions.lastRevisions.get(patchConfig.installationTarget) + 1
+		}
+	}
+
 	patchConfig.lastRevision = revisions.lastRevisions.get(patchConfig.installationTarget,'SNAPSHOT')
 }
 
 def saveRevisions(patchConfig) {
 	def revisionFileName = "${env.JENKINS_HOME}/userContent/PatchPipeline/data/Revisions.json"
 	def revisionFile = new File(revisionFileName)
-	def currentRevision = [P:1,T:1]
+	def currentRevision = [P:1,T:10000]
 	def lastRevision = [:]
 	def revisions = [lastRevisions:lastRevision, currentRevision:currentRevision]
 	if (revisionFile.exists()) {
 		revisions = new JsonSlurper().parseText(revisionFile.text)
 	}
-	revisions.currentRevision[patchConfig.targetInd]++
+	if(patchConfig.targetInd.equals("P")) {
+		revisions.currentRevision[patchConfig.targetInd]++
+	}
+	else {
+		// We increase it only when saving a new Target
+		if(revisions.lastRevisions.get(patchConfig.installationTarget) == null) {
+			revisions.currentRevision[patchConfig.targetInd] = revisions.currentRevision[patchConfig.targetInd] + 10000
+		}
+	}
 	revisions.lastRevisions[patchConfig.installationTarget] = patchConfig.revision
 	new File(revisionFileName).write(new JsonBuilder(revisions).toPrettyString())
 
 }
+
+
 def buildAndReleaseModules(patchConfig) {
 	patchConfig.mavenArtifacts.each { buildAndReleaseModule(patchConfig,it) }
 }
