@@ -62,13 +62,34 @@ def patchBuilds(patchConfig) {
 
 def retrieveRevisions(patchConfig) {
 	
-	// TODO JHE: Remove this code and call the equivalent which will be implement in cmdClient
+	def revision
+	def lastRevision
+	def shOutputFileName = "shOutput"
 	
+	// TODO JHE: verify that we really wait on the script execution.
+	//           probably needs to handle exception
+	sh "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
+	def lines = readFile(shOutputFileName).readLines()
+	
+	lines.each {String line ->
+		 // See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
+		 // TODO JHE: Maybe "fromRetrieveRevision" could be configured as Jenkins env variable ?
+		 if (line.contains("fromRetrieveRevision")) {
+			 def parsedRev = new JsonSlurper().parseText(line)
+			 revision = parsedRev.fromRetrieveRevision.revision
+			 lastRevision = parsedRev.fromRetrieveRevision.lastRevision
+		 }
+	}
+	
+	patchConfig.revision = revision
+	patchConfig.lastRevision = lastRevision 	
 }
 
 def saveRevisions(patchConfig) {
 	
-	// TODO JHE: Remove this code and call the equivalent which will be implement in cmdClient
+	// TODO JHE: verify that we really wait on the script execution.
+	//           probably needs to handle exception
+	sh "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision}"
 	
 }
 
