@@ -1,3 +1,5 @@
+import hudson.*
+
 def nbMovedjob = 0
 
 def getProductivePatchView() {
