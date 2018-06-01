@@ -3,11 +3,11 @@ import hudson.model.*
 def nbMovedjob = 0
 
 def getProductivePatchView() {
-	return hudson.model.Hudson.instance.getView('ProductivePatches')
+	return Hudson.instance.getView('ProductivePatches')
 }
 
 def getPatchView() {
-	return hudson.model.Hudson.instance.getView('Patches')
+	return Hudson.instance.getView('Patches')
 }
 
 println "Patch cleaner starting ..."
