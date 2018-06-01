@@ -1,4 +1,4 @@
-import hudson.*
+import hudson.model.*
 
 def nbMovedjob = 0
 
