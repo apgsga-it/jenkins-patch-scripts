@@ -69,11 +69,10 @@ def retrieveRevisions(patchConfig) {
 	// TODO JHE: verify that we really wait on the script execution.
 	//           probably needs to handle exception
 	sh "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
-	def lines = readFile(shOutputFileName).readLines()
 	
+	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
 		 // See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
-		 // TODO JHE: Maybe "fromRetrieveRevision" could be configured as Jenkins env variable ?
 		 if (line.contains("fromRetrieveRevision")) {
 			 def parsedRev = new JsonSlurper().parseText(line)
 			 revision = parsedRev.fromRetrieveRevision.revision
