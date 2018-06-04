@@ -15,7 +15,7 @@ allJobs.each { job ->
 	def jobName = job.name
 	def addjobToView = true
 	
-	if(jobName.startsWith("Patch")) {
+	if(jobName.matches("Patch[0-9]+.*")) {
 		
 		patchjobs.each {patchjob ->
 			def patchjobName = patchjob.name
