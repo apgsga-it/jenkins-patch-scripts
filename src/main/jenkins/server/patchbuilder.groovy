@@ -17,6 +17,7 @@ pipelineJob (jobName) {
 	description("Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
+		stringParam('jobName',jobName)
 	}
 }
 pipelineJob (downLoadJobName) {
@@ -32,5 +33,6 @@ pipelineJob (downLoadJobName) {
 	description("*Download* Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
+		stringParam('downloadJobName',downloadJobName)
 	}
 }
