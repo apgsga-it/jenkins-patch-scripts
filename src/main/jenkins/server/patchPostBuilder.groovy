@@ -11,8 +11,8 @@ def downloadJobName_param_value = resolver.resolve(downloadjobName_param)
 //def jobs = new JsonSlurperClassic().parseText(params.PARAMETER)
 
 
-println "jobName : ${jobName}"
-println "downloadJobName : ${downloadJobName}"
+println "jobName : ${jobName_param_value}"
+println "downloadJobName : ${downloadJobName_param_value}"
 
 //println "jobs = ${jobs}"
 
