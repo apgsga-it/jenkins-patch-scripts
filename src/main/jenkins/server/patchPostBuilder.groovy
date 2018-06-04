@@ -1,17 +1,18 @@
 import hudson.model.*
-import groovy.json.JsonSlurperClassic
 
-
-def hardcoded_param = "jobName"
+def jobName_param = "jobName"
+def downloadjobName_param = "downloadJobName"
 def resolver = build.buildVariableResolver
-def hardcoded_param_value = resolver.resolve(hardcoded_param)
+def jobName_param_value = resolver.resolve(jobName_param)
+def downloadJobName_param_value = resolver.resolve(downloadjobName_param)
 
 
 // Parameter
 //def jobs = new JsonSlurperClassic().parseText(params.PARAMETER)
 
 
-println("params :" + hardcoded_param_value)
+println "jobName : ${jobName}"
+println "downloadJobName : ${downloadJobName}"
 
 //println "jobs = ${jobs}"
 
