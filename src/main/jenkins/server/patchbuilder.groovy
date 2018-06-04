@@ -41,6 +41,6 @@ pipelineJob (downLoadJobName) {
 }
 
 def addJobToPatchesView(def jobName) {
-	def patchView = Hudson.instance.getView('Patches')
+	def patchView = Hudson.instance.getView("Patches")
 	patchView.doAddJobToView(jobName)
 }
