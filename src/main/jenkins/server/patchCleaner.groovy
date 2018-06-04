@@ -24,11 +24,13 @@ patchJobs.each { job ->
 			println "Job ${jobName} successfully ended and will be moved"
 			nbMovedjob++
 			productivePatchView.doAddJobToView(jobName)
+			patchView.doRemoveJobFromView(jobName)
 			patchJobs.each{ downloadJob -> 
 				if(downloadJob.name.equalsIgnoreCase(jobName + "Download")) {
 					// JHE(23.05.2018): Not sure if we really want to delete the download job, for now, just move it as well.
 					//jobToBeDeleted.delete()
 					productivePatchView.doAddJobToView(downloadJob.name)
+					patchView.doRemoveJobFromView(downloadJob.name)
 				}
 			}
 		}
