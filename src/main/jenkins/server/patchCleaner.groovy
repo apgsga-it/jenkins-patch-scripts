@@ -41,3 +41,5 @@ patchJobs.each { job ->
 		}
 	}  
 }
+
+println "PatchCleaner ended, ${nbMovedjob} job(s) have been moved."
