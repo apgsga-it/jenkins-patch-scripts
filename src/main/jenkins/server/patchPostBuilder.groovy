@@ -12,9 +12,12 @@ properties([
 ])
 
 // Parameter
-def jobs = new JsonSlurperClassic().parseText(params.PARAMETER)
+//def jobs = new JsonSlurperClassic().parseText(params.PARAMETER)
 
-println "jobs = ${jobs}"
+
+println("params :" + params)
+
+//println "jobs = ${jobs}"
 
 /*
 def patchView = Hudson.instance.getView('Patches')
