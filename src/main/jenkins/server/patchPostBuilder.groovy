@@ -1,7 +1,7 @@
 import hudson.model.*
 import groovy.json.JsonSlurperClassic
 
-/*
+
 properties([
 	parameters([
 		stringParam(
@@ -11,13 +11,13 @@ properties([
 		)
 	])
 ])
-*/
+
 
 // Parameter
 //def jobs = new JsonSlurperClassic().parseText(params.PARAMETER)
 
 
-println("params :" + jobName)
+println("params :" + params.PARAMETER)
 
 //println "jobs = ${jobs}"
 
