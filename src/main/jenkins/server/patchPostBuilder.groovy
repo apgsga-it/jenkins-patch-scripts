@@ -41,6 +41,6 @@ allJobs.each { job ->
 
 	if(addjobToView) {
 		println "Job ${jobName} added to Patches view."
-		patchjobs.doAddJobToView(jobName)
+		patchView.doAddJobToView(jobName)
 	}
 }
