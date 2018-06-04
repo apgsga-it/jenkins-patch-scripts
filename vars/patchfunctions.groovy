@@ -61,51 +61,35 @@ def patchBuilds(patchConfig) {
 }
 
 def retrieveRevisions(patchConfig) {
-	def revisionFileName = "${env.JENKINS_HOME}/userContent/PatchPipeline/data/Revisions.json"
-	def revisionFile = new File(revisionFileName)
-	def currentRevision = [P:1,T:10000]
-	def lastRevision = [:]
-	def revisions = [lastRevisions:lastRevision, currentRevision:currentRevision]
-	if (revisionFile.exists()) {
-		revisions = new JsonSlurper().parseText(revisionFile.text)
+	
+	def revision
+	def lastRevision
+	def shOutputFileName = "shOutput"
+	
+	// TODO JHE: verify that we really wait on the script execution.
+	//           probably needs to handle exception
+	sh "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
+	
+	def lines = readFile(shOutputFileName).readLines()
+	lines.each {String line ->
+		 // See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
+		 if (line.contains("fromRetrieveRevision")) {
+			 def parsedRev = new JsonSlurper().parseText(line)
+			 revision = parsedRev.fromRetrieveRevision.revision
+			 lastRevision = parsedRev.fromRetrieveRevision.lastRevision
+		 }
 	}
 	
-	if(patchConfig.targetInd.equals("P")) {
-		patchConfig.revision = revisions.currentRevision[patchConfig.targetInd]
-	}
-	else {
-		if(revisions.lastRevisions.get(patchConfig.installationTarget) == null) {
-			patchConfig.revision = revisions.currentRevision[patchConfig.targetInd]
-		}
-		else {
-			patchConfig.revision = revisions.lastRevisions.get(patchConfig.installationTarget) + 1
-		}
-	}
-
-	patchConfig.lastRevision = revisions.lastRevisions.get(patchConfig.installationTarget,'SNAPSHOT')
+	patchConfig.revision = revision
+	patchConfig.lastRevision = lastRevision 	
 }
 
 def saveRevisions(patchConfig) {
-	def revisionFileName = "${env.JENKINS_HOME}/userContent/PatchPipeline/data/Revisions.json"
-	def revisionFile = new File(revisionFileName)
-	def currentRevision = [P:1,T:10000]
-	def lastRevision = [:]
-	def revisions = [lastRevisions:lastRevision, currentRevision:currentRevision]
-	if (revisionFile.exists()) {
-		revisions = new JsonSlurper().parseText(revisionFile.text)
-	}
-	if(patchConfig.targetInd.equals("P")) {
-		revisions.currentRevision[patchConfig.targetInd]++
-	}
-	else {
-		// We increase it only when saving a new Target
-		if(revisions.lastRevisions.get(patchConfig.installationTarget) == null) {
-			revisions.currentRevision[patchConfig.targetInd] = revisions.currentRevision[patchConfig.targetInd] + 10000
-		}
-	}
-	revisions.lastRevisions[patchConfig.installationTarget] = patchConfig.revision
-	new File(revisionFileName).write(new JsonBuilder(revisions).toPrettyString())
-
+	
+	// TODO JHE: verify that we really wait on the script execution.
+	//           probably needs to handle exception
+	sh "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision}"
+	
 }
 
 
