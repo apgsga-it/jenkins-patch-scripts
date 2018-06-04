@@ -15,13 +15,9 @@ pipelineJob (jobName) {
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
 	}
-	sectionedView("Patches") {
-		sections {
-			listView {
-				jobs {
-					name(jobName)
-				}
-			}
+	listView("Patches") {
+		jobs {
+			name(jobName)
 		}
 	}
 }
@@ -39,13 +35,9 @@ pipelineJob (downLoadJobName) {
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
 	}
-	sectionedView("Patches") {
-		sections {
-			listView {
-				jobs {
-					name(downLoadJobName)
-				}
-			}
+	listView("Patches") {
+		jobs {
+			name(downLoadJobName)
 		}
 	}
 }
