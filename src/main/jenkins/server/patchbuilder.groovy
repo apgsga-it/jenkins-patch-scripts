@@ -1,3 +1,5 @@
+import hudson.model.*
+
 def patchName = "Patch${patchnumber}"
 def jobName = patchName
 def downLoadJobName = jobName + "Download"
@@ -15,11 +17,9 @@ pipelineJob (jobName) {
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
 	}
-	listView("Patches") {
-		jobs {
-			name(jobName)
-		}
-	}
+	
+	// JHE (04.06.2018): Ideally, one would use listView section here. The problem with listView is that it adds new job(s), but loose all job which were already listed. 
+	addJobToPatchesView(jobName)
 }
 pipelineJob (downLoadJobName) {
 	authenticationToken(downLoadJobName)
@@ -35,9 +35,12 @@ pipelineJob (downLoadJobName) {
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
 	}
-	listView("Patches") {
-		jobs {
-			name(downLoadJobName)
-		}
-	}
+	
+	// JHE (04.06.2018): Ideally, one would use listView section here. The problem with listView is that it adds new job(s), but loose all job which were already listed. 
+	addJobToPatchesView(downLoadJobName)
+}
+
+def addJobToPatchesView(def jobName) {
+	def patchView = Hudson.instance.getView('Patches')
+	patchView.doAddJobToView(jobName)
 }
