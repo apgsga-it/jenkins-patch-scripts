@@ -1,7 +1,6 @@
 def patchName = "Patch${patchnumber}"
 def jobName = patchName
 def downLoadJobName = jobName + "Download"
-def dbJobName = jobName + "Db"
 pipelineJob (jobName) {
 	authenticationToken(patchName)
 	concurrentBuild(false)
