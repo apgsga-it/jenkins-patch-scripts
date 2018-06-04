@@ -3,6 +3,12 @@ import hudson.model.*
 def patchName = "Patch${patchnumber}"
 def jobName = patchName
 def downLoadJobName = jobName + "Download"
+
+def addJobToPatchesView(def jobName) {
+	def patchView = Hudson.instance.getView("Patches")
+	patchView.doAddJobToView(jobName)
+}
+
 pipelineJob (jobName) {
 	authenticationToken(patchName)
 	concurrentBuild(false)
@@ -38,9 +44,4 @@ pipelineJob (downLoadJobName) {
 	
 	// JHE (04.06.2018): Ideally, one would use listView section here. The problem with listView is that it adds new job(s), but loose all job which were already listed. 
 	addJobToPatchesView(downLoadJobName)
-}
-
-def addJobToPatchesView(def jobName) {
-	def patchView = Hudson.instance.getView("Patches")
-	patchView.doAddJobToView(jobName)
 }
