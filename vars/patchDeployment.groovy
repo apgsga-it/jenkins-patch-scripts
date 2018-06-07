@@ -40,8 +40,6 @@ def installDbPatch(patchConfig,artifact,extension) {
 	
 	node (env.JENKINS_INSTALLER){
 		
-		def cmDownloadPath = "\\\\cm-linux.apgsga.ch\\cm_patch_download"
-		
 		def downloadSpec = """{
               "files": [
                     {
@@ -54,9 +52,8 @@ def installDbPatch(patchConfig,artifact,extension) {
 		
 		
 		unzip zipFile: "download/${artifact}.${extension}"
-		fileOperations ([folderCopyOperation(sourceFolderPath: artifact, destinationFolderPath: "${cmDownloadPath}\\${artifact}")])
 		
-		bat("cmd /c \\\\cm-linux.apgsga.ch\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${cmDownloadPath}\\${patchDbFolderName} ${patchConfig.installationTarget}")
+		bat("cmd /c c:\\local\\software\\cm_winproc_root\\jenkins_pipeline_patch_install.bat download\\${artifact}\\${patchDbFolderName} ${patchConfig.installationTarget}")
 	}
 }
 
