@@ -53,7 +53,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 		
 		unzip zipFile: "download/${artifact}.${extension}"
 		
-		bat("cmd /c c:\\local\\software\\cm_winproc_root\\jenkins_pipeline_patch_install.bat download\\${artifact}\\${patchDbFolderName} ${patchConfig.installationTarget}")
+		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${artifact}\\${patchDbFolderName} ${patchConfig.installationTarget}")
 	}
 }
 
