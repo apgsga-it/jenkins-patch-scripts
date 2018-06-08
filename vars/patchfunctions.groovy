@@ -66,9 +66,12 @@ def retrieveRevisions(patchConfig) {
 	def lastRevision
 	def shOutputFileName = "shOutput"
 	
-	// TODO JHE: verify that we really wait on the script execution.
-	//           probably needs to handle exception
-	sh "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
+	
+	if(result != 0) {
+		// Put the pipeline in error
+		error "An error occured while saving revision file. Return status was ${result}"
+	}
 	
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
@@ -86,9 +89,12 @@ def retrieveRevisions(patchConfig) {
 
 def saveRevisions(patchConfig) {
 	
-	// TODO JHE: verify that we really wait on the script execution.
-	//           probably needs to handle exception
-	sh "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision}"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision}"
+
+	if(result != 0) {
+		// Put the pipeline in error
+		error "An error occured while saving revision file. Return status was ${result}"
+	}
 	
 }
 
