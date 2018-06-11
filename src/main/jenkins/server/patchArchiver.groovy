@@ -11,6 +11,7 @@ def archiveLogsForPipelineJob(def builds, def jobName) {
 		def logContent = build.logFile.text
 		def logName = "${jobName}-archive-${buildNr}.log"
 		new File("/var/opt/apg-jenkins/archive/log/${logName}").write(logContent)
+		println "New archive logged created for job ${jobName} for build ${buildNr} : /var/opt/apg-jenkins/archive/log/${logName}"
 		buildNr++
 	}
 }
