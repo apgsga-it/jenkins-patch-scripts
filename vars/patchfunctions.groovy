@@ -68,10 +68,7 @@ def retrieveRevisions(patchConfig) {
 	
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
 	
-	if(result != 0) {
-		// Put the pipeline in error
-		error "An error occured while saving revision file. Return status was ${result}"
-	}
+	assert result == 0 : "An error occured while saving revision file. Return status was ${result}"
 	
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
@@ -90,12 +87,7 @@ def retrieveRevisions(patchConfig) {
 def saveRevisions(patchConfig) {
 	
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision}"
-
-	if(result != 0) {
-		// Put the pipeline in error
-		error "An error occured while saving revision file. Return status was ${result}"
-	}
-	
+	assert result == 0 : "An error occured while saving revision file. Return status was ${result}"
 }
 
 
@@ -328,6 +320,7 @@ def notify(target,toState,patchConfig) {
 		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db"
 		echo "Executeing ${notCmd}"
 		sh "${notCmd}"
+		assert notCmd == 0 : "Error while notifying db for patch ${patchConfig.patchNummer} for state ${targetToState}"
 		echo "Executeing ${notCmd} done"
 	}
 
