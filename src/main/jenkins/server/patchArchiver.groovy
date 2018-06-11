@@ -5,7 +5,7 @@ def getProductivePatchView() {
 	return Hudson.instance.getView('ProductivePatches')
 }
 
-def archiveLogsForPipelineJob(def builds) {
+def archiveLogsForPipelineJob(def builds, def jobName) {
 	def buildNr = 1
 	builds.each{ build ->
 		def logContent = build.logFile.text
@@ -52,11 +52,11 @@ patchJobs.each { job ->
 
 						// Archive all PROD Pipeline logs
 						def prodBuilds = Jenkins.getInstance().getItemByFullName(jobName).getBuilds()
-						archiveLogsForPipelineJob(prodBuilds)
+						archiveLogsForPipelineJob(prodBuilds,jobName)
 
 						// Archive all Download Pipeline logs
 						def downloadBuilds = Jenkins.getInstance().getItemByFullName(downloadJobName).getBuilds()
-						archiveLogsForPipelineJob(downloadBuilds)
+						archiveLogsForPipelineJob(downloadBuilds,downloadJobName)
 
 						job.delete()
 						println "${jobName} has been deleted."
