@@ -66,9 +66,9 @@ def retrieveRevisions(patchConfig) {
 	def lastRevision
 	def shOutputFileName = "shOutput"
 	
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName} 2>pipelineErr.log"
 	
-	assert result == 0 : "An error occured while saving revision file. Return status was ${result}"
+	assert result == 0 : logErrorFromFileOnJenkinsConsole("pipelineErr.log")
 	
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
@@ -86,8 +86,8 @@ def retrieveRevisions(patchConfig) {
 
 def saveRevisions(patchConfig) {
 	
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision}"
-	assert result == 0 : "An error occured while saving revision file. Return status was ${result}"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} 2>pipelineErr.log"
+	assert result == 0 : logErrorFromFileOnJenkinsConsole("pipelineErr.log")
 }
 
 
@@ -317,13 +317,20 @@ def notify(target,toState,patchConfig) {
 	node {
 		echo "Notifying ${target} to ${toState}"
 		def targetToState = mapToState(target,toState)
-		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db"
+		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db 2>pipelineErr.log"
 		echo "Executeing ${notCmd}"
 		def result = sh returnStatus: true, script: notCmd
-		assert result == 0 : "Error while notifying db for patch ${patchConfig.patchNummer} for state ${targetToState}"
+		assert result == 0 : logErrorFromFileOnJenkinsConsole("pipelineErr.log")
 		echo "Executeing ${notCmd} done"
 	}
 
+}
+
+def logErrorFromFileOnJenkinsConsole(def filePath) {
+	def lines = readFile(filePath).readLines()
+	lines.each {String line ->
+		 println line
+	}
 }
 
 def mapToState(target,toState) {
