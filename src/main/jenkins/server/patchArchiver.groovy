@@ -67,10 +67,11 @@ patchJobs.each { job ->
 					}
 				}
 			}
+			
+			deleteJenkinsWorkspaces(jobName)
 		}
 	}
 	
-	deleteJenkinsWorkspaces(jobName)
 }
 
 println "Patch archiver done."
