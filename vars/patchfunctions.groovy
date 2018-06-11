@@ -319,8 +319,8 @@ def notify(target,toState,patchConfig) {
 		def targetToState = mapToState(target,toState)
 		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db"
 		echo "Executeing ${notCmd}"
-		sh "${notCmd}"
-		assert notCmd == 0 : "Error while notifying db for patch ${patchConfig.patchNummer} for state ${targetToState}"
+		def result = sh returnStatus: true, script: notCmd
+		assert result == 0 : "Error while notifying db for patch ${patchConfig.patchNummer} for state ${targetToState}"
 		echo "Executeing ${notCmd} done"
 	}
 
