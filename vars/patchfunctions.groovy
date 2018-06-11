@@ -66,9 +66,9 @@ def retrieveRevisions(patchConfig) {
 	def lastRevision
 	def shOutputFileName = "shOutput"
 	
-	// TODO JHE: verify that we really wait on the script execution.
-	//           probably needs to handle exception
-	sh "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName}"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName} 2>pipelineErr.log"
+	
+	assert result == 0 : println (new File("pipelineErr.log").text)
 	
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
@@ -86,10 +86,8 @@ def retrieveRevisions(patchConfig) {
 
 def saveRevisions(patchConfig) {
 	
-	// TODO JHE: verify that we really wait on the script execution.
-	//           probably needs to handle exception
-	sh "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision}"
-	
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} 2>pipelineErr.log"
+	assert result == 0 : println (new File("pipelineErr.log").text)
 }
 
 
@@ -319,9 +317,10 @@ def notify(target,toState,patchConfig) {
 	node {
 		echo "Notifying ${target} to ${toState}"
 		def targetToState = mapToState(target,toState)
-		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db"
+		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db 2>pipelineErr.log"
 		echo "Executeing ${notCmd}"
-		sh "${notCmd}"
+		def result = sh returnStatus: true, script: notCmd
+		assert result == 0 : println (new File("pipelineErr.log").text)
 		echo "Executeing ${notCmd} done"
 	}
 
