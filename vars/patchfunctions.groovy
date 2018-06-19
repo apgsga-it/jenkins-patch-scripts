@@ -93,7 +93,7 @@ def retrieveRevisions(patchConfig) {
 	def lastRevision
 	def shOutputFileName = "shOutput"
 	
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName} 2>pipelineErr.log"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget} > ${shOutputFileName} 2>pipelineErr.log"
 	
 	assert result == 0 : println (new File("pipelineErr.log").text)
 	
