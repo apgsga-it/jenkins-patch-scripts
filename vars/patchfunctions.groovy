@@ -154,8 +154,8 @@ def coFromTagcvs(patchConfig,tag, moduleName) {
 }
 
 def generateVersionProperties(patchConfig) {
-	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	def previousVersion = mavenVersionNumber(patchConfig,patchConfig.lastRevision)
+	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
