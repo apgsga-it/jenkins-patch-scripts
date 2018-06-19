@@ -25,12 +25,11 @@ def targetIndicator(patchConfig, target) {
 	patchConfig.targetInd = target.typeInd
 }
 
-def mavenVersionNumber(patchConfig,revision,cloned) {
+def mavenVersionNumber(patchConfig,revision) {
 	def mavenVersion
 	
 	// Case where this is the first patch after having cloned the target
-	//if(patchConfig.lastRevision == "CLONED") {
-	if(cloned) {
+	if(patchConfig.lastRevision == "CLONED") {
 		mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
 	}
 	else {
@@ -154,8 +153,8 @@ def coFromTagcvs(patchConfig,tag, moduleName) {
 }
 
 def generateVersionProperties(patchConfig) {
-	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision,true)
-	def previousVersion = mavenVersionNumber(patchConfig,patchConfig.lastRevision,false)
+	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
+	def previousVersion = mavenVersionNumber(patchConfig,patchConfig.lastRevision)
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
@@ -183,7 +182,7 @@ def buildModule(patchConfig,module) {
 
 def updateBom(patchConfig,module) {
 	echo "Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision
-	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision,false)
+	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
@@ -315,7 +314,7 @@ def coDbModules(patchConfig) {
 def buildDockerImage(patchConfig) {
 	def extension = patchConfig.dockerBuildExtention
 	def artifact = patchConfig.jadasServiceArtifactName
-	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision,false)
+	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	def mvnCommand = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
 	echo "${mvnCommand}"
 	def mvnCommandCopy = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
@@ -332,7 +331,7 @@ def buildDockerImage(patchConfig) {
 }
 
 def assemble(patchConfig, assemblyName) {
-	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision,false)
+	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
@@ -366,7 +365,7 @@ def mapToState(target,toState) {
 
 def jadasServiceDropName(patchConfig) {
 	def extension = patchConfig.dockerBuildExtention
-	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision,false)
+	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	def artifact = patchConfig.jadasServiceArtifactName
 	def pos = artifact.indexOf(':')
 	def artifactName = artifact.substring(pos+1)
