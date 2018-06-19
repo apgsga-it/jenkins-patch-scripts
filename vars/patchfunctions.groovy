@@ -31,6 +31,7 @@ def mavenVersionNumber(patchConfig,revision) {
 	// Case where this is the first patch after having cloned the target
 	if(patchConfig.lastRevision == "CLONED") {
 		mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
+		patchConfig.lastRevision = patchConfig.revisions
 	}
 	else {
 		if (revision.equals('SNAPSHOT')) {
