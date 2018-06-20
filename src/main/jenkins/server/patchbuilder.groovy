@@ -18,6 +18,12 @@ pipelineJob (jobName) {
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
 	}
+	properties {
+		jobInclusionJobProperty {
+			useJobGroup(true)
+			jobGroupName('ProdPatch')
+		}
+	}
 }
 pipelineJob (downLoadJobName) {
 	authenticationToken(downLoadJobName)
@@ -32,5 +38,11 @@ pipelineJob (downLoadJobName) {
 	description("*Download* Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
+	}
+	properties {
+		jobInclusionJobProperty {
+			useJobGroup(true)
+			jobGroupName('DownloadPatch')
+		}
 	}
 }
