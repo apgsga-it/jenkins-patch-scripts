@@ -16,7 +16,7 @@ properties([
 
 def patchConfig = new JsonSlurperClassic().parseText(params.PARAMETER)
 echo patchConfig.toString()
-patchConfig.cvsroot = "/var/local/cvs/root"
+patchConfig.cvsroot = env.CVS_ROOT
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"
 

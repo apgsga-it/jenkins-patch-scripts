@@ -2,7 +2,7 @@ import groovy.xml.*
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 def boolean dry = true
-def jobNameToProcess = "Java8mig com.affichage.geo.lib"
+def jobNameToProcess = null
 def cntUpdated = 0
 def cntProcessed = 0 
 Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {job ->
