@@ -47,9 +47,7 @@ stage("${target.envName} (${target.targetName}) Installationsbereit Notification
 	stage("Approve ${envName} (${target.targetName}) Installation") { patchfunctions.approveInstallation(patchConfig)	 }
 	stage("${envName} (${target.targetName}) Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
 	stage("${envName} (${target.targetName}) Installation Notification") {
-		if(envName.equalsIgnoreCase("produktion")) {
-			patchfunctions.mergeDbObjectOnHead(patchConfig)
-		}
+		patchfunctions.mergeDbObjectOnHead(patchConfig, envName)
 		patchfunctions.notify(target,"Installation", patchConfig)
 	}
 }

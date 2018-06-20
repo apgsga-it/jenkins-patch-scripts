@@ -221,7 +221,11 @@ def getCoPatchDbFolderName(patchConfig) {
 	return "${patchConfig.dbPatchBranch.replace('Patch', 'test')}-${patchConfig.revisionMnemoPart}-${patchConfig.targetInd}-${patchConfig.revision}"
 }
 
-def mergeDbObjectOnHead(patchConfig) {
+def mergeDbObjectOnHead(patchConfig, envName) {
+	
+	if(!envName.equals("Produktion")) {
+		return;
+	}
 	
 	/*
 	 * JHE (22.05.2018): Within this function, we're calling a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
