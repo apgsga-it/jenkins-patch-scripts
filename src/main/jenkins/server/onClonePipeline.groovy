@@ -13,7 +13,7 @@ stage("onclone") {
 	stage("resetRevision") {
 		node {
 			def target = params.target
-			echo "Within resetRevision stage ...."
+			echo "Within resetRevision stage .... job will be done for ${target}"
 		}
 	}
 	
