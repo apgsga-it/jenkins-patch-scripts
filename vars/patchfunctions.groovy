@@ -27,12 +27,40 @@ def targetIndicator(patchConfig, target) {
 
 def mavenVersionNumber(patchConfig,revision) {
 	def mavenVersion
-	if (revision.equals('SNAPSHOT')) {
-		mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
-	} else {
-		mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + patchConfig.targetInd + '-' + revision
+	
+	// Case where this is the first patch after having cloned the target
+	if(patchConfig.lastRevision == "CLONED") {
+		mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
+		patchConfig.lastRevision = patchConfig.revision
+	}
+	else {
+		if (revision.equals('SNAPSHOT')) {
+			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
+		} else {
+			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + patchConfig.targetInd + '-' + revision
+		}
 	}
 	mavenVersion
+}
+
+def getCurrentProdRevision() {
+	def revision
+	def shOutputFileName = "shProdRevOutput"
+	
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -pr > ${shOutputFileName} 2>pipelineErr.log"
+	
+	assert result == 0 : println (new File("pipelineErr.log").text)
+	
+	def lines = readFile(shOutputFileName).readLines()
+	lines.each {String line ->
+		 // See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
+		 if (line.contains("lastProdRevision")) {
+			 def parsedRev = new JsonSlurper().parseText(line)
+			 revision = parsedRev.lastProdRevision
+		 }
+	}
+	
+	return revision
 }
 
 def approveBuild(patchConfig) {
@@ -66,7 +94,7 @@ def retrieveRevisions(patchConfig) {
 	def lastRevision
 	def shOutputFileName = "shOutput"
 	
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} > ${shOutputFileName} 2>pipelineErr.log"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget} > ${shOutputFileName} 2>pipelineErr.log"
 	
 	assert result == 0 : println (new File("pipelineErr.log").text)
 	
@@ -126,8 +154,8 @@ def coFromTagcvs(patchConfig,tag, moduleName) {
 }
 
 def generateVersionProperties(patchConfig) {
-	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	def previousVersion = mavenVersionNumber(patchConfig,patchConfig.lastRevision)
+	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
