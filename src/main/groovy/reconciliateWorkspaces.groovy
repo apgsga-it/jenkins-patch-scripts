@@ -38,9 +38,9 @@ workspacesDir.eachDir() { dir ->
 	println "Inspecting workspace Directory: ${dir.getName()}"
 	def jobDir = new File(jobsDir,dir.getName())
 	if (jobDir.exists()) {
-		println "Corresponding Job Directory exists: ${jobDir.getPath()}"
+		println "++++++Corresponding Job Directory exists: ${jobDir.getPath()}"
 	} else {
-		println "No Job for: ${dir.getName()}"
+		println "------No Job for: ${dir.getName()}"
 	}
 }
 
