@@ -7,10 +7,29 @@ def options = cli.parse(args)
 if (options == null) {
 	System.exit(1)
 }
+// Validate if directory
 def directory = new File(options.j)
 if (!directory.exists() | !directory.directory) {
 	println "Directory ${options.l} not valid: either not a directory or it doesn't exist"
 	System.exit(1)
 }
+// Validate if Jenkins Installation
+def jobsDir = new File(directory,"jobs") 
+if (!jobsDir.exists() | !jobsDir.directory) {
+	println "Does'nt seem Jenkins installation, no jobs subdirectory"
+	System.exit(1)
+}
+def workspacesDir = new File(directory,"workspace")
+if (!workspacesDir.exists() | !workspacesDir.directory) {
+	println "Does'nt seem Jenkins installation, no workspace subdirectory"
+	System.exit(1)
+}
+// Validate permissions
 def dry = options.u == null
+if (!dry) {
+	if (!workspacesDir.canWrite()) {
+		println "Not sufficient rights for workspace subdirectory"
+		System.exit(1)
+	}
+}
 println "Running with Updates : ${options.u}"
