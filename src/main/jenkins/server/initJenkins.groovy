@@ -1,6 +1,6 @@
 import hudson.*
 import hudson.model.*
-
+import jenkins.model.*
 
 def thr = Thread.currentThread()
 // get current build
@@ -23,7 +23,6 @@ def hardcoded_param_value = resolver.resolve(hardcoded_param)
  
  
 println "param ${hardcoded_param} value : ${hardcoded_param_value}"
-import jenkins.model.*
 def dry = true
 // First Delete Job in Patch Views
 println "Deleting all Job for Patch Views"
@@ -44,10 +43,10 @@ println "Deleteing all Builds from remainging Jobs"
 // Then Deleted all Builds for existing Jobs
 def jobs = Jenkins.instance.getAllItems(hudson.model.AbstractProject.class).each {  job ->
 	println "About to delete Builds for ${job.name}"
-	job.getBuilds().each { build ->
-		println "About to deleted Build ${build}"
+	job.getBuilds().each { b ->
+		println "About to deleted Build ${b}"
 		if (!dry) {
-			build.delete()
+			b.delete()
 			println "Deleted Build"
 		} else  {
 			println "Did'nt delete anything, running dry"
@@ -58,10 +57,10 @@ println "Deleteing all Builds from remaining Maven Jobs"
 // Delete the missed Maven Jobs
 jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  job ->
 	println "About to delete Builds for Maven Job ${job.name}"
-	job.getBuilds().each { build ->
-		println "About to deleted Build ${build}"
+	job.getBuilds().each { b ->
+		println "About to deleted Build ${b}"
 		if (!dry) {
-			build.delete()
+			b.delete()
 			println "Deleted Build"
 		} else  {
 			println "Did'nt delete anything, running dry"
