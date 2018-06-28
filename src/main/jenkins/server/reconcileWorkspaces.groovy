@@ -1,3 +1,4 @@
+#!groovy
 import com.cloudbees.hudson.plugins.folder.*
 import hudson.*
 import jenkins.model.*
