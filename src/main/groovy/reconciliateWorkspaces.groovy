@@ -33,3 +33,8 @@ if (!dry) {
 		System.exit(1)
 	}
 }
+println "Cleaning up workspaces in : ${workspaces.getPath()}"
+workspacesDir.eachDir() { dir -> 
+	println dir.getPath()
+}
+
