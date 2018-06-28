@@ -5,25 +5,16 @@ import jenkins.model.*
 def thr = Thread.currentThread()
 // get current build
 def build = thr?.executable
- 
- 
-// get parameters
-def parameters = build?.actions.find{ it instanceof ParametersAction }?.parameters
-parameters.each {
-   println "parameter ${it.name}:"
-   println it.dump()
-   println "-" * 80
-}
- 
- 
-// ... or if you want the parameter by name ...
-def hardcoded_param = "FOOBAR"
 def resolver = build.buildVariableResolver
-def hardcoded_param_value = resolver.resolve(hardcoded_param)
- 
- 
-println "param ${hardcoded_param} value : ${hardcoded_param_value}"
-def dry = true
+
+ def crumb = resolver.resolve("CONFIRMATION")
+ if (!crumb.equals("SURE")) {
+	 println "Not executing script, done with you"
+	 return
+ }
+
+def dry = resolver.resolve("DRY")
+print "Running with ${dry}"
 // First Delete Job in Patch Views
 println "Deleting all Job for Patch Views"
 ["ProductivePatches", "Patches"].each { viewName ->
