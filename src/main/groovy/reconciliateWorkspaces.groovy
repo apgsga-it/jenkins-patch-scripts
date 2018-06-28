@@ -5,8 +5,12 @@ cli.with {
 }
 def options = cli.parse(args)
 if (options == null) {
-	return System.exit(1)
+	System.exit(1)
+}
+def directory = new File(options.j)
+if (!directory.exists() | !directory.directory) {
+	println "Directory ${options.l} not valid: either not a directory or it doesn't exist"
+	System.exit(1)
 }
 def dry = options.u == null
 println "Running with Updates : ${options.u}"
-println "Some more "
