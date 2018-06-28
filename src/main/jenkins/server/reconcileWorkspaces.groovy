@@ -2,6 +2,8 @@ import com.cloudbees.hudson.plugins.folder.Folder
 import hudson.FilePath
 import jenkins.model.Jenkins
 
+def dry = true
+
 def boolean isFolder(String name) {
     def item = Jenkins.instance.getItemByFullName(name)
     return item instanceof Folder
@@ -14,8 +16,14 @@ def deleteUnusedWorkspace(FilePath root, String path) {
             deleteUnusedWorkspace(root.child(child.name), "$fullName/")
         } else {
             if (Jenkins.instance.getItemByFullName(fullName) == null) {
-                println "Deleting: $fullName "
-                child.deleteRecursive()
+                println "Intending to Delete: $fullName "
+				if (!dry) {
+					child.deleteRecursive()
+					println "Deleted: $fullName "
+				} else {
+					println "Skipped"
+				}
+					 
             }
         }
     }
