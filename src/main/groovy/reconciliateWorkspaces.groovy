@@ -1,7 +1,7 @@
 def cli = new CliBuilder(usage: '-j|jenkins <directory>')
 cli.with {
 	j longOpt: 'jenkins',args:1 , argName: 'directory', 'Jenkins installation directory', required: true
-	u longOpt: 'update', 'If to run with updates', required: false
+	u longOpt: 'update', 'If to run with updates'
 }
 def options = cli.parse(args)
 if (options == null) {
@@ -25,11 +25,11 @@ if (!workspacesDir.exists() | !workspacesDir.directory) {
 	System.exit(1)
 }
 // Validate permissions
-def dry = options.u == null
+def dry = !options.u 
+println "Running with Updates : ${options.u}"
 if (!dry) {
 	if (!workspacesDir.canWrite()) {
 		println "Not sufficient rights for workspace subdirectory"
 		System.exit(1)
 	}
 }
-println "Running with Updates : ${options.u}"
