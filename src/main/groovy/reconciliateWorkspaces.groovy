@@ -1,6 +1,6 @@
 def cli = new CliBuilder(usage: '-j|jenkins <directory>')
 cli.with {
-	j longOpt: 'jenkins', 'Jenkins installation directory', required: true
+	j longOpt: 'jenkins',args:1 , argName: 'directory', 'Jenkins installation directory', required: true
 	u longOpt: 'update', 'If to run with updates', required: false
 }
 def options = cli.parse(args)
