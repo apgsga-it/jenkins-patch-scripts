@@ -14,7 +14,7 @@ def resolver = build.buildVariableResolver
  }
 
 def dry = resolver.resolve("DRY")
-print "Running with ${dry}"
+print "Running with DRY:  ${dry}"
 // First Delete Job in Patch Views
 println "Deleting all Job for Patch Views"
 ["ProductivePatches", "Patches"].each { viewName ->
