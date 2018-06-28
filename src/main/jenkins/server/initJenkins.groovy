@@ -1,4 +1,6 @@
 import hudson.*
+import hudson.model.*
+
 
 def thr = Thread.currentThread()
 // get current build
