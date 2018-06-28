@@ -35,6 +35,12 @@ if (!dry) {
 }
 println "Cleaning up workspaces in : ${workspacesDir.getPath()}"
 workspacesDir.eachDir() { dir -> 
-	println dir.getName()
+	println "Inspecting workspace Directory: ${dir.getName()}"
+	def jobDir = new File(jobsDir,dir.getName())
+	if (jobDir.exists()) {
+		println "Corresponding Job Directory exists: ${jobDir.getPath()}"
+	} else {
+		println "No Job for: ${dir.getName()}"
+	}
 }
 
