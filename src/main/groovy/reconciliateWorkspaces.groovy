@@ -35,6 +35,6 @@ if (!dry) {
 }
 println "Cleaning up workspaces in : ${workspacesDir.getPath()}"
 workspacesDir.eachDir() { dir -> 
-	println dir.getPath()
+	println dir.getName()
 }
 
