@@ -1,3 +1,5 @@
+import hudson.*
+import jenkins.model.*
 def dry = true
 // First Delete Job in Patch Views
 println "Deleting all Job for Patch Views"
