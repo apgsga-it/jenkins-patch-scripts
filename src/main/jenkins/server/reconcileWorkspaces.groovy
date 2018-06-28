@@ -1,15 +1,14 @@
-import com.cloudbees.hudson.plugins.folder.Folder
-import hudson.FilePath
-import jenkins.model.Jenkins
+import com.cloudbees.hudson.plugins.folder.*
+import hudson.*
+import jenkins.model.*
 
-def dry = true
 
-def boolean isFolder(String name) {
+def boolean isFolder(name) {
     def item = Jenkins.instance.getItemByFullName(name)
     return item instanceof Folder
 }
 
-def deleteUnusedWorkspace(FilePath root, String path) {
+def deleteUnusedWorkspace(root, path, dry) {
     root.list().each { child ->
         String fullName = path + child.name
         if (isFolder(fullName)) {
@@ -30,7 +29,8 @@ def deleteUnusedWorkspace(FilePath root, String path) {
 }
 
 for (node in Jenkins.instance.nodes) {
+	def dry = true
     println "Processing $node.displayName"
     def workspaceRoot = node.rootPath.child("workspace");
-    deleteUnusedWorkspace(workspaceRoot, "")
+    deleteUnusedWorkspace(workspaceRoot, "", dry)
 }
