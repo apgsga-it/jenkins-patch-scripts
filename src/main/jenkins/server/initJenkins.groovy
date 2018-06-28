@@ -30,3 +30,17 @@ def jobs = Jenkins.instance.getAllItems(AbstractProject.class).each {  job ->
 		}
 	}
 }
+println "Deleteing all Builds from remaining Maven Jobs"
+// Delete the missed Maven Jobs
+jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  job ->
+	println "About to delete Builds for Maven Job ${job.name}"
+	job.getBuilds().each { build ->
+		println "About to deleted Build ${build}"
+		if (!dry) {
+			build.delete()
+			println "Deleted Build"
+		} else  {
+			println "Did'nt delete anything, running dry"
+		}
+	}
+}
