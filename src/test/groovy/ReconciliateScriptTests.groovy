@@ -159,4 +159,34 @@ class ReconciliateScriptTests extends GroovyTestCase {
 
 	
 	}
+	
+	@Test
+	void testJobWsNotJobsNotDryII() {
+		def testDir = new File(TEST_DIR_NAME)
+		testDir.deleteDir()
+		testDir.mkdir()
+		def jobsDir = new File(testDir,"jobs")
+		jobsDir.mkdir()
+		def wsDir = new File(testDir,"workspace")
+		wsDir.mkdir()
+		def jobwsDir = new File(wsDir,"testjob")
+		jobwsDir.mkdir()
+		def jobwsDir2 = new File(wsDir,"testjob@one")
+		jobwsDir2.mkdir()
+		Binding binding = new Binding()
+		binding.args = ["-j", TEST_DIR_NAME, "-u"]
+		GroovyShell shell = new GroovyShell(binding)
+		def script = shell.parse(new File('src/main/groovy/reconciliateWorkspaces.groovy'))
+		def outWriter = new StringWriter()
+		script.out = new PrintWriter(outWriter)
+		script.run()
+		println "Output: " + outWriter.toString()
+		assertTrue outWriter.toString().contains("Directory testjob can be deleted")
+		assertTrue outWriter.toString().contains("testjob has been deleted")
+		assertTrue !jobwsDir.exists()
+		assertTrue jobsDir.exists()
+		assertTrue wsDir.exists()
+
+	
+	}
 }
