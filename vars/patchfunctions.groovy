@@ -49,7 +49,7 @@ def getCurrentProdRevision() {
 	
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -pr > ${shOutputFileName} 2>pipelineErr.log"
 	
-	assert result == 0 : println (new File("pipelineErr.log").text)
+	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
 	
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
@@ -96,7 +96,7 @@ def retrieveRevisions(patchConfig) {
 	
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget} > ${shOutputFileName} 2>pipelineErr.log"
 	
-	assert result == 0 : println (new File("pipelineErr.log").text)
+	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
 	
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
@@ -115,7 +115,7 @@ def retrieveRevisions(patchConfig) {
 def saveRevisions(patchConfig) {
 	
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} 2>pipelineErr.log"
-	assert result == 0 : println (new File("pipelineErr.log").text)
+	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
 }
 
 
