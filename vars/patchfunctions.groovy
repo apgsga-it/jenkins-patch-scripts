@@ -352,7 +352,7 @@ def notify(target,toState,patchConfig) {
 		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db 2>pipelineErr.log"
 		echo "Executeing ${notCmd}"
 		def result = sh returnStatus: true, script: notCmd
-		assert result == 0 : println (new File("pipelineErr.log").text)
+		assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
 		echo "Executeing ${notCmd} done"
 	}
 
