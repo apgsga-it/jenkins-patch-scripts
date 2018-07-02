@@ -3,7 +3,7 @@ import groovy.json.JsonSlurper
 import hudson.model.*
 
 def loadTargetsMap() {
-	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/var/opt/apg-patch-common/TargetSystemMappings.json"
+	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/etc/opt/apg-patch-common/TargetSystemMappings.json"
 	def targetSystemFile = new File(configFileLocation)
 	assert targetSystemFile.exists()
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
