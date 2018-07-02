@@ -47,9 +47,12 @@ if (!dry) {
 		return 
 	}
 }
+def cntInspected = 0
+def cntDeleted = 0
 println "Cleaning up workspaces in : ${workspacesDir.getPath()} "
 workspacesDir.eachDir() { dir -> 
 	println "Inspecting workspace Directory: ${dir.getName()}"
+	cntInspected++
 	def pos = dir.getName().indexOf("@")
 	def jobName = pos < 0 ? dir.getName() : dir.getName().substring(0,pos)
 	println "Resolved Jobname : ${jobName}"
@@ -61,6 +64,7 @@ workspacesDir.eachDir() { dir ->
 		println "       Directory ${dir.getName()} can be deleted" 
 		if (!dry) {
 			if (dir.deleteDir()) {
+				cntDeleted++
 				println "       ${dir.getName()} has been deleted" 
 			} else {
 				println "       ${dir.getName()} has NOT been deleted, eventough we tried"
@@ -70,4 +74,6 @@ workspacesDir.eachDir() { dir ->
 		}
 	}
 }
+println "Dirs inspected:  ${cntInspected} " 
+println "Dirs deleted  :  ${cntDeleted}"
 
