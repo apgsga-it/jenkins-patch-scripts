@@ -30,7 +30,7 @@ println "Deleting all Job for Patch Views"
 	}
 }
 println "Done."
-println "Deleteing all Builds from remainging Jobs"
+println "Deleteing all Builds from remaining Jobs"
 // Then Deleted all Builds for existing Jobs
 def jobs = Jenkins.instance.getAllItems(hudson.model.AbstractProject.class).each {  job ->
 	println "About to delete Builds for ${job.name}"
