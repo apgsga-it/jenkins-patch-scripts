@@ -21,7 +21,7 @@ println "Deleting all Job for Patch Views"
 	println "Deleteing Jobs from ${viewName}"
 	Jenkins.instance.getView(viewName).items.each { item ->
 		println "About to delete $item.name"
-		if (!dry) {
+		if (dry == false) {
 			item.delete()
 			println "Deleted $item.name"
 		} else {
