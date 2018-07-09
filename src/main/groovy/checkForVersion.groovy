@@ -15,7 +15,10 @@ jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  j
 		if (pomFile.exists()) {
 			def pomXml = new XmlSlurper().parse(pomFile)
 			def versionNode =  pomXml.depthFirst().find{ node -> node.name() == 'version'}
-			println versionNode
+			println "Version node ${versionNode}"
+			println "Version direkt: " + pomXml.version
+			println "Whole pom.xml parsed"
+			println XmlUtil.serialize(pomXml).toString()
 		} else {
 			println "No pom.xml found for ${job.name}, probably multi project build"
 		}
