@@ -13,7 +13,10 @@ properties([
 ])
 
 // Parameter
-def patchConfig = new JsonSlurperClassic().parseText(params.PARAMETER)
+// TODO  (che, 9.7) When JENKINS-27413 is resolved
+// Passing Patch File Path , because of JAVA8MIG-395 / JENKINS-27413
+def patchFile = new File(params.PARAMETER)
+def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
 echo patchConfig.toString()
 patchConfig.cvsroot = env.CVS_ROOT
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
