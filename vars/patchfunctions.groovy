@@ -214,7 +214,7 @@ def dbAssemble(patchConfig) {
 	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
 	
 	def installPatchContent = "@echo off\r\n"
-	// TODO JHE: 0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
+	// TODO (jhe) :  0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
 	installPatchContent += "@echo *** Installation von Patch 0900C_${patchConfig.patchNummer} [Build von TODO get YYYY/MM/dd-HH:mm:ss]\r\n"
 	installPatchContent += "set /p v_params=Geben Sie die Zielumgebung ein: \r\n"
 	installPatchContent += "pushd %~dp0 \r\n\r\n"

@@ -76,7 +76,7 @@ def installGUI(patchConfig,artifact,extension) {
 		def buildVersion =  patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
 		def zip = "${artifact}-${buildVersion}.${extension}"
 
-		//TODO JHE: here we should probably pass the repo type as well -> snapshot or relaease, althought it might always be relaease...
+		//TODO (jhe) : here we should probably pass the repo type as well -> snapshot or relaease, althought it might always be relaease...
 		downloadGuiZipToBeInstalled(artifactoryServer,zip)
 
 		def extractedFolderName = guiExtractedFolderName()
