@@ -7,11 +7,11 @@ def thr = Thread.currentThread()
 def build = thr?.executable
 def resolver = build.buildVariableResolver
 
- def crumb = resolver.resolve("CONFIRMATION")
- if (!crumb.equals("SURE")) {
-	 println "Not executing script, done with you"
-	 return
- }
+def crumb = resolver.resolve("CONFIRMATION")
+if (!crumb.equals("SURE")) {
+	println "Not executing script, done with you"
+	return
+}
 
 def dry = resolver.resolve("DRY")
 println "Running with DRY:  ${dry}"
@@ -34,15 +34,16 @@ println "Deleteing all Builds from remaining Jobs"
 // Then Deleted all Builds for existing Jobs
 def jobs = Jenkins.instance.getAllItems(hudson.model.AbstractProject.class).each {  job ->
 	println "About to delete Builds for ${job.name}"
-	job.getBuilds().each { b ->
-		println "About to deleted Build ${b}"
-		if (dry.equals('false')) {
-			b.delete()
-			println "Deleted Build"
-		} else  {
-			println "Did'nt delete anything, running dry"
-		}
-	}
+	if (!job.name.equals('Init Jenkins')) {
+		job.getBuilds().each { b ->
+			println "About to deleted Build ${b}"
+			if (dry.equals('false')) {
+				b.delete()
+				println "Deleted Build"
+			} else  {
+				println "Did'nt delete anything, running dry"
+			}
+		}}
 }
 println "Deleteing all Builds from remaining Maven Jobs"
 // Delete the missed Maven Jobs
