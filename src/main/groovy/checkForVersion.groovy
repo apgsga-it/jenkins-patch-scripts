@@ -14,5 +14,7 @@ jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  j
 		def pomFile = new File(wrks,"pom.xml")
 		def pomXml = new XmlSlurper().parse(pom)
 		println XmlUtil.serialize(pomXml).toString()
+	} else {
+		print "${job.name} has not been built, cannot inspect pom.xml"
 	}
 }
