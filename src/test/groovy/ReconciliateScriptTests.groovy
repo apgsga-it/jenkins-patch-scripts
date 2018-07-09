@@ -101,8 +101,9 @@ class ReconciliateScriptTests extends GroovyTestCase {
 		script.out = new PrintWriter(outWriter)
 		script.run()
 		println "Output: " + outWriter.toString()
-		assertTrue outWriter.toString().contains("Running with Updates : false \nCleaning up workspaces in : src/test/resources/test/workspace ")
-
+		assertTrue outWriter.toString().contains("Running with Updates : false")
+		assertTrue outWriter.toString().contains("Cleaning up workspaces in : ")
+		
 	
 	}
 	
@@ -215,7 +216,7 @@ class ReconciliateScriptTests extends GroovyTestCase {
 		println "Output: " + outWriter.toString()
 		assertTrue outWriter.toString().contains("Inspecting workspace Directory: testjob")
 		assertTrue outWriter.toString().contains("Inspecting workspace Directory: testjob@one")
-		assertTrue outWriter.toString().contains("++++++ corresponding Job Directory exists: src/test/resources/test/jobs/testjob")
+		assertTrue outWriter.toString().contains("++++++ corresponding Job Directory exists: ")
 		assertTrue jobwsDir.exists()
 		assertTrue jobwsDir2.exists()
 		assertTrue jobsDir.exists()
