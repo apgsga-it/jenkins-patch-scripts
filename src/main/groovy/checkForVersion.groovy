@@ -14,11 +14,8 @@ jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  j
 		def pomFile = new File(wrks,'pom.xml')
 		if (pomFile.exists()) {
 			def pomXml = new XmlSlurper().parse(pomFile)
-			println "Version direkt: " + pomXml.version
-		    if (pomXml.version.equals('9.0.6.ADMIN-UIMIG-${revision}')) {
-				println "${job.name} has correct Version set"
-			} else {
-				println "${job.name} nok"
+			if (!pomXml.version.equals('9.0.6.ADMIN-UIMIG-${revision}')) {
+				println "${job.name} nok: ${pomXml.version}"
 			}
 		} else {
 			println "No pom.xml found for ${job.name}, probably multi project build"
