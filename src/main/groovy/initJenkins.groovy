@@ -30,7 +30,7 @@ println "Deleting all Job for Patch Views"
 	}
 }
 println "Done."
-def withBuilds = resolver.resolve("BUILDS") 
+def withBuilds = resolver.resolve("BUILDS")
 println "With Builds: ${withBuilds}"
 if (!withBuilds.equals('true')) {
 	println "Skipping cleaning Builds"
