@@ -36,7 +36,7 @@ def jobs = Jenkins.instance.getAllItems(hudson.model.AbstractProject.class).each
 	println "About to delete Builds for ${job.name}"
 	job.getBuilds().each { b ->
 		println "About to deleted Build ${b}"
-		if (!dry) {
+		if (dry.equals('false')) {
 			b.delete()
 			println "Deleted Build"
 		} else  {
@@ -50,7 +50,7 @@ jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  j
 	println "About to delete Builds for Maven Job ${job.name}"
 	job.getBuilds().each { b ->
 		println "About to deleted Build ${b}"
-		if (!dry) {
+		if (dry.equals('false')) {
 			b.delete()
 			println "Deleted Build"
 		} else  {
