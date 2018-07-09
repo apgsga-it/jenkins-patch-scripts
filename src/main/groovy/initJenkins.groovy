@@ -30,6 +30,12 @@ println "Deleting all Job for Patch Views"
 	}
 }
 println "Done."
+def withBuilds = resolver.resolve("BUILDS") 
+println "With Builds: ${withBuilds}"
+if (!withBuilds.equals('true')) {
+	println "Skipping cleaning Builds"
+	return
+}
 println "Deleteing all Builds from remaining Jobs"
 // Then Deleted all Builds for existing Jobs
 def jobs = Jenkins.instance.getAllItems(hudson.model.AbstractProject.class).each {  job ->
