@@ -11,8 +11,8 @@ jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  j
 	println "About to Inspect Maven Job ${job.name}"
 	def wrks = new File("/var/jenkins/workspace/${job.name}")
 	if (wrks.exists()) {
-		def pomFile = new File(wrks,"pom.xml")
-		def pomXml = new XmlSlurper().parse(pom)
+		def pomFile = new File(wrks,'pom.xml')
+		def pomXml = new XmlSlurper().parse(pomFile)
 		println XmlUtil.serialize(pomXml).toString()
 	} else {
 		println "${job.name} has not been built, cannot inspect pom.xml"
