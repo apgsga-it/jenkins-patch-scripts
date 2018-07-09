@@ -1,4 +1,6 @@
-import hudson.*
+import groovy.xml.*
+import javax.xml.transform.Source
+import javax.xml.transform.stream.StreamSource
 println "Inspecting all Maven Jobs for Maven Version"
 // Delete the missed Maven Jobs
 jobs = Jenkins.instance.getAllItems(hudson.maven.MavenModuleSet.class).each {  job ->
