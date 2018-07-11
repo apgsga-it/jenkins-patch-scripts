@@ -2,12 +2,15 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import hudson.model.*
 
-def benchmark = { closure ->
-	start = System.currentTimeMillis()
-	closure.call()
-	now = System.currentTimeMillis()
-	now - start
-  }
+def benchmark() {
+	def benchmarkCallback = { closure ->
+		start = System.currentTimeMillis()
+		closure.call()
+		now = System.currentTimeMillis()
+		now - start
+	}
+	benchmarkCallback
+}
 
 def loadTargetsMap() {
 	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/etc/opt/apg-patch-common/TargetSystemMappings.json"
@@ -153,13 +156,15 @@ def coFromBranchCvs(patchConfig, moduleName, type) {
 	if(type.equals("db")) {
 		cvsBranch = patchConfig.dbPatchBranch
 	}
-	def duration = benchmark {
+	def callBack = benchmark()
+	def duration = callBack {
 		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
 	}
 	echo "Checkoout of ${moduleName} took ${duration} ms"
 }
 def coFromTagcvs(patchConfig,tag, moduleName) {
-	def duration = benchmark {
+	def callBack = benchmark()
+	def duration = callBack {
 		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
 	}
 	echo "Checkoout of ${moduleName} took ${duration} ms"
