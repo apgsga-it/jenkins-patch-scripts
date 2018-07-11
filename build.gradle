@@ -21,12 +21,10 @@ sourceSets {
     }
   }
 }
-repositories {
-    flatDir { dirs 'libs' }
-}
+
 
 dependencies {
-    compile fileTree(dir: "libs", includes: ['*.jar'])
-   
+   	compile group: 'org.codehaus.groovy' , name: 'groovy-all', version: '2.4.9'
+
 }
 

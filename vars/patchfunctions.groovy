@@ -2,6 +2,13 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import hudson.model.*
 
+def benchmark = { closure ->
+	start = System.currentTimeMillis()
+	closure.call()
+	now = System.currentTimeMillis()
+	now - start
+  }
+
 def loadTargetsMap() {
 	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/etc/opt/apg-patch-common/TargetSystemMappings.json"
 	def targetSystemFile = new File(configFileLocation)
