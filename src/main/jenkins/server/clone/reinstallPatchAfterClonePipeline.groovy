@@ -70,6 +70,7 @@ def getPatchConfig(def patch, def target) {
 def getPatchListFile(def target) {
 	// We first call apsDbCli in order to produce a file containing the list of patch to be re-installed.
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac Informatiktest"
+	echo "result = ${result}"
 	assert result == 0 : println ("Error while getting list of patch to be re-installed on ${target} for status Informatiktest")
 	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled.json")
 }
