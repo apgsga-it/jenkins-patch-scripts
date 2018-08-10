@@ -53,6 +53,7 @@ private def getStatusForTarget(def target) {
 	def targetSystemFile = new File("/etc/opt/apg-patch-common/TargetSystemMappings.json")
 	assert targetSystemFile.exists() : println ("/etc/opt/apg-patch-common/TargetSystemMappings.json doesn't exist or is not accessible!")
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
+	def status
 	
 	jsonSystemTargets.targetSystems.each{ targetSystem ->
 		if(targetSystem.target.equalsIgnoreCase(target)) {
