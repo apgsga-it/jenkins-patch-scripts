@@ -39,7 +39,7 @@ stage("onclone") {
 			// Check if target corresponds to a status for which we automatically install patches (Informatiktest only for now)
 			def status = getStatusForTarget()
 			if(status == null || !status.toString().equalsIgnoreCase("informatiktest")) {
-				echo "No patch have to be re-installed on ${params.target}. ${param.target} is not configured as Informatiktest target."
+				echo "No patch have to be re-installed on ${params.target}. ${params.target} is not configured as Informatiktest target."
 			}
 			else {
 				echo "Patch have to be re-installed on ${params.target}, reinstallPatchAfterClone Pipeline will be started"
