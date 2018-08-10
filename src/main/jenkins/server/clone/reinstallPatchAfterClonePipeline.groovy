@@ -47,13 +47,13 @@ def reinstallPatch(def patch, def target) {
 	stage("Re-installing patch ${patch} on ${patchConfig.installationTarget}") {
 		echo "Starting Build for patch ${patch}"
 		node {patchfunctions.patchBuilds(patchConfig)}
-		echo "DONE - Starting Build for patch ${patch}"
+		echo "DONE - Build for patch ${patch}"
 		echo "Starting Deployment Artefact for patch ${patch}"
 		node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
-		echo "DONE - Starting Deployment Artefact for patch ${patch}"
+		echo "DONE - Deployment Artefact for patch ${patch}"
 		echo "Starting Installation Artefact for patch ${patch}"
 		node {patchDeployment.installDeploymentArtifacts(patchConfig)}
-		echo "DONE - Starting Installation Artefact for patch ${patch}"
+		echo "DONE - Installation Artefact for patch ${patch}"
 	}
 }
 
