@@ -26,9 +26,9 @@ stage("reinstallPatchAfterClone") {
 		
 		if(patchListFilePath.exists()) {
 			echo "Patch will be re-installed on ${target}"
-			def patchList = new JsonSlurper().parseText(patchListFilePath.text)
+			def patchList = new JsonSlurperClassic().parseText(patchListFilePath.text)
 			echo "Following json has been produced by apsdbcli: ${patchList}"
-			patches = patchList.patchlist
+			def patches = patchList.patchlist
 			patches.each{patch ->
 				reinstallPatch(patch,target)
 			}
