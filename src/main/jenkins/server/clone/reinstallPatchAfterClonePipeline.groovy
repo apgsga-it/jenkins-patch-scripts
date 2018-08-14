@@ -60,6 +60,7 @@ def reinstallPatch(def patch, def target) {
 }
 
 def getPatchConfig(def patch, def target) {
+	echo "Getting patchConfig for patch ${patch} on target ${target}..."
 	def patchFile = new File("/var/opt/apg-patch-service-server/db/Patch${patch.toString()}.json")
 	assert patchFile.exists() : println ("Patch file /var/opt/apg-patch-service-server/db/Patch${patch.toString()}.json doesn't exist")
 	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
@@ -67,6 +68,7 @@ def getPatchConfig(def patch, def target) {
 	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 	patchConfig.dockerBuildExtention = "tar.gz"
 	patchConfig.installationTarget = target
+	echo "patchConfig for patch ${patch} : ${patchConfig}"
 }
 
 def getPatchListFile(def target) {
