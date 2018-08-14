@@ -69,6 +69,7 @@ def getPatchConfig(def patch, def target) {
 	patchConfig.dockerBuildExtention = "tar.gz"
 	patchConfig.installationTarget = target
 	echo "patchConfig for patch ${patch} : ${patchConfig}"
+	return patchConfig
 }
 
 def getPatchListFile(def target) {
