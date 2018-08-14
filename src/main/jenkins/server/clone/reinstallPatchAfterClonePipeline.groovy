@@ -43,7 +43,7 @@ stage("reinstallPatchAfterClone") {
 def reinstallPatch(def patch, def target) {
 	def patchConfig = getPatchConfig(patch,target)
 	
-	def targetBean = [envName:${target},targetName:patchConfig.installationTarget,typeInd:"T"]
+	def targetBean = [envName:{target},targetName:patchConfig.installationTarget,typeInd:"T"]
 	patchfunctions.targetIndicator(patchConfig,targetBean)
 		
 	stage("Re-installing patch ${patch} on ${patchConfig.installationTarget}") {
