@@ -1,10 +1,6 @@
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import hudson.model.*
-import java.util.function.Function
-import java.util.Comparator
-import static java.util.stream.Collectors.groupingBy;
-
 
 def benchmark() {
 	def benchmarkCallback = { closure ->
@@ -41,7 +37,7 @@ def targetIndicator(patchConfig, target) {
 
 def mavenVersionNumber(patchConfig,revision) {
 	def mavenVersion
-	
+
 	// Case where this is the first patch after having cloned the target
 	if(patchConfig.lastRevision == "CLONED") {
 		mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
@@ -60,20 +56,20 @@ def mavenVersionNumber(patchConfig,revision) {
 def getCurrentProdRevision() {
 	def revision
 	def shOutputFileName = "shProdRevOutput"
-	
+
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -pr > ${shOutputFileName} 2>pipelineErr.log"
-	
+
 	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
-	
+
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
-		 // See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
-		 if (line.contains("lastProdRevision")) {
-			 def parsedRev = new JsonSlurper().parseText(line)
-			 revision = parsedRev.lastProdRevision
-		 }
+		// See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
+		if (line.contains("lastProdRevision")) {
+			def parsedRev = new JsonSlurper().parseText(line)
+			revision = parsedRev.lastProdRevision
+		}
 	}
-	
+
 	return revision
 }
 
@@ -103,31 +99,31 @@ def patchBuilds(patchConfig) {
 }
 
 def retrieveRevisions(patchConfig) {
-	
+
 	def revision
 	def lastRevision
 	def shOutputFileName = "shOutput"
-	
+
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget} > ${shOutputFileName} 2>pipelineErr.log"
-	
+
 	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
-	
+
 	def lines = readFile(shOutputFileName).readLines()
 	lines.each {String line ->
-		 // See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
-		 if (line.contains("fromRetrieveRevision")) {
-			 def parsedRev = new JsonSlurper().parseText(line)
-			 revision = parsedRev.fromRetrieveRevision.revision
-			 lastRevision = parsedRev.fromRetrieveRevision.lastRevision
-		 }
+		// See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
+		if (line.contains("fromRetrieveRevision")) {
+			def parsedRev = new JsonSlurper().parseText(line)
+			revision = parsedRev.fromRetrieveRevision.revision
+			lastRevision = parsedRev.fromRetrieveRevision.lastRevision
+		}
 	}
-	
+
 	patchConfig.revision = revision
-	patchConfig.lastRevision = lastRevision 	
+	patchConfig.lastRevision = lastRevision
 }
 
 def saveRevisions(patchConfig) {
-	
+
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} 2>pipelineErr.log"
 	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
 }
@@ -146,24 +142,24 @@ def buildAndReleaseModulesConcurrent(patchConfig) {
 	depLevels.sort()
 	depLevels.reverse(true)
 	println depLevels
-	depLevels.each {
-		def artifactsToBuildParallel = listsByDepLevel[it] as List
-		println artifactsToBuildParallel
-		def parallelBuilds = artifactsToBuildParallel.collectEntries {
-			buildAndReleaseModulesConcurrent(patchConfig,it)
-		}
+	depLevels.each { depLevel -> 
+			def artifactsToBuildParallel = listsByDepLevel[depLevel]
+			println artifactsToBuildParallel
+			def parallelBuilds = artifactsToBuildParallel.collectEntries {
+				[ "Building Level: ${depLevel} and Module: ${it}" : buildAndReleaseModulesConcurrent(patchConfig,it)]
+			}
 		parallel parallelBuilds
 	}
 }
 
 def buildAndReleaseModulesConcurrent(patchConfig,module) {
-		return {
+	return {
 		node {
-			buildAndReleaseModule(patchConfig,module)		
+			buildAndReleaseModule(patchConfig,module)
 		}
 	}
 }
- 
+
 
 def buildAndReleaseModule(patchConfig,module) {
 	echo "buildAndReleaseModule : " + module.name
@@ -261,7 +257,7 @@ def dbAssemble(patchConfig) {
 	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
 	def configInfoContent = "config_name:${PatchDbFolderName}"
 	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
-	
+
 	def installPatchContent = "@echo off\r\n"
 	// TODO (jhe) :  0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
 	installPatchContent += "@echo *** Installation von Patch 0900C_${patchConfig.patchNummer} [Build von TODO get YYYY/MM/dd-HH:mm:ss]\r\n"
@@ -270,7 +266,7 @@ def dbAssemble(patchConfig) {
 	installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
 	installPatchContent += "popd"
 	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)])
-	
+
 	publishDbAssemble(patchConfig)
 }
 
@@ -280,8 +276,8 @@ def publishDbAssemble(patchConfig) {
 	def zipName = "${patchDbFolderName}.zip"
 	fileOperations ([fileDeleteOperation(includes: zipName)])
 	zip zipFile: zipName, glob: "${patchDbFolderName}/**"
-	
-		
+
+
 	// TODO JHE: Target should better be a subfolder within releases ... like "db"
 	def uploadSpec = """{
 		"files": [
@@ -299,33 +295,33 @@ def getCoPatchDbFolderName(patchConfig) {
 }
 
 def mergeDbObjectOnHead(patchConfig, envName) {
-	
+
 	if(!envName.equals("Produktion")) {
 		return;
 	}
-	
+
 	/*
 	 * JHE (22.05.2018): Within this function, we're calling a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
 	 * 					 coFromTagcvs method. So far I didn't find an equivalent build-in function allowing to do a merge.
 	 * 
 	 */
-	
+
 	node {
 		echo "Following object will be merge from ${patchConfig.patchTag} to ${patchConfig.prodBranch}:"
 		echo "${patchConfig.dbObjectsAsVcsPath}"
-		
+
 		def dbObjects = patchConfig.dbObjectsAsVcsPath
 		def folder = ""
 		def tag = tagName(patchConfig)
 		def cvsRoot = patchConfig.cvsroot
-		
+
 		/*
 		 * JHE (22.05.2018): Not sure if we really want to separate the merge and the commit. Idea for separation is obviously that if we encounter an issue during merge, we
 		 * 					 don't commit anything. 
 		 * TODO JHE: verify the above is actually true? Do we really get an exception?? 
 		 * 
 		 */
-		
+
 		dbObjects.each{ dbo ->
 			//coFromTagcvs(patchConfig,tag,dbo)
 			// JHE(22.05.2018): ideally we would like to use the coFromTagCvs method. But we need a .CVS in the checked out folders, which doesn't happen with our coFromTagCvs method.
@@ -339,7 +335,7 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 				echo "${dbo} has been merged from ${tag} to head"
 			}
 		}
-		
+
 		dbObjects.each{ dbo ->
 			folder = dbo.substring(0,dbo.lastIndexOf("/"))
 			dir(folder) {
