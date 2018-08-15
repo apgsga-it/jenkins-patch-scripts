@@ -102,7 +102,7 @@ def testParallelPatchBuilds(patchConfig) {
 	node {
 		deleteDir()
 		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
-			checkoutModules(patchConfig)
+			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
 			retrieveRevisions(patchConfig)
 			generateVersionProperties(patchConfig)
 			buildAndReleaseModulesConcurrent(patchConfig)
@@ -168,6 +168,8 @@ def buildAndReleaseModulesConcurrent(patchConfig) {
 def buildAndReleaseModulesConcurrent(patchConfig,module) {
 	return {
 		node {
+			def tag = tagName(patchConfig)
+			coFromTagcvs(patchConfig,tag,module.name)
 			buildAndReleaseModule(patchConfig,module)
 		}
 	}
