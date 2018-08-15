@@ -85,10 +85,19 @@ def installGUI(patchConfig,artifact,extension) {
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
+		removeOldGuiFolder(extractedGuiPath)
 
 		// Unmount the share drive
 		powershell("net use ${extractedGuiPath} /delete")
 	}
+}
+
+def removeOldGuiFolder(extractedGuiPath) {
+	// JHE (15.08.2018) : We do this with Powershell as it contains build-in function which make it so easy to keep only the last X folders following a given pattern.
+	def guiFolderNamePrefix = "java_gui"
+	def nbFolderToKeep = "2"
+	powershell "Get-ChildItem ${extractedGuiPath} -Directory -Recurse -Include ${guiFolderNamePrefix}* | Sort-Object CreationTime -Descending | Select-Object -Skip ${nbFolderToKeep} | Remove-Item -Recurse -Force"
+	
 }
 
 def guiExtractedFolderName() {
