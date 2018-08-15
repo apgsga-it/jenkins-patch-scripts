@@ -245,7 +245,7 @@ def updateBom(patchConfig,module) {
 	echo "Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
-	dir ("it21-ui-bundle") {
+	dir ("${WORKSPACE}/it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId}"
 	}
