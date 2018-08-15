@@ -21,6 +21,6 @@ println "TargetSystemsMap : ${targetSystemsMap} "
 	assert target != null
 	patchfunctions.targetIndicator(patchConfig,target)
 	stage("${envName} (${target.targetName}) Build" ) { 
-		patchfunctions.testParallelPatchBuilds(patchConfig)  
+		patchfunctions.patchBuildsConcurrent(patchConfig)  
 	}
 }

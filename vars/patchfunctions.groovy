@@ -98,7 +98,7 @@ def patchBuilds(patchConfig) {
 	}
 }
 
-def testParallelPatchBuilds(patchConfig) {
+def patchBuildsConcurrent(patchConfig) {
 	node {
 		deleteDir()
 		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
