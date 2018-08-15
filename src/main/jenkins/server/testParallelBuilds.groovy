@@ -3,7 +3,7 @@ library 'patch-global-functions'
 library 'patch-deployment-functions'
 import groovy.json.JsonSlurperClassic
 
-def patchFile = new File("/home/che/data/Patch5730.json")
+def patchFile = new File("/home/che/data/Patch5730new.json")
 def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
 echo patchConfig.toString()
 patchConfig.cvsroot = env.CVS_ROOT
