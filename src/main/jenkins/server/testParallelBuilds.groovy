@@ -20,5 +20,9 @@ println "TargetSystemsMap : ${targetSystemsMap} "
 	target = targetSystemsMap.get(envName)
 	assert target != null
 	patchfunctions.targetIndicator(patchConfig,target)
-	stage("${envName} (${target.targetName}) Build" ) { patchfunctions.buildAndReleaseModulesConcurrent(patchConfig)  }
+	stage("${envName} (${target.targetName}) Build" ) { 
+		patchfunctions.checkoutModules(patchConfig)
+		patchfunctions.retrieveRevisions(patchConfig)
+		patchfunctions.buildAndReleaseModulesConcurrent(patchConfig)  
+	}
 }
