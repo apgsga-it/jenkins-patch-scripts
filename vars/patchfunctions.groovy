@@ -145,9 +145,10 @@ def buildAndReleaseModulesConcurrent(patchConfig) {
 	depLevels.reverse(true)
 	depLevels.each {
 		def artifactsToBuildParallel = listsByDepLevel[it]
-		def stepsForParallel = artifactsToBuildParallel.collectEntries {
+		def parallelBuilds = artifactsToBuildParallel.collectEntries {
 			buildAndReleaseModulesConcurrent(patchConfig,it)
 		}
+		parallel parallelBuilds
 	}
 }
 
