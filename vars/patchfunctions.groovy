@@ -139,10 +139,9 @@ def buildAndReleaseModules(patchConfig) {
 
 def buildAndReleaseModulesConcurrent(patchConfig) {
 	def artefacts = patchConfig.mavenArtifacts;
-	def listsByDepLevel = artefacts.collectEnttries {
-		[it.dependencyLevel : it]
+	def listsByDepLevel = artefacts.groupBy {
+		it.dependencyLevel
 	}
-	println listsByDepLevel
 	def depLevels = listsByDepLevel.keySet() as List
 	depLevels.sort()
 	depLevels.reverse(true)
