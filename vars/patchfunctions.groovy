@@ -98,6 +98,19 @@ def patchBuilds(patchConfig) {
 	}
 }
 
+def testParallelPatchBuilds(patchConfig) {
+	node {
+		deleteDir()
+		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
+			checkoutModules(patchConfig)
+			retrieveRevisions(patchConfig)
+			generateVersionProperties(patchConfig)
+			buildAndReleaseModulesConcurrent(patchConfig)
+			saveRevisions(patchConfig)
+		}
+	}
+}
+
 def retrieveRevisions(patchConfig) {
 
 	def revision
