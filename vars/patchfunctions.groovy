@@ -1,6 +1,10 @@
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import hudson.model.*
+import java.util.function.Function
+import java.util.Comparator
+import static java.util.stream.Collectors.groupingBy;
+
 
 def benchmark() {
 	def benchmarkCallback = { closure ->
@@ -132,6 +136,30 @@ def saveRevisions(patchConfig) {
 def buildAndReleaseModules(patchConfig) {
 	patchConfig.mavenArtifacts.each { buildAndReleaseModule(patchConfig,it) }
 }
+
+def buildAndReleaseModulesConcurrent(patchConfig) {
+	def artefacts = patchConfig.mavenArtifacts;
+	def listsByDepLevel = artefacts.stream().collect(groupingBy((Function) { b -> return b.dependencyLevel }))
+	def depLevels = listsByDepLevel.keySet() as List
+	depLevels.sort()
+	depLevels.reverse(true)
+	depLevels.each {
+		def artifactsToBuildParallel = listsByDepLevel[it]
+		def parallelBuilds = artifactsToBuildParallel.collectEntries {
+			buildAndReleaseModulesConcurrent(patchConfig,it)
+		}
+		parallel parallelBuilds
+	}
+}
+
+def buildAndReleaseModulesConcurrent(patchConfig,module) {
+		return {
+		node {
+			buildAndReleaseModule(patchConfig,module)		
+		}
+	}
+}
+ 
 
 def buildAndReleaseModule(patchConfig,module) {
 	echo "buildAndReleaseModule : " + module.name
