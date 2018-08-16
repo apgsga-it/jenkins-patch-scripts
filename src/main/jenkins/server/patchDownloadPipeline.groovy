@@ -27,7 +27,7 @@ def target = [envName:"Download",targetName:patchConfig.installationTarget,typeI
 patchfunctions.targetIndicator(patchConfig,target)
 stage("${target.targetName} Build & Assembly") {
 	stage("${target.targetName} Build" ) {
-		node {patchfunctions.patchBuilds(patchConfig)}
+		node {patchfunctions.patchBuildsConcurrent(patchConfig)}
 	}
 	stage("${target.targetName} Assembly" ) {
 		node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}

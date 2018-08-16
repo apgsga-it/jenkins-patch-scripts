@@ -85,6 +85,7 @@ def approveInstallation(patchConfig) {
 	}
 }
 
+// TODO (che,16.8): Deprecated, with be removed, keep as fallback
 def patchBuilds(patchConfig) {
 	node {
 		deleteDir()
@@ -142,6 +143,7 @@ def saveRevisions(patchConfig) {
 }
 
 
+// TODO (che,16.8): Deprecated, with be removed, keep as fallback
 def buildAndReleaseModules(patchConfig) {
 	patchConfig.mavenArtifacts.each { buildAndReleaseModule(patchConfig,it) }
 }

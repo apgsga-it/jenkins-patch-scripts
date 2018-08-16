@@ -42,7 +42,7 @@ stage("${target.envName} (${target.targetName}) Installationsbereit Notification
 	assert target != null
 	patchfunctions.targetIndicator(patchConfig,target)
 	stage("Approve ${envName} (${target.targetName}) Build & Assembly") { patchfunctions.approveBuild(patchConfig) }
-	stage("${envName} (${target.targetName}) Build" ) { patchfunctions.patchBuilds(patchConfig)  }
+	stage("${envName} (${target.targetName}) Build" ) { patchfunctions.patchBuildsConcurrent(patchConfig)  }
 	stage("${envName} (${target.targetName}) Assembly" ) { patchfunctions.assembleDeploymentArtefacts(patchConfig) }
 	stage("${envName} (${target.targetName}) Installationsbereit Notification") {
 		patchfunctions.notify(target,"Installationsbereit", patchConfig)
