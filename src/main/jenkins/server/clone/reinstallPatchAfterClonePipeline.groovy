@@ -47,7 +47,7 @@ def reinstallPatch(def patch, def target) {
 		
 	stage("Re-installing patch ${patch} on ${patchConfig.installationTarget}") {
 		echo "Starting Build for patch ${patch}"
-		node {patchfunctions.patchBuilds(patchConfig)}
+		node {patchfunctions.patchBuildsConcurrent(patchConfig)}
 		echo "DONE - Build for patch ${patch}"
 		echo "Starting Deployment Artefact for patch ${patch}"
 		node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
