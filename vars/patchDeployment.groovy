@@ -93,7 +93,7 @@ def installGUI(patchConfig,artifact,extension) {
 }
 
 def removeOldGuiFolder(extractedGuiPath) {
-	// JHE (15.08.2018) : We do this with Powershell as it contains build-in function which make it so easy to keep only the last X folders following a given pattern.
+	// Keep last 2 folders starting with java_gui.
 	def guiFolderNamePrefix = "java_gui"
 	def nbFolderToKeep = "2"
 	powershell "Get-ChildItem ${extractedGuiPath} -Directory -Recurse -Include ${guiFolderNamePrefix}* | Sort-Object CreationTime -Descending | Select-Object -Skip ${nbFolderToKeep} | Remove-Item -Recurse -Force"
