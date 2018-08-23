@@ -6,11 +6,21 @@ def installDeploymentArtifacts(patchConfig) {
 		parallel 'ui-client-deployment': {
 			node {install(patchConfig,"client","it21gui-dist-zip","zip")}
 		}, 'ui-server-deployment': {
-			node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+			if(installDocker(patchConfig)) {
+				node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+			}
 		}, 'db-deployment': {
 			node {install(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip") }
 		}
 	}
+}
+
+def installDocker(patchConfig) {
+	def mavenArtifactList = patchConfig.mavenArtifacts
+	def dbObjectsLists = patchConfig.dbObjects
+	def installOnEmptyModules = patchConfig.installOnEmptyModules
+	
+	return !mavenArtifactList.isEmpty() || !dbObjectsLists.isEmpty() || installOnEmptyModules
 }
 
 def install(patchConfig, type, artifact,extension) {
