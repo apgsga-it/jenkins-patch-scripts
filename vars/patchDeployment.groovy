@@ -6,7 +6,9 @@ def installDeploymentArtifacts(patchConfig) {
 		parallel 'ui-client-deployment': {
 			node {install(patchConfig,"client","it21gui-dist-zip","zip")}
 		}, 'ui-server-deployment': {
-			node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+			if(patchConfig.installJadas) {
+				node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+			}
 		}, 'db-deployment': {
 			node {install(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip") }
 		}
