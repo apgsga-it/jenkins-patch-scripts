@@ -6,6 +6,7 @@ cli.with {
 	h longOpt: 'help', 'Show usage information', required: false
 	j longOpt: 'jenkins',args:1 , argName: 'directory', 'Jenkins installation directory', required: true
 	u longOpt: 'update', 'If to run with updates', required: false
+	v longOpt: 'verbose', 'Verbose println', required: false
 }
 def opt = cli.parse(args)
 if (!opt) {
@@ -47,6 +48,7 @@ if (!dry) {
 		return 
 	}
 }
+def verbose = opt.v
 def cntInspected = 0
 println "Cleaning up workspaces in : ${workspacesDir.getPath()} "
 def dirCanBeDeleted = []
@@ -59,12 +61,16 @@ workspacesDir.eachDir() { dir ->
 	println "Resolved Jobname : ${jobName}"
 	def jobDir = new File(jobsDir,jobName)
 	if (!jobDir.exists()) {
-		println "------ No Job for: ${dir.getName()}"
-		println "       Directory ${dir.getName()} can be deleted" 
+		if (verbose) {
+			println "------ No Job for: ${dir.getName()}"
+			println "       Directory ${dir.getName()} can be deleted" 
+		}
 		dirCanBeDeleted << dir.getName()
 		if (!dry) {
 			if (dir.deleteDir()) {
-				println "       ${dir.getName()} has been deleted" 
+				if (verbose) {
+					println "       ${dir.getName()} has been deleted" 
+				}
 				dirDeleted << dir.getName()
 			} else {
 				println "       ${dir.getName()} has NOT been deleted, eventough we tried"
