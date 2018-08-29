@@ -54,11 +54,15 @@ println "Cleaning up workspaces in : ${workspacesDir.getPath()} "
 def dirCanBeDeleted = []
 def dirDeleted = []
 workspacesDir.eachDir() { dir -> 
-	println "Inspecting workspace Directory: ${dir.getName()}"
+	if (verbose) {
+		println "Inspecting workspace Directory: ${dir.getName()}"
+	}
 	cntInspected++
 	def pos = dir.getName().indexOf("@")
 	def jobName = pos < 0 ? dir.getName() : dir.getName().substring(0,pos)
-	println "Resolved Jobname : ${jobName}"
+	if (verbose) {
+		println "Resolved Jobname : ${jobName}"
+	}
 	def jobDir = new File(jobsDir,jobName)
 	if (!jobDir.exists()) {
 		if (verbose) {
