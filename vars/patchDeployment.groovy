@@ -6,7 +6,9 @@ def installDeploymentArtifacts(patchConfig) {
 		parallel 'ui-client-deployment': {
 			node {install(patchConfig,"client","it21gui-dist-zip","zip")}
 		}, 'ui-server-deployment': {
-			node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+			if(patchConfig.installJadas) {
+				node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+			}
 		}, 'db-deployment': {
 			node {install(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip") }
 		}
@@ -38,7 +40,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
 	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
 	
-	node ("jenkins_installer"){
+	node ("jenkins_installer_windows_prod"){
 		
 		def downloadSpec = """{
               "files": [
@@ -58,7 +60,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 }
 
 def installGUI(patchConfig,artifact,extension) {
-	node("jenkins_installer") {
+	node("jenkins_installer_windows_prod") {
 		
 		def extractedGuiPath = ""
 
