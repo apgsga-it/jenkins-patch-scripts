@@ -48,8 +48,9 @@ if (!dry) {
 	}
 }
 def cntInspected = 0
-def cntDeleted = 0
 println "Cleaning up workspaces in : ${workspacesDir.getPath()} "
+def dirCanBeDeleted = []
+def dirDeleted = []
 workspacesDir.eachDir() { dir -> 
 	println "Inspecting workspace Directory: ${dir.getName()}"
 	cntInspected++
@@ -57,23 +58,31 @@ workspacesDir.eachDir() { dir ->
 	def jobName = pos < 0 ? dir.getName() : dir.getName().substring(0,pos)
 	println "Resolved Jobname : ${jobName}"
 	def jobDir = new File(jobsDir,jobName)
-	if (jobDir.exists()) {
-		println "++++++ corresponding Job Directory exists: ${jobDir.getPath()}"
-	} else {
+	if (!jobDir.exists()) {
 		println "------ No Job for: ${dir.getName()}"
 		println "       Directory ${dir.getName()} can be deleted" 
+		dirCanBeDeleted << dir.getName()
 		if (!dry) {
 			if (dir.deleteDir()) {
-				cntDeleted++
 				println "       ${dir.getName()} has been deleted" 
+				dirDeleted << dir.getName()
 			} else {
 				println "       ${dir.getName()} has NOT been deleted, eventough we tried"
 			}
-		} else {
-			println "       Running dry ${dir.getName()} not deleted"
-		}
+		} 
 	}
 }
 println "Dirs inspected:  ${cntInspected} " 
-println "Dirs deleted  :  ${cntDeleted}"
+println "Dirs which can be deleted: "
+dirCanBeDeleted.each() {
+	println it
+}
+println "Count: ${dirCanBeDeleted.size()}"
+println "Dirs which where  deleted: "
+dirDeleted.each() {
+	println it
+}
+println "Count: ${dirDeleted.size()}"
+
+
 
