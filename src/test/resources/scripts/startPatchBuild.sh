@@ -1,2 +1,0 @@
- #!/bin/bash
-curl -k  -X POST https://che:6777e7eb358ff4ba5518cc351acdd1ef@jenkins.apgsga.ch/job/PatchBuilder/build?token=PATCHBUILDER_START&patchnumber=9063 --data-urlencode json='{"parameter": []}' -H "Jenkins-Crumb:3bc311c4025b6a30a5f07ee19248d99f" -H "Content-Type:application/x-www-form-urlencoded;charset=UTF-8"
