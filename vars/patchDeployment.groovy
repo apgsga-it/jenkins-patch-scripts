@@ -4,9 +4,11 @@ library 'patch-global-functions'
 def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Install") {
 		parallel 'ui-client-deployment': {
-			node {install(patchConfig,"client","it21gui-dist-zip","zip")}
+			if(patchConfig.installJadasAndGui) {
+				node {install(patchConfig,"client","it21gui-dist-zip","zip")}
+			}
 		}, 'ui-server-deployment': {
-			if(patchConfig.installJadas) {
+			if(patchConfig.installJadasAndGui) {
 				node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
 			}
 		}, 'db-deployment': {
