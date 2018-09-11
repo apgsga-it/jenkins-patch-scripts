@@ -37,20 +37,30 @@ def targetIndicator(patchConfig, target) {
 
 def mavenVersionNumber(patchConfig,revision) {
 	def mavenVersion
-
+	
 	// Case where this is the first patch after having cloned the target
 	if(patchConfig.lastRevision == "CLONED") {
-		mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
-		patchConfig.lastRevision = patchConfig.revision
+		
+		if(getCurrentProdRevision() == null) {
+			mavenVersion = 	getMavenSnapshotVersion(patchConfig,revision)
+		}
+		else {
+			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
+			patchConfig.lastRevision = patchConfig.revision
+		}
 	}
 	else {
 		if (revision.equals('SNAPSHOT')) {
-			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
+			mavenVersion = getMavenSnapshotVersion(patchConfig,revision)
 		} else {
 			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + patchConfig.targetInd + '-' + revision
 		}
 	}
 	mavenVersion
+}
+
+def getMavenSnapshotVersion(def patchConfig,def revision) {
+	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
 }
 
 def getCurrentProdRevision() {
