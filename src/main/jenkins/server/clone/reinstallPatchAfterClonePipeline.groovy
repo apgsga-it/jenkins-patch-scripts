@@ -6,6 +6,10 @@ library 'patch-deployment-functions'
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 
+final PATCH_DB_FOLDER = "/var/opt/apg-patch-service-server/db/"
+
+final PATCH_FILE_PREFIX = "Patch"
+
 properties([
 	parameters([
 		stringParam(
@@ -40,28 +44,39 @@ stage("reinstallPatchAfterClone") {
 }
 
 def reinstallPatch(def patch, def target) {
-	def patchConfig = getPatchConfig(patch,target)
 	
-	def targetBean = [envName:target,targetName:patchConfig.installationTarget,typeInd:"T"]
-	patchfunctions.targetIndicator(patchConfig,targetBean)
+	if(patchFileExists(patch)) {
+	
+		def patchConfig = getPatchConfig(patch,target)
 		
-	stage("Re-installing patch ${patch} on ${patchConfig.installationTarget}") {
-		echo "Starting Build for patch ${patch}"
-		node {patchfunctions.patchBuildsConcurrent(patchConfig)}
-		echo "DONE - Build for patch ${patch}"
-		echo "Starting Deployment Artefact for patch ${patch}"
-		node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
-		echo "DONE - Deployment Artefact for patch ${patch}"
-		echo "Starting Installation Artefact for patch ${patch}"
-		node {patchDeployment.installDeploymentArtifacts(patchConfig)}
-		echo "DONE - Installation Artefact for patch ${patch}"
+		def targetBean = [envName:target,targetName:patchConfig.installationTarget,typeInd:"T"]
+		patchfunctions.targetIndicator(patchConfig,targetBean)
+			
+		stage("Re-installing patch ${patch} on ${patchConfig.installationTarget}") {
+			echo "Starting Build for patch ${patch}"
+			node {patchfunctions.patchBuildsConcurrent(patchConfig)}
+			echo "DONE - Build for patch ${patch}"
+			echo "Starting Deployment Artefact for patch ${patch}"
+			node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
+			echo "DONE - Deployment Artefact for patch ${patch}"
+			echo "Starting Installation Artefact for patch ${patch}"
+			node {patchDeployment.installDeploymentArtifacts(patchConfig)}
+			echo "DONE - Installation Artefact for patch ${patch}"
+		}
 	}
+	else {
+		echo "Patch ${patch} has not been re-installed because it is managed by the old patch system."
+	}
+}
+
+def patchFileExists(def patch) {
+	return new File("${PATCH_DB_FOLDER}${PATCH_FILE_PREFIX}${patch.toString()}.json").exists()
 }
 
 def getPatchConfig(def patch, def target) {
 	echo "Getting patchConfig for patch ${patch} on target ${target}..."
-	def patchFile = new File("/var/opt/apg-patch-service-server/db/Patch${patch.toString()}.json")
-	assert patchFile.exists() : println ("Patch file /var/opt/apg-patch-service-server/db/Patch${patch.toString()}.json doesn't exist")
+	def patchFile = new File("${PATCH_DB_FOLDER}${PATCH_FILE_PREFIX}${patch.toString()}.json")
+	assert patchFile.exists() : println ("Patch file ${PATCH_DB_FOLDER}${PATCH_FILE_PREFIX}${patch.toString()}.json doesn't exist")
 	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
 	patchConfig.cvsroot = env.CVS_ROOT
 	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
