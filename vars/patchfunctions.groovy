@@ -43,6 +43,10 @@ def mavenVersionNumber(patchConfig,revision) {
 		
 		if(getCurrentProdRevision() == null) {
 			mavenVersion = 	getMavenSnapshotVersion(patchConfig)
+			// TODO JHE: for debug purpose only, will be removed (println) ...
+			println "patchConfig.lastRevision = patchConfig.revision ... Will be done with following information:"
+			println "patchConfig.lastRevision -> ${patchConfig.lastRevision} // patchConfig.revision -> ${patchConfig.revision}"
+			patchConfig.lastRevision = patchConfig.revision
 		}
 		else {
 			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
