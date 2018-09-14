@@ -42,7 +42,7 @@ def mavenVersionNumber(patchConfig,revision) {
 	if(patchConfig.lastRevision == "CLONED") {
 		
 		if(getCurrentProdRevision() == null) {
-			mavenVersion = 	getMavenSnapshotVersion(patchConfig,revision)
+			mavenVersion = 	getMavenSnapshotVersion(patchConfig)
 		}
 		else {
 			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
@@ -51,7 +51,7 @@ def mavenVersionNumber(patchConfig,revision) {
 	}
 	else {
 		if (revision.equals('SNAPSHOT')) {
-			mavenVersion = getMavenSnapshotVersion(patchConfig,revision)
+			mavenVersion = getMavenSnapshotVersion(patchConfig)
 		} else {
 			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + patchConfig.targetInd + '-' + revision
 		}
@@ -59,8 +59,8 @@ def mavenVersionNumber(patchConfig,revision) {
 	mavenVersion
 }
 
-def getMavenSnapshotVersion(def patchConfig,def revision) {
-	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
+def getMavenSnapshotVersion(def patchConfig) {
+	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-SNAPSHOT"
 }
 
 def getCurrentProdRevision() {
