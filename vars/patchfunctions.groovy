@@ -145,11 +145,11 @@ def saveRevisions(patchConfig) {
 
 // TODO (che,16.8): Deprecated, with be removed, keep as fallback
 def buildAndReleaseModules(patchConfig) {
-	patchConfig.mavenArtifacts.each { buildAndReleaseModule(patchConfig,it) }
+	patchConfig.mavenArtifactsToBuild.each { buildAndReleaseModule(patchConfig,it) }
 }
 
 def buildAndReleaseModulesConcurrent(patchConfig) {
-	def artefacts = patchConfig.mavenArtifacts;
+	def artefacts = patchConfig.mavenArtifactsToBuild;
 	def listsByDepLevel = artefacts.groupBy {
 		it.dependencyLevel
 	}
@@ -191,7 +191,7 @@ def buildAndReleaseModule(patchConfig,module) {
 
 def checkoutModules(patchConfig) {
 	def tag = tagName(patchConfig)
-	patchConfig.mavenArtifacts.each {
+	patchConfig.mavenArtifactsToBuild.each {
 		coFromTagcvs(patchConfig,tag,it.name)
 	}
 	coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
@@ -222,7 +222,7 @@ def generateVersionProperties(patchConfig) {
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
 	}
 }
 
