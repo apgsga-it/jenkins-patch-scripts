@@ -6,10 +6,6 @@ library 'patch-deployment-functions'
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 
-final PATCH_DB_FOLDER = "/var/opt/apg-patch-service-server/db/"
-
-final PATCH_FILE_PREFIX = "Patch"
-
 properties([
 	parameters([
 		stringParam(
@@ -70,13 +66,13 @@ def reinstallPatch(def patch, def target) {
 }
 
 def patchFileExists(def patch) {
-	return new File("${PATCH_DB_FOLDER}${PATCH_FILE_PREFIX}${patch.toString()}.json").exists()
+	return new File("${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json").exists()
 }
 
 def getPatchConfig(def patch, def target) {
 	echo "Getting patchConfig for patch ${patch} on target ${target}..."
-	def patchFile = new File("${PATCH_DB_FOLDER}${PATCH_FILE_PREFIX}${patch.toString()}.json")
-	assert patchFile.exists() : println ("Patch file ${PATCH_DB_FOLDER}${PATCH_FILE_PREFIX}${patch.toString()}.json doesn't exist")
+	def patchFile = new File("${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json")
+	assert patchFile.exists() : println ("Patch file ${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json doesn't exist")
 	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
 	patchConfig.cvsroot = env.CVS_ROOT
 	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
