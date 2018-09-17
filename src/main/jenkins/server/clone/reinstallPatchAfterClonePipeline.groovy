@@ -65,7 +65,7 @@ def reinstallPatch(def patch, def target) {
 		}
 	}
 	else {
-		echo "Patch ${patch} has not been re-installed because it is managed by the old patch system."
+		echo "Patch ${patch} has not been re-installed because the corresponding JSON file has not been found."
 	}
 }
 
