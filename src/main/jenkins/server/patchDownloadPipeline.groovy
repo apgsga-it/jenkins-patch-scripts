@@ -21,6 +21,7 @@ echo patchConfig.toString()
 patchConfig.cvsroot = env.CVS_ROOT
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"
+patchConfig.patchFilePath = params.PARAMETER
 
 // Mainline
 def target = [envName:"Download",targetName:patchConfig.installationTarget,typeInd:"T"]
