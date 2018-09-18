@@ -26,7 +26,8 @@ patchConfig.patchFilePath = params.PARAMETER
 // Load Target System Mappings
 def targetSystemsMap = patchfunctions.loadTargetsMap()
 println "TargetSystemsMap : ${targetSystemsMap} " 
-
+mavenLocalRepo(patchConfig)
+println patchConfig.mavenLocalRepo
 // Mainline
 // While mit Start der Pipeline bereits getagt ist
 
