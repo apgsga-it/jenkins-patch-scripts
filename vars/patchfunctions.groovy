@@ -245,7 +245,7 @@ def releaseModule(patchConfig,module) {
 		echo "Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
 		def mvnCommand = 'mvn clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.targetInd + '-' + patchConfig.revision
 		echo "${mvnCommand}"
-		withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: '.repository') { sh "${mvnCommand}" }
+		withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: './mavenLocal') { sh "${mvnCommand}" }
 	}
 }
 
@@ -254,7 +254,7 @@ def buildModule(patchConfig,module) {
 		echo "Building Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
 		def mvnCommand = 'mvn deploy'
 		echo "${mvnCommand}"
-		withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: '.repository') { sh "${mvnCommand}" }
+		withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: './mavenLocal') { sh "${mvnCommand}" }
 	}
 }
 
@@ -405,7 +405,7 @@ def buildDockerImage(patchConfig) {
 	def dropName = jadasServiceDropName(patchConfig)
 	def dockerBuild = "/opt/apgops/docker/build.sh jadas-service ${WORKSPACE}/distributions/${dropName} ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER}"
 	echo "${dockerBuild}"
-	withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: '.repository') {
+	withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: './mavenLocal') {
 		sh "${mvnCommand}"
 		sh "${mvnCommandCopy}"
 	}
