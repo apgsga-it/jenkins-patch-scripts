@@ -251,18 +251,18 @@ def generateVersionProperties(patchConfig) {
 def releaseModule(patchConfig,module) {
 	dir ("${module.name}") {
 		echo "Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
-		def mvnCommand = 'mvn clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.targetInd + '-' + patchConfig.revision
+		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} " + 'clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.targetInd + '-' + patchConfig.revision
 		echo "${mvnCommand}"
-		withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: './mavenLocal') { sh "${mvnCommand}" }
+		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
 }
 
 def buildModule(patchConfig,module) {
 	dir ("${module.name}") {
 		echo "Building Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
-		def mvnCommand = 'mvn deploy'
+		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} deploy"
 		echo "${mvnCommand}"
-		withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: './mavenLocal') { sh "${mvnCommand}" }
+		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
 }
 
@@ -405,15 +405,15 @@ def buildDockerImage(patchConfig) {
 	def extension = patchConfig.dockerBuildExtention
 	def artifact = patchConfig.jadasServiceArtifactName
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-	def mvnCommand = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
+	def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
 	echo "${mvnCommand}"
-	def mvnCommandCopy = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
+	def mvnCommandCopy = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
 	echo "${mvnCommandCopy}"
 
 	def dropName = jadasServiceDropName(patchConfig)
 	def dockerBuild = "/opt/apgops/docker/build.sh jadas-service ${WORKSPACE}/distributions/${dropName} ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER}"
 	echo "${dockerBuild}"
-	withMaven( maven: 'apache-maven-3.5.0', mavenLocalRepo: './mavenLocal') {
+	withMaven( maven: 'apache-maven-3.5.0') {
 		sh "${mvnCommand}"
 		sh "${mvnCommandCopy}"
 	}
