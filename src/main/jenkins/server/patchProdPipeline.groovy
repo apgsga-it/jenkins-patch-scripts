@@ -6,8 +6,13 @@ properties([
 	parameters([
 		stringParam(
 		defaultValue: "",
-		description: 'Parameter',
+		description: 'Path to Patch*.json File',
 		name: 'PARAMETER'
+		),
+		stringParam(
+			defaultValue: "FALSE",
+			description: 'Indicator, if the Pipeline should be restartet to the last successful state',
+			name: 'RESTART'
 		)
 	])
 ])
@@ -17,7 +22,6 @@ properties([
 // Passing Patch File Path , because of JAVA8MIG-395 / JENKINS-27413
 def patchFile = new File(params.PARAMETER)
 def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
-echo patchConfig.toString()
 patchConfig.cvsroot = env.CVS_ROOT
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"

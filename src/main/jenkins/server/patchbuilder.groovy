@@ -16,7 +16,8 @@ pipelineJob (jobName) {
 	logRotator(5,10,5,-1)
 	description("Patch Pipeline for : ${patchName}")
 	parameters {
-		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
+		stringParam('PARAMETER', "", "Pfad zum Patch*.json File")
+		stringParam('RESTART', "FALSE", "Indikator ob die Pipeline gerestart werden soll, bis zum letzten erfolgreichen Ststus default FALSE")
 	}
 	properties {
 		jobInclusionJobProperty {
