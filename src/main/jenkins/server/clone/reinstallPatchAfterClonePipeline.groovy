@@ -16,6 +16,7 @@ properties([
 	])
 ])
 
+
 stage("reinstallPatchAfterClone") {
 	
 	node {
@@ -47,6 +48,8 @@ def reinstallPatch(def patch, def target) {
 		
 		def targetBean = [envName:target,targetName:patchConfig.installationTarget,typeInd:"T"]
 		patchfunctions.targetIndicator(patchConfig,targetBean)
+		patchfunctions.mavenLocalRepo(patchConfig)
+		println patchConfig.mavenLocalRepo
 			
 		stage("Re-installing patch ${patch} on ${patchConfig.installationTarget}") {
 			echo "Starting Build for patch ${patch}"
