@@ -448,6 +448,7 @@ def predecessorStates(patchConfig) {
 
 def toSkip(target,toState, patchConfig) {
 	if (patchConfig.restart.equals('FALSE')) {
+		echo "Skipping ${target} and ${toState}"
 		return false
 	}
 	def targetToState = mapToState(target,toState)
@@ -462,6 +463,7 @@ def notify(target,toState,patchConfig) {
 	}
 	node {
 		echo "Notifying ${target} to ${toState}"
+		def targetToState = mapToState(target,toState)
 		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${targetToState}"
 		echo "Executeing ${cmd}"
 		def resultOk = sh ( returnStdout : true, script: cmd).trim()
