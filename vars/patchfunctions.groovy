@@ -438,7 +438,7 @@ def notify(target,toState,patchConfig) {
 		echo "Executeing ${notCmd}"
 		def result = sh ( returnStdout : true, script: notCmd).trim()
 		echo result
-		assert result == true 
+		assert result == "true" 
 		echo "Executeing ${notCmd} done"
 	}
 
