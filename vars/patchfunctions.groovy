@@ -1,4 +1,3 @@
-import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import hudson.model.*
 
@@ -15,8 +14,8 @@ def benchmark() {
 def mavenLocalRepo(patchConfig) {
 	node {
 		dir('mavenLocalRepo') {
-           patchConfig.mavenLocalRepo = pwd()
-        }
+			patchConfig.mavenLocalRepo = pwd()
+		}
 	}
 }
 
@@ -45,10 +44,10 @@ def targetIndicator(patchConfig, target) {
 
 def mavenVersionNumber(patchConfig,revision) {
 	def mavenVersion
-	
+
 	// Case where this is the first patch after having cloned the target
 	if(patchConfig.lastRevision == "CLONED") {
-		
+
 		if(getCurrentProdRevision() == null) {
 			mavenVersion = 	getMavenSnapshotVersion(patchConfig)
 			// TODO JHE: for debug purpose only, will be removed (println) ...
@@ -95,13 +94,19 @@ def getCurrentProdRevision() {
 	return revision
 }
 
-def approveBuild(patchConfig) {
+def approveBuild(target,toState,patchConfig) {
+	if (toSkip(target,toState,patchConfig)) {
+		return
+	}
 	timeout(time:5, unit:'DAYS') {
 		userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Build?" , submitter: 'svcjenkinsclient,che')
 	}
 }
 
-def approveInstallation(patchConfig) {
+def approveInstallation(target,toState,patchConfig) {
+	if (toSkip(target,toState,patchConfig)) {
+		return
+	}
 	timeout(time:5, unit:'DAYS') {
 		userInput = input (id:"Patch${patchConfig.patchNummer}InstallFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Installation?" , submitter: 'svcjenkinsclient,che')
 	}
@@ -172,19 +177,17 @@ def buildAndReleaseModules(patchConfig) {
 
 def buildAndReleaseModulesConcurrent(patchConfig) {
 	def artefacts = patchConfig.mavenArtifactsToBuild;
-	def listsByDepLevel = artefacts.groupBy {
-		it.dependencyLevel
-	}
+	def listsByDepLevel = artefacts.groupBy { it.dependencyLevel }
 	def depLevels = listsByDepLevel.keySet() as List
 	depLevels.sort()
 	depLevels.reverse(true)
 	println depLevels
-	depLevels.each { depLevel -> 
-			def artifactsToBuildParallel = listsByDepLevel[depLevel]
-			println artifactsToBuildParallel
-			def parallelBuilds = artifactsToBuildParallel.collectEntries {
-				[ "Building Level: ${depLevel} and Module: ${it.name}" : buildAndReleaseModulesConcurrent(patchConfig,it)]
-			}
+	depLevels.each { depLevel ->
+		def artifactsToBuildParallel = listsByDepLevel[depLevel]
+		println artifactsToBuildParallel
+		def parallelBuilds = artifactsToBuildParallel.collectEntries {
+			[ "Building Level: ${depLevel} and Module: ${it.name}" : buildAndReleaseModulesConcurrent(patchConfig,it)]
+		}
 		parallel parallelBuilds
 	}
 }
@@ -429,14 +432,39 @@ def assemble(patchConfig, assemblyName) {
 	}
 }
 
+def predecessorStates(patchConfig) {
+	if (patchConfig.restart.equals('FALSE')) {
+		patchConfig.predecessorsStates = []
+		return
+	}
+	echo "Retrieving predecessor States of ${patchConfig.patchNummer}"
+	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -rsta ${patchConfig.patchNummer}"
+	echo "Executeing ${cmd}"
+	result = sh ( returnStdout : true, script: cmd).trim()
+	echo result
+	patchConfig.predecessorsStates = result.tokenize('::')
+
+}
+
+def toSkip(target,toState, patchConfig) {
+	if (patchConfig.restart.equals('FALSE')) {
+		return false
+	}
+	def targetToState = mapToState(target,toState)
+	return patchConfig.predecessorsStates.contains(targetToState)
+
+}
+
 
 def notify(target,toState,patchConfig) {
+	if (toSkip(target,toState,patchConfig)) {
+		return
+	}
 	node {
 		echo "Notifying ${target} to ${toState}"
-		def targetToState = mapToState(target,toState)
-		def notCmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${targetToState}"
-		echo "Executeing ${notCmd}"
-		def resultOk = sh ( returnStdout : true, script: notCmd).trim()
+		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${targetToState}"
+		echo "Executeing ${cmd}"
+		def resultOk = sh ( returnStdout : true, script: cmd).trim()
 		echo resultOk
 		assert resultOk
 		echo "Executeing ${notCmd} done"
