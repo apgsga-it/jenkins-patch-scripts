@@ -469,7 +469,7 @@ def notify(target,toState,patchConfig) {
 		def resultOk = sh ( returnStdout : true, script: cmd).trim()
 		echo resultOk
 		assert resultOk
-		echo "Executeing ${notCmd} done"
+		echo "Executeing ${cmd} done"
 	}
 
 }
