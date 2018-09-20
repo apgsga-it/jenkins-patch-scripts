@@ -434,10 +434,10 @@ def notify(target,toState,patchConfig) {
 	node {
 		echo "Notifying ${target} to ${toState}"
 		def targetToState = mapToState(target,toState)
-		def notCmd = "/opt/apg-patch-cli/bin/apscli.sh -sta ${patchConfig.patchNummer},${targetToState},db 2>pipelineErr.log"
+		def notCmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${targetToState}"
 		echo "Executeing ${notCmd}"
-		def result = sh returnStatus: true, script: notCmd
-		assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
+		def result = sh ( returnStdOutput: true, script: notCmd).trim()
+		assert result == "true" : println (result)
 		echo "Executeing ${notCmd} done"
 	}
 
