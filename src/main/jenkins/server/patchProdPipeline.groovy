@@ -26,7 +26,7 @@ patchConfig.cvsroot = env.CVS_ROOT
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"
 patchConfig.patchFilePath = params.PARAMETER
-patchConfig.restart = params.RESTART
+patchConfig.restart = params.RESTART.equals("TRUE")
 
 // Load Target System Mappings
 def targetSystemsMap = patchfunctions.loadTargetsMap()
@@ -35,31 +35,61 @@ println "TargetSystemsMap : ${targetSystemsMap} "
 patchfunctions.mavenLocalRepo(patchConfig)
 println patchConfig.mavenLocalRepo
 // Retrieve event. PrecessorsState , which will be skipped if in Restart Modues
-patchfunctions.predecessorStates(patchConfig)
-println patchConfig.predecessorStates
+patchfunctions.redoToState(patchConfig)
 
 // Mainline
 // While mit Start der Pipeline bereits getagt ist
 
 def target = targetSystemsMap.get('Entwicklung')
-stage("${target.envName} (${target.targetName}) Installationsbereit Notification") {
-	patchfunctions.notify(target,"Installationsbereit", patchConfig)
+def skip =!patchConfig.restart || !patchConfig.redoToState.equals(patchfunctions.mapToState(target,"Installationsbereit"))
+stage("${target.envName} (${target.targetName}) Installationsbereit Notification "  + (skip ? "(Skipped" : "")) {
+	if (!skip) {
+		patchfunctions.notify(target,"Installationsbereit", patchConfig)
+	}
 }
 
 ['Informatiktest', 'Produktion'].each { envName ->
 	target = targetSystemsMap.get(envName)
 	assert target != null
 	patchfunctions.targetIndicator(patchConfig,target)
-	stage("Approve ${envName} (${target.targetName}) Build & Assembly") { patchfunctions.approveBuild(target,"Installationsbereit",patchConfig) }
-	stage("${envName} (${target.targetName}) Build" ) { patchfunctions.patchBuildsConcurrent(patchConfig)  }
-	stage("${envName} (${target.targetName}) Assembly" ) { patchfunctions.assembleDeploymentArtefacts(patchConfig) }
-	stage("${envName} (${target.targetName}) Installationsbereit Notification") {
-		patchfunctions.notify(target,"Installationsbereit", patchConfig)
+	skip = !patchConfig.restart || !patchConfig.redoToState.equals(patchfunctions.mapToState(target,"Installationsbereit"))
+	stage("Approve ${envName} (${target.targetName}) Build & Assembly ${patchConfig.skipText}") {
+		if (!skip) {
+			patchfunctions.approveBuild(patchConfig)
+		}
 	}
-	stage("Approve ${envName} (${target.targetName}) Installation") { patchfunctions.approveInstallation(target,"Installation", patchConfig)	 }
-	stage("${envName} (${target.targetName}) Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
-	stage("${envName} (${target.targetName}) Installation Notification") {
-		patchfunctions.mergeDbObjectOnHead(patchConfig, envName)
-		patchfunctions.notify(target,"Installation", patchConfig)
+	stage("${envName} (${target.targetName}) Build ${patchConfig.skipText}" ) {
+		if (!skip) {
+			patchfunctions.patchBuildsConcurrent(patchConfig)
+		}
+	}
+	stage("${envName} (${target.targetName}) Assembly ${patchConfig.skipText}" ) {
+		if (!skip) {
+			patchfunctions.assembleDeploymentArtefacts(patchConfig)
+		}
+	}
+	stage("${envName} (${target.targetName}) Installationsbereit Notification ${patchConfig.skipText}") {
+		if (!skip) {
+			patchfunctions.notify(target,"Installationsbereit", patchConfig)
+		}
+	}
+	stage("Approve ${envName} (${target.targetName}) Installation ${patchConfig.skipText}") {
+		if (!skip) {
+			patchfunctions.approveInstallation(patchConfig)
+		}
+	}
+	skip = !patchConfig.restart || !patchConfig.redoToState.equals(patchfunctions.mapToState(target,"Installation"))
+	stage("${envName} (${target.targetName}) Installation ${patchConfig.skipText}") {
+		if (!skip) {
+			patchDeployment.installDeploymentArtifacts(patchConfig)
+		}
+	}
+	stage("${envName} (${target.targetName}) Installation Notification ${patchConfig.skipText}") {
+		if(envName.equals("Produktion")) {
+			patchfunctions.mergeDbObjectOnHead(patchConfig, envName)
+		}
+		if (!skip) {
+			patchfunctions.notify(target,"Installation", patchConfig)
+		}
 	}
 }
