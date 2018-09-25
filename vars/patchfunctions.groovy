@@ -15,7 +15,6 @@ def failIf(parm) {
 	def testParameter = env.PATCH_SERVICE_TEST ? env.PATCH_SERVICE_TEST	: ""
 	if (testParameter.contentEquals(parm)) {
 		error("Forced error termination of pipeline, for testing purposes with parameter: ${parm}")
-		
 	}
 }
 
@@ -104,6 +103,7 @@ def getCurrentProdRevision() {
 
 def approveBuild(target,toState,patchConfig) {
 	if (toSkip(target,toState,patchConfig)) {
+		echo "Skipping Approve ${target} and ${toState}"
 		return
 	}
 	timeout(time:5, unit:'DAYS') {
@@ -113,6 +113,7 @@ def approveBuild(target,toState,patchConfig) {
 
 def approveInstallation(target,toState,patchConfig) {
 	if (toSkip(target,toState,patchConfig)) {
+		echo "Skipping Approve ${target} and ${toState}"
 		return
 	}
 	timeout(time:5, unit:'DAYS') {
@@ -456,7 +457,6 @@ def predecessorStates(patchConfig) {
 
 def toSkip(target,toState, patchConfig) {
 	if (patchConfig.restart.equals('FALSE')) {
-		echo "Skipping ${target} and ${toState}"
 		return false
 	}
 	def targetToState = mapToState(target,toState)
@@ -467,6 +467,7 @@ def toSkip(target,toState, patchConfig) {
 
 def notify(target,toState,patchConfig) {
 	if (toSkip(target,toState,patchConfig)) {
+		echo "Skipping Notification ${target} and ${toState}"
 		return
 	}
 	failIf("fail=" + mapToState(target,toState))
