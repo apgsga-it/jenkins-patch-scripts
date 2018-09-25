@@ -11,6 +11,14 @@ def benchmark() {
 	benchmarkCallback
 }
 
+def failIf(parm) {
+	def testParameter = env.PATCH_SERVICE_TEST ? env.PATCH_SERVICE_TEST	: ""
+	if (testParameter.contentEquals(parm)) {
+		error("Forced error termination of pipeline, for testing purposes with parameter: ${parm}")
+		
+	}
+}
+
 def mavenLocalRepo(patchConfig) {
 	node {
 		dir('mavenLocalRepo') {
@@ -461,6 +469,7 @@ def notify(target,toState,patchConfig) {
 	if (toSkip(target,toState,patchConfig)) {
 		return
 	}
+	failIf("fail=" + mapToState(target,toState))
 	node {
 		echo "Notifying ${target} to ${toState}"
 		def targetToState = mapToState(target,toState)
