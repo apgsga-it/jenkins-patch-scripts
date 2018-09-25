@@ -452,7 +452,7 @@ def predecessorStates(patchConfig) {
 		echo "Executeing ${cmd}"
 		def stateValues = sh ( returnStdout : true, script: cmd).trim()
 		echo stateValues
-		patchConfig.predecessorsStates = stateValues.tokenize('::')
+		patchConfig.predecessorStates = stateValues.tokenize('::')
 		echo "Executeing ${cmd} done."
 	}
 
