@@ -449,7 +449,7 @@ def predecessorStates(patchConfig) {
 	echo "Retrieving predecessor States of ${patchConfig.patchNummer}"
 	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -rsta ${patchConfig.patchNummer}"
 	echo "Executeing ${cmd}"
-	result = sh ( returnStdout : true, script: cmd).trim()
+	def result = sh ( returnStdout : true, script: cmd).trim()
 	echo result
 	patchConfig.predecessorsStates = result.tokenize('::')
 
