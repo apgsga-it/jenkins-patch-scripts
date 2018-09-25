@@ -463,7 +463,7 @@ def toSkip(target,toState, patchConfig) {
 		return false
 	}
 	def targetToState = mapToState(target,toState)
-	echo "Checking predecessorStates ${patchConfig.predecessorStates} for target State ${targetState}"
+	echo "Checking predecessorStates ${patchConfig.predecessorStates} for target State ${targetToState}"
 	def result = patchConfig.predecessorStates.contains(targetToState)
 	echo "Result ${result}"
 	result
