@@ -463,7 +463,7 @@ def toSkip(target,toState, patchConfig) {
 		return false
 	}
 	def targetToState = mapToState(target,toState)
-	return patchConfig.predecessorsStates.contains(targetToState)
+	return patchConfig.predecessorStates.contains(targetToState)
 
 }
 
