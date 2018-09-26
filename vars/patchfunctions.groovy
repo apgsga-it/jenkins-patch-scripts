@@ -18,10 +18,16 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	stage(stageText) {
 		if (!skip) {
 			callBack(patchConfig)
-			if (patchConfig.restart && patchConfig.redoToState.equals(patchConfig.targetToState) && task.equals("Notification")) {
+			if (patchConfig.redo && patchConfig.redoToState.equals(patchConfig.targetToState) && task.equals("Notification")) {
 				patchConfig.redo = false
 			}
-		}  
+		}
+	}
+}
+
+def installationPostProcess(patchConfig) {
+	if(patchConfig.envName.equals("Produktion")) {
+		patchfunctions.mergeDbObjectOnHead(patchConfig, patchConfig.envName)
 	}
 }
 
@@ -55,12 +61,11 @@ def tagName(patchConfig) {
 	patchConfig.patchTag
 }
 
-// TODO (che, 1.5 ) : we don't really need this anymore , but for the moment
 def targetIndicator(patchConfig, target) {
 	patchConfig.targetBean = target
-	// TODO (che, 1.5) for back ward compatability, must be changed further down the line.
+	patchConfig.envName = target.envName
 	patchConfig.installationTarget = target.targetName
-	patchConfig.targetInd = target.typeIn
+	patchConfig.targetInd = target.typeInd
 }
 
 def mavenVersionNumber(patchConfig,revision) {
@@ -112,7 +117,7 @@ def getCurrentProdRevision() {
 		}
 	}
 
-	return revision
+	revision
 }
 
 def approveBuild(patchConfig) {
@@ -459,12 +464,11 @@ def redoToState(patchConfig) {
 }
 
 
-def notify(target,toState,patchConfig) {
-	failIf("fail=" + mapToState(target,toState))
+def notify(patchConfig) {
+	failIf("fail=${patchConfig.targetToState}")
 	node {
-		echo "Notifying ${target} to ${toState}"
-		def targetToState = mapToState(target,toState)
-		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${targetToState}"
+		echo "Notifying ${patchConfig.targetToState}"
+		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${patchConfig.targetToState}"
 		echo "Executeing ${cmd}"
 		def resultOk = sh ( returnStdout : true, script: cmd).trim()
 		echo resultOk
