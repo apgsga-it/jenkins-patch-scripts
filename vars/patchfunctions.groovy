@@ -11,6 +11,26 @@ def benchmark() {
 	benchmarkCallback
 }
 
+def stage(target,toState,patchConfig,task, Closure callBack) {
+	patchConfig.targetToState = mapToState(target,toState)
+	def skip = patchConfig.redo && !patchConfig.redoToState.equals(patchConfig.targetToState)
+	def stageText = "${target.envName} (${target.targetName}) ${patchConfig.targetToState} ${task} "  + (skip ? "(Skipped)" : "")
+	stage(stageText) {
+		if (!skip) {
+			callBack(patchConfig)
+			if (patchConfig.redo && patchConfig.redoToState.equals(patchConfig.targetToState) && task.equals("Notification")) {
+				patchConfig.redo = false
+			}
+		}
+	}
+}
+
+def installationPostProcess(patchConfig) {
+	if(patchConfig.envName.equals("Produktion")) {
+		patchfunctions.mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+	}
+}
+
 def failIf(parm) {
 	def testParameter = env.PATCH_SERVICE_TEST ? env.PATCH_SERVICE_TEST	: ""
 	if (testParameter.contentEquals(parm)) {
@@ -41,10 +61,9 @@ def tagName(patchConfig) {
 	patchConfig.patchTag
 }
 
-// TODO (che, 1.5 ) : we don't really need this anymore , but for the moment
 def targetIndicator(patchConfig, target) {
 	patchConfig.targetBean = target
-	// TODO (che, 1.5) for back ward compatability, must be changed further down the line.
+	patchConfig.envName = target.envName
 	patchConfig.installationTarget = target.targetName
 	patchConfig.targetInd = target.typeInd
 }
@@ -98,24 +117,16 @@ def getCurrentProdRevision() {
 		}
 	}
 
-	return revision
+	revision
 }
 
-def approveBuild(target,toState,patchConfig) {
-	if (toSkip(target,toState,patchConfig)) {
-		echo "Skipping Approve ${target} and ${toState}"
-		return
-	}
+def approveBuild(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
 		userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Build?" , submitter: 'svcjenkinsclient,che')
 	}
 }
 
-def approveInstallation(target,toState,patchConfig) {
-	if (toSkip(target,toState,patchConfig)) {
-		echo "Skipping Approve ${target} and ${toState}"
-		return
-	}
+def approveInstallation(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
 		userInput = input (id:"Patch${patchConfig.patchNummer}InstallFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Installation?" , submitter: 'svcjenkinsclient,che')
 	}
@@ -347,11 +358,6 @@ def getCoPatchDbFolderName(patchConfig) {
 }
 
 def mergeDbObjectOnHead(patchConfig, envName) {
-
-	if(!envName.equals("Produktion")) {
-		return;
-	}
-
 	/*
 	 * JHE (22.05.2018): Within this function, we're calling a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
 	 * 					 coFromTagcvs method. So far I didn't find an equivalent build-in function allowing to do a merge.
@@ -441,46 +447,28 @@ def assemble(patchConfig, assemblyName) {
 	}
 }
 
-def predecessorStates(patchConfig) {
-	if (patchConfig.restart.equals('FALSE')) {
-		patchConfig.predecessorsStates = []
+def redoToState(patchConfig) {
+	if (!patchConfig.restart) {
+		patchConfig.redoToState = ""
 		return
 	}
 	node {
-		echo "Retrieving predecessor States of ${patchConfig.patchNummer}"
+		echo "Retrieving Redo ToState for ${patchConfig.patchNummer}"
 		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -rsta ${patchConfig.patchNummer}"
 		echo "Executeing ${cmd}"
-		def stateValues = sh ( returnStdout : true, script: cmd).trim()
-		echo stateValues
-		patchConfig.predecessorStates = stateValues.tokenize('::')
+		patchConfig.redoToState = sh ( returnStdout : true, script: cmd).trim()
+		echo patchConfig.redoToState
 		echo "Executeing ${cmd} done."
 	}
 
 }
 
-def toSkip(target,toState, patchConfig) {
-	if (patchConfig.restart.equals('FALSE')) {
-		return false
-	}
-	def targetToState = mapToState(target,toState)
-	echo "Checking predecessorStates ${patchConfig.predecessorStates} for target State ${targetToState}"
-	def result = patchConfig.predecessorStates.contains(targetToState.toString())
-	echo "Result ${result}"
-	result
 
-}
-
-
-def notify(target,toState,patchConfig) {
-	if (toSkip(target,toState,patchConfig)) {
-		echo "Skipping Notification ${target} and ${toState}"
-		return
-	}
-	failIf("fail=" + mapToState(target,toState))
+def notify(patchConfig) {
+	failIf("fail=${patchConfig.targetToState}")
 	node {
-		echo "Notifying ${target} to ${toState}"
-		def targetToState = mapToState(target,toState)
-		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${targetToState}"
+		echo "Notifying ${patchConfig.targetToState}"
+		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${patchConfig.targetToState}"
 		echo "Executeing ${cmd}"
 		def resultOk = sh ( returnStdout : true, script: cmd).trim()
 		echo resultOk

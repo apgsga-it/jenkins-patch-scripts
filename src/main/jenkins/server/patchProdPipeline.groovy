@@ -17,7 +17,7 @@ properties([
 	])
 ])
 
-// Parameter
+// Process Parameters
 // TODO  (che, 9.7) When JENKINS-27413 is resolved
 // Passing Patch File Path , because of JAVA8MIG-395 / JENKINS-27413
 def patchFile = new File(params.PARAMETER)
@@ -26,40 +26,40 @@ patchConfig.cvsroot = env.CVS_ROOT
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"
 patchConfig.patchFilePath = params.PARAMETER
-patchConfig.restart = params.RESTART
+patchConfig.redo = params.RESTART.equals("TRUE")
 
 // Load Target System Mappings
 def targetSystemsMap = patchfunctions.loadTargetsMap()
 println "TargetSystemsMap : ${targetSystemsMap} "
 // Create a local Maven Repo for Pipeline
 patchfunctions.mavenLocalRepo(patchConfig)
-println patchConfig.mavenLocalRepo
-// Retrieve event. PrecessorsState , which will be skipped if in Restart Modues
-patchfunctions.predecessorStates(patchConfig)
-println patchConfig.predecessorStates
+// Retrieve event. State, which will re - done
+patchfunctions.redoToState(patchConfig)
 
 // Mainline
-// While mit Start der Pipeline bereits getagt ist
 
+
+// Artefacts are tagged = ready to be buildt and deployed, we wait for Notification
 def target = targetSystemsMap.get('Entwicklung')
-stage("${target.envName} (${target.targetName}) Installationsbereit Notification") {
-	patchfunctions.notify(target,"Installationsbereit", patchConfig)
-}
+patchfunctions.stage(target,"Installationsbreit",patchConfig,"Notification", patchfunctions.notify(patchConfig))
 
 ['Informatiktest', 'Produktion'].each { envName ->
 	target = targetSystemsMap.get(envName)
 	assert target != null
 	patchfunctions.targetIndicator(patchConfig,target)
-	stage("Approve ${envName} (${target.targetName}) Build & Assembly") { patchfunctions.approveBuild(target,"Installationsbereit",patchConfig) }
-	stage("${envName} (${target.targetName}) Build" ) { patchfunctions.patchBuildsConcurrent(patchConfig)  }
-	stage("${envName} (${target.targetName}) Assembly" ) { patchfunctions.assembleDeploymentArtefacts(patchConfig) }
-	stage("${envName} (${target.targetName}) Installationsbereit Notification") {
-		patchfunctions.notify(target,"Installationsbereit", patchConfig)
-	}
-	stage("Approve ${envName} (${target.targetName}) Installation") { patchfunctions.approveInstallation(target,"Installation", patchConfig)	 }
-	stage("${envName} (${target.targetName}) Installation") { patchDeployment.installDeploymentArtifacts(patchConfig)  }
-	stage("${envName} (${target.targetName}) Installation Notification") {
-		patchfunctions.mergeDbObjectOnHead(patchConfig, envName)
-		patchfunctions.notify(target,"Installation", patchConfig)
-	}
+
+	// Approve to make Patch "Installationsbereit" for target
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.approveBuild(patchConfig))
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.patchBuildsConcurrent(patchConfig))
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.assembleDeploymentArtefacts(patchConfig))
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification",  patchfunctions.notify(patchConfig))
+	
+	// Approve to to install Patch
+	
+	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.approveInstallation(patchConfig))
+	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.installDeploymentArtifacts(patchConfig))
+	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.installationPostProcess(patchConfig))
+	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.notify(patchConfig))
+	
 }
+
