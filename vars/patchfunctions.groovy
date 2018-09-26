@@ -29,13 +29,15 @@ def initPatchConfig(patchConfig, params) {
 }
 
 def savePatchConfigState(patchConfig) {
-	echo "Saveing Patchconfig State ${patchConfig.patchNummer}"
-	def patchFileName = "Patch${patchConfig.patchNummer}.json"
-	writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
-	def cmd = "/opt/apg-patch-cli/bin/apscli.sh -s ${patchFileName}"
-	echo "Executeing ${cmd}"
-	sh "${cmd}"
-	echo "Executeing ${cmd} done."
+	node {
+		echo "Saveing Patchconfig State ${patchConfig.patchNummer}"
+		def patchFileName = "Patch${patchConfig.patchNummer}.json"
+		writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
+		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -s ${patchFileName}"
+		echo "Executeing ${cmd}"
+		sh "${cmd}"
+		echo "Executeing ${cmd} done."
+	}
 }
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
