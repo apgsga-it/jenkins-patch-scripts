@@ -31,9 +31,7 @@ def initPatchConfig(patchConfig, params) {
 def savePatchConfigState(patchConfig) {
 	echo "Saveing Patchconfig State ${patchConfig.patchNummer}"
 	def patchFileName = "Patch${patchConfig.patchNummer}.json"
-	def jsonOutput = new JsonBuilder(patchConfig).toPrettyString()
-	echo jsonOutput
-	writeFile(file: patchFileName , text = jsonOutput)
+	writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
 	def cmd = "/opt/apg-patch-cli/bin/apscli.sh -s ${patchFileName}"
 	echo "Executeing ${cmd}"
 	sh "${cmd}"
