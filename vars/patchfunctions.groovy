@@ -17,9 +17,9 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
 	def skip = patchConfig.redo &&
-			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()
-			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()
-			&& task.equals("Approve")))))
+			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
+			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
+			&& task.equals("Approve")))
 	echo "skip = ${skip}"
 	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : "")
 	stage(stageText) {
