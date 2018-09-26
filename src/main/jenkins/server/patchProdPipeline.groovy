@@ -39,9 +39,9 @@ patchfunctions.redoToState(patchConfig)
 // Mainline
 
 
-// Artefacts are tagged = ready to be buildt and deployed, we wait for Notification
+// Artefacts are tagged = ready to be buildt and deployed with start of Patch Pipeline
 def target = targetSystemsMap.get('Entwicklung')
-patchfunctions.stage(target,"Installationsbreit",patchConfig,"Notification", patchfunctions.notify(patchConfig))
+patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification", patchfunctions.notify(patchConfig))
 
 ['Informatiktest', 'Produktion'].each { envName ->
 	target = targetSystemsMap.get(envName)

@@ -14,7 +14,7 @@ def benchmark() {
 def stage(target,toState,patchConfig,task, Closure callBack) {
 	patchConfig.targetToState = mapToState(target,toState)
 	def skip = patchConfig.redo && !patchConfig.redoToState.equals(patchConfig.targetToState)
-	def stageText = "${target.envName} (${target.targetName}) ${patchConfig.targetToState} ${task} "  + (skip ? "(Skipped)" : "")
+	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : "")
 	stage(stageText) {
 		if (!skip) {
 			callBack(patchConfig)
