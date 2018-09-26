@@ -20,7 +20,7 @@ def readPatchFile(patchFilePath) {
 	patchConfig
 }
 
-def patchConfigInit(patchConfig, params) {
+def initPatchConfig(patchConfig, params) {
 	patchConfig.cvsroot = env.CVS_ROOT
 	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 	patchConfig.dockerBuildExtention = "tar.gz"
