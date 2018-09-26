@@ -11,12 +11,17 @@ def benchmark() {
 	benchmarkCallback
 }
 
-def stage(target,toState,patchConfig,Closure callBack) {
-	def skip =!patchConfig.restart || !patchConfig.redoToState.equals(patchfunctions.mapToState(target,toState))
-	stage("${target.envName} (${target.targetName}) Installationsbereit Notification "  + (skip ? "(Skipped" : "")) {
+def stage(target,toState,patchConfig,task, Closure callBack) {
+	patchConfig.targetToState = mapToState(target,toState)
+	def skip = patchConfig.redo && !patchConfig.redoToState.equals(patchConfig.targetToState)
+	def stageText = "${target.envName} (${target.targetName}) ${patchConfig.targetToState} ${task} "  + (skip ? "(Skipped)" : "")
+	stage(stageText) {
 		if (!skip) {
 			callBack(patchConfig)
-		}
+			if (patchConfig.restart && patchConfig.redoToState.equals(patchConfig.targetToState) && task.equals("Notification")) {
+				patchConfig.redo = false
+			}
+		}  
 	}
 }
 

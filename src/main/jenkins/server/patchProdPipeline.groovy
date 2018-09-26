@@ -26,7 +26,7 @@ patchConfig.cvsroot = env.CVS_ROOT
 patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 patchConfig.dockerBuildExtention = "tar.gz"
 patchConfig.patchFilePath = params.PARAMETER
-patchConfig.restart = params.RESTART.equals("TRUE")
+patchConfig.redo = params.RESTART.equals("TRUE")
 
 // Load Target System Mappings
 def targetSystemsMap = patchfunctions.loadTargetsMap()
