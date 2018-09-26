@@ -16,7 +16,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	patchConfig.targetToState = mapToState(target,toState)
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
-	def skip = patchConfig.redo && !patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
+	def skip = patchConfig.redo && !patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString() &&!task.equals("Approve"))
 	echo "skip = ${skip}"
 	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : "")
 	stage(stageText) {
@@ -59,7 +59,9 @@ def loadTargetsMap() {
 	assert targetSystemFile.exists()
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
-	jsonSystemTargets.targetSystems.each( { target -> targetSystemMap.put(target.name, [envName:target.name,targetName:target.target,typeInd:target.typeInd])})
+	jsonSystemTargets.targetSystems.each( {
+		target -> targetSystemMap.put(target.name, [envName:target.name,targetName:target.target,typeInd:target.typeInd])
+	})
 	println targetSystemMap
 	targetSystemMap
 }
