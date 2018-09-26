@@ -55,7 +55,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 		if (!skip) {
 			echo "Not skipping"
 			callBack(patchConfig)
-			if (patchConfig.redo && patchConfig.redoToState.equals(patchConfig.targetToState) && task.equals("Notification")) {
+			if (patchConfig.redo && patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && task.equals("Notification")) {
 				patchConfig.redo = false
 			}
 			savePatchConfigState(patchConfig)
