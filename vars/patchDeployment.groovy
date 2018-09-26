@@ -31,7 +31,7 @@ def install(patchConfig, type, artifact,extension) {
 		}
 
 		def dropName = patchfunctions.jadasServiceDropName(patchConfig)
-		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER} ${patchConfig.installationTarget}"
+		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr} ${patchConfig.installationTarget}"
 		echo dockerDeploy
 		sh "${dockerDeploy}"
 	}

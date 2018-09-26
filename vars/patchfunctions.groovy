@@ -465,13 +465,14 @@ def buildDockerImage(patchConfig) {
 	def extension = patchConfig.dockerBuildExtention
 	def artifact = patchConfig.jadasServiceArtifactName
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
+	patchConfig.runningNr = env.BUILD_NUMBER
 	def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
 	echo "${mvnCommand}"
 	def mvnCommandCopy = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
 	echo "${mvnCommandCopy}"
 
 	def dropName = jadasServiceDropName(patchConfig)
-	def dockerBuild = "/opt/apgops/docker/build.sh jadas-service ${WORKSPACE}/distributions/${dropName} ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER}"
+	def dockerBuild = "/opt/apgops/docker/build.sh jadas-service ${WORKSPACE}/distributions/${dropName} ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr}"
 	echo "${dockerBuild}"
 	withMaven( maven: 'apache-maven-3.5.0') {
 		sh "${mvnCommand}"
