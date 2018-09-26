@@ -454,7 +454,7 @@ def assemble(patchConfig, assemblyName) {
 }
 
 def redoToState(patchConfig) {
-	if (!patchConfig.restart) {
+	if (!patchConfig.redo) {
 		patchConfig.redoToState = ""
 		return
 	}
@@ -463,7 +463,7 @@ def redoToState(patchConfig) {
 		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -rsta ${patchConfig.patchNummer}"
 		echo "Executeing ${cmd}"
 		patchConfig.redoToState = sh ( returnStdout : true, script: cmd).trim()
-		echo patchConfig.redoToState
+		echo "Redo ToState: ${patchConfig.redoToState}"
 		echo "Executeing ${cmd} done."
 	}
 

@@ -41,7 +41,7 @@ patchfunctions.redoToState(patchConfig)
 
 // Artefacts are tagged = ready to be buildt and deployed with start of Patch Pipeline
 def target = targetSystemsMap.get('Entwicklung')
-patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification", patchfunctions.notify(patchConfig))
+patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification", patchfunctions.&notify)
 
 ['Informatiktest', 'Produktion'].each { envName ->
 	target = targetSystemsMap.get(envName)
@@ -49,17 +49,17 @@ patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification", pa
 	patchfunctions.targetIndicator(patchConfig,target)
 
 	// Approve to make Patch "Installationsbereit" for target
-	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.approveBuild(patchConfig))
-	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.patchBuildsConcurrent(patchConfig))
-	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.assembleDeploymentArtefacts(patchConfig))
-	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification",  patchfunctions.notify(patchConfig))
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.&approveBuild)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification",  patchfunctions.&notify)
 	
 	// Approve to to install Patch
 	
-	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.approveInstallation(patchConfig))
-	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.installDeploymentArtifacts(patchConfig))
-	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.installationPostProcess(patchConfig))
-	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.notify(patchConfig))
+	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.&approveInstallation)
+	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
+	patchfunctions.stage(target,"Installation",patchConfig,"Postprocess",  patchfunctions.&installationPostProcess)
+	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.&notify)
 	
 }
 
