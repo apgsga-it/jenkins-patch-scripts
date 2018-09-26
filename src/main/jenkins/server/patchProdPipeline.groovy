@@ -20,13 +20,9 @@ properties([
 // Process Parameters
 // TODO  (che, 9.7) When JENKINS-27413 is resolved
 // Passing Patch File Path , because of JAVA8MIG-395 / JENKINS-27413
-def patchFile = new File(params.PARAMETER)
-def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
-patchConfig.cvsroot = env.CVS_ROOT
-patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
-patchConfig.dockerBuildExtention = "tar.gz"
-patchConfig.patchFilePath = params.PARAMETER
-patchConfig.redo = params.RESTART.equals("TRUE")
+
+def patchConfig = patchfunctions.readPatchFile(params.PARAMETER)
+patchfunctions.initPatchConfig(patchConfig,params)
 
 // Load Target System Mappings
 def targetSystemsMap = patchfunctions.loadTargetsMap()

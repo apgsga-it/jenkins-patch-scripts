@@ -1,4 +1,6 @@
+import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
 def benchmark() {
@@ -9,6 +11,25 @@ def benchmark() {
 		now - start
 	}
 	benchmarkCallback
+}
+
+def readPatchFile(patchFilePath) {
+	def patchFile = new File(patchFilePath)
+	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
+	patchConfig.patchFilePath = patchFilePath
+	patchConfig
+}
+
+def patchConfigInit(patchConfig, params) {
+	patchConfig.cvsroot = env.CVS_ROOT
+	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
+	patchConfig.dockerBuildExtention = "tar.gz"
+	patchConfig.patchFilePath = params.PARAMETER
+	patchConfig.redo = params.RESTART.equals("TRUE")
+}
+
+def savePatchConfigState(patchConfig) {
+	new File(patchConfig.patchFilePath).write(new JsonBuilder(patchConfig).toPrettyString())
 }
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
@@ -29,6 +50,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 			if (patchConfig.redo && patchConfig.redoToState.equals(patchConfig.targetToState) && task.equals("Notification")) {
 				patchConfig.redo = false
 			}
+			savePatchConfigState(patchConfig)
 		} else {
 			"Echo skipping"
 		}
