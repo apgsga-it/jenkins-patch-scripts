@@ -20,7 +20,7 @@ def readPatchFile(patchFilePath) {
 	patchConfig
 }
 
-def initPatchConfig(patchConfig, params) {
+def patchConfigInit(patchConfig, params) {
 	patchConfig.cvsroot = env.CVS_ROOT
 	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 	patchConfig.dockerBuildExtention = "tar.gz"
@@ -29,7 +29,13 @@ def initPatchConfig(patchConfig, params) {
 }
 
 def savePatchConfigState(patchConfig) {
-	new File(patchConfig.patchFilePath).write(new JsonBuilder(patchConfig).toPrettyString())
+	echo "Saveing Patchconfig State ${patchConfig.patchNummer}"
+	def patchFileName = "Patch${patchConfig.patchNummer}.json"
+	writeFile file: patchFileName , text = new JsonBuilder(patchConfig).toPrettyString()
+	def cmd = "/opt/apg-patch-cli/bin/apscli.sh -s ${patchFileName}"
+	echo "Executeing ${cmd}"
+	sh "${cmd}"
+	echo "Executeing ${cmd} done."
 }
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
