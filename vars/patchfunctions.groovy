@@ -160,14 +160,20 @@ def patchBuildsConcurrent(patchConfig) {
 }
 
 def nextRevision(patchConfig) {
+	setPatchRevision(patchConfig)
+	setPatchLastRevision(patchConfig)
+}
 
+def setPatchLastRevision(patchConfig) {
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.installationTarget}"
+	def lastRevision = sh ( returnStdout : true, script: cmd).trim()
+	patchConfig.lastRevision = lastRevision
+}
+
+def setPatchRevision(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -nr"
 	def revision = sh ( returnStdout : true, script: cmd).trim()
-
-	// TODO JHE: to be verified if it's really what we want (patchConfig.lastRevision = patchConfig.revision)	
-	patchConfig.lastRevision = patchConfig.revision
 	patchConfig.revision = revision
-	
 }
 
 def saveRevisions(patchConfig) {
