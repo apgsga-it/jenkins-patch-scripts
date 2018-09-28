@@ -111,55 +111,13 @@ def targetIndicator(patchConfig, target) {
 }
 
 def mavenVersionNumber(patchConfig,revision) {
-	def mavenVersion
-
-	// Case where this is the first patch after having cloned the target
-	if(patchConfig.lastRevision == "CLONED") {
-
-		if(getCurrentProdRevision() == null) {
-			mavenVersion = 	getMavenSnapshotVersion(patchConfig)
-			// TODO JHE: for debug purpose only, will be removed (println) ...
-			println "patchConfig.lastRevision = patchConfig.revision ... Will be done with following information:"
-			println "patchConfig.lastRevision -> ${patchConfig.lastRevision} // patchConfig.revision -> ${patchConfig.revision}"
-			patchConfig.lastRevision = patchConfig.revision
-		}
-		else {
-			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
-			patchConfig.lastRevision = patchConfig.revision
-		}
-	}
-	else {
-		if (revision.equals('SNAPSHOT')) {
-			mavenVersion = getMavenSnapshotVersion(patchConfig)
-		} else {
-			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + patchConfig.targetInd + '-' + revision
-		}
-	}
-	mavenVersion
-}
-
-def getMavenSnapshotVersion(def patchConfig) {
-	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-SNAPSHOT"
+	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
 }
 
 def getCurrentProdRevision() {
-	def revision
-	def shOutputFileName = "shProdRevOutput"
-
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -pr > ${shOutputFileName} 2>pipelineErr.log"
-
-	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
-
-	def lines = readFile(shOutputFileName).readLines()
-	lines.each {String line ->
-		// See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
-		if (line.contains("lastProdRevision")) {
-			def parsedRev = new JsonSlurper().parseText(line)
-			revision = parsedRev.lastProdRevision
-		}
-	}
-
-	revision
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
+	def revision = sh ( returnStdout : true, script: cmd).trim()
+	return revision
 }
 
 def approveBuild(patchConfig) {
@@ -180,7 +138,7 @@ def patchBuilds(patchConfig) {
 		deleteDir()
 		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
 			checkoutModules(patchConfig)
-			retrieveRevisions(patchConfig)
+			nextRevision(patchConfig)
 			generateVersionProperties(patchConfig)
 			buildAndReleaseModules(patchConfig)
 			saveRevisions(patchConfig)
@@ -193,7 +151,7 @@ def patchBuildsConcurrent(patchConfig) {
 		deleteDir()
 		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
 			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
-			retrieveRevisions(patchConfig)
+			nextRevision(patchConfig)
 			generateVersionProperties(patchConfig)
 			buildAndReleaseModulesConcurrent(patchConfig)
 			saveRevisions(patchConfig)
@@ -201,34 +159,41 @@ def patchBuildsConcurrent(patchConfig) {
 	}
 }
 
-def retrieveRevisions(patchConfig) {
+def nextRevision(patchConfig) {
 
-	def revision
-	def lastRevision
-	def shOutputFileName = "shOutput"
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -nr"
+	def revision = sh ( returnStdout : true, script: cmd).trim()
 
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget} > ${shOutputFileName} 2>pipelineErr.log"
-
-	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
-
-	def lines = readFile(shOutputFileName).readLines()
-	lines.each {String line ->
-		// See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
-		if (line.contains("fromRetrieveRevision")) {
-			def parsedRev = new JsonSlurper().parseText(line)
-			revision = parsedRev.fromRetrieveRevision.revision
-			lastRevision = parsedRev.fromRetrieveRevision.lastRevision
-		}
-	}
-
+	// TODO JHE: to be verified if it's really what we want (patchConfig.lastRevision = patchConfig.revision)	
+	patchConfig.lastRevision = patchConfig.revision
 	patchConfig.revision = revision
-	patchConfig.lastRevision = lastRevision
+	
 }
 
 def saveRevisions(patchConfig) {
+	if(isPatchForProdTarget(patchConfig)) {
+		saveProdRevision(patchConfig)
+	}
+	else {
+		saveNonProdRevision(patchConfig)
+	}
+}
 
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} 2>pipelineErr.log"
-	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
+def isPatchForProdTarget(def patchConfig) {
+	def targetMap = loadTargetsMap()
+	return targetMap.get("Produktion").get("targetName").equalsIgnoreCase("${patchConfig.installationTarget}") 	
+}
+
+def saveProdRevision(def patchConfig) {
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -spr ${patchConfig.revision}"
+	def result = sh returnStatus: true, script: "${cmd}"
+	assert result == 0 : println("Error while setting PROD revision to ${patchConfig.revision}")
+}
+
+def saveNonProdRevision(def patchConfig) {
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${patchConfig.revision}"
+	def result = sh returnStatus: true, script: "${cmd}"
+	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
 }
 
 
