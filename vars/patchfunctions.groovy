@@ -1,4 +1,6 @@
+import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
 def benchmark() {
@@ -9,6 +11,64 @@ def benchmark() {
 		now - start
 	}
 	benchmarkCallback
+}
+
+def readPatchFile(patchFilePath) {
+	def patchFile = new File(patchFilePath)
+	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
+	patchConfig.patchFilePath = patchFilePath
+	patchConfig
+}
+
+def initPatchConfig(patchConfig, params) {
+	patchConfig.cvsroot = env.CVS_ROOT
+	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
+	patchConfig.dockerBuildExtention = "tar.gz"
+	patchConfig.patchFilePath = params.PARAMETER
+	patchConfig.redo = params.RESTART.equals("TRUE")
+}
+
+def savePatchConfigState(patchConfig) {
+	node {
+		echo "Saveing Patchconfig State ${patchConfig.patchNummer}"
+		def patchFileName = "Patch${patchConfig.patchNummer}.json"
+		writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
+		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -s ${patchFileName}"
+		echo "Executeing ${cmd}"
+		sh "${cmd}"
+		echo "Executeing ${cmd} done."
+	}
+}
+
+def stage(target,toState,patchConfig,task, Closure callBack) {
+	echo "target: ${target}, toState: ${toState}, task: ${task} "
+	patchConfig.targetToState = mapToState(target,toState)
+	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
+	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
+	def skip = patchConfig.redo &&
+			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
+			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
+			&& task.equals("Approve")))
+	echo "skip = ${skip}"
+	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : "")
+	stage(stageText) {
+		if (!skip) {
+			echo "Not skipping"
+			callBack(patchConfig)
+			if (patchConfig.redo && patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && task.equals("Notification")) {
+				patchConfig.redo = false
+			}
+			savePatchConfigState(patchConfig)
+		} else {
+			"Echo skipping"
+		}
+	}
+}
+
+def installationPostProcess(patchConfig) {
+	if(patchConfig.envName.equals("Produktion")) {
+		patchfunctions.mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+	}
 }
 
 def failIf(parm) {
@@ -32,7 +92,9 @@ def loadTargetsMap() {
 	assert targetSystemFile.exists()
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
-	jsonSystemTargets.targetSystems.each( { target -> targetSystemMap.put(target.name, [envName:target.name,targetName:target.target,typeInd:target.typeInd])})
+	jsonSystemTargets.targetSystems.each( { target ->
+		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target,typeInd:target.typeInd])
+	})
 	println targetSystemMap
 	targetSystemMap
 }
@@ -41,81 +103,30 @@ def tagName(patchConfig) {
 	patchConfig.patchTag
 }
 
-// TODO (che, 1.5 ) : we don't really need this anymore , but for the moment
 def targetIndicator(patchConfig, target) {
 	patchConfig.targetBean = target
-	// TODO (che, 1.5) for back ward compatability, must be changed further down the line.
+	patchConfig.envName = target.envName
 	patchConfig.installationTarget = target.targetName
 	patchConfig.targetInd = target.typeInd
 }
 
 def mavenVersionNumber(patchConfig,revision) {
-	def mavenVersion
-
-	// Case where this is the first patch after having cloned the target
-	if(patchConfig.lastRevision == "CLONED") {
-
-		if(getCurrentProdRevision() == null) {
-			mavenVersion = 	getMavenSnapshotVersion(patchConfig)
-			// TODO JHE: for debug purpose only, will be removed (println) ...
-			println "patchConfig.lastRevision = patchConfig.revision ... Will be done with following information:"
-			println "patchConfig.lastRevision -> ${patchConfig.lastRevision} // patchConfig.revision -> ${patchConfig.revision}"
-			patchConfig.lastRevision = patchConfig.revision
-		}
-		else {
-			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-P-" + getCurrentProdRevision()
-			patchConfig.lastRevision = patchConfig.revision
-		}
-	}
-	else {
-		if (revision.equals('SNAPSHOT')) {
-			mavenVersion = getMavenSnapshotVersion(patchConfig)
-		} else {
-			mavenVersion = patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + patchConfig.targetInd + '-' + revision
-		}
-	}
-	mavenVersion
-}
-
-def getMavenSnapshotVersion(def patchConfig) {
-	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-SNAPSHOT"
+	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
 }
 
 def getCurrentProdRevision() {
-	def revision
-	def shOutputFileName = "shProdRevOutput"
-
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -pr > ${shOutputFileName} 2>pipelineErr.log"
-
-	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
-
-	def lines = readFile(shOutputFileName).readLines()
-	lines.each {String line ->
-		// See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
-		if (line.contains("lastProdRevision")) {
-			def parsedRev = new JsonSlurper().parseText(line)
-			revision = parsedRev.lastProdRevision
-		}
-	}
-
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
+	def revision = sh ( returnStdout : true, script: cmd).trim()
 	return revision
 }
 
-def approveBuild(target,toState,patchConfig) {
-	if (toSkip(target,toState,patchConfig)) {
-		echo "Skipping Approve ${target} and ${toState}"
-		return
-	}
+def approveBuild(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
 		userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Build?" , submitter: 'svcjenkinsclient,che')
 	}
 }
 
-def approveInstallation(target,toState,patchConfig) {
-	if (toSkip(target,toState,patchConfig)) {
-		echo "Skipping Approve ${target} and ${toState}"
-		return
-	}
+def approveInstallation(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
 		userInput = input (id:"Patch${patchConfig.patchNummer}InstallFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Installation?" , submitter: 'svcjenkinsclient,che')
 	}
@@ -127,7 +138,7 @@ def patchBuilds(patchConfig) {
 		deleteDir()
 		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
 			checkoutModules(patchConfig)
-			retrieveRevisions(patchConfig)
+			nextRevision(patchConfig)
 			generateVersionProperties(patchConfig)
 			buildAndReleaseModules(patchConfig)
 			saveRevisions(patchConfig)
@@ -140,7 +151,7 @@ def patchBuildsConcurrent(patchConfig) {
 		deleteDir()
 		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
 			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
-			retrieveRevisions(patchConfig)
+			nextRevision(patchConfig)
 			generateVersionProperties(patchConfig)
 			buildAndReleaseModulesConcurrent(patchConfig)
 			saveRevisions(patchConfig)
@@ -148,34 +159,21 @@ def patchBuildsConcurrent(patchConfig) {
 	}
 }
 
-def retrieveRevisions(patchConfig) {
+def nextRevision(patchConfig) {
 
-	def revision
-	def lastRevision
-	def shOutputFileName = "shOutput"
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -nr"
+	def revision = sh ( returnStdout : true, script: cmd).trim()
 
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -rr ${patchConfig.targetInd},${patchConfig.installationTarget} > ${shOutputFileName} 2>pipelineErr.log"
-
-	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
-
-	def lines = readFile(shOutputFileName).readLines()
-	lines.each {String line ->
-		// See com.apgsga.patch.service.client.PatchCli.retrieveRevisions to know where it's coming from...
-		if (line.contains("fromRetrieveRevision")) {
-			def parsedRev = new JsonSlurper().parseText(line)
-			revision = parsedRev.fromRetrieveRevision.revision
-			lastRevision = parsedRev.fromRetrieveRevision.lastRevision
-		}
-	}
-
+	// TODO JHE: to be verified if it's really what we want (patchConfig.lastRevision = patchConfig.revision)	
+	patchConfig.lastRevision = patchConfig.revision
 	patchConfig.revision = revision
-	patchConfig.lastRevision = lastRevision
+	
 }
 
 def saveRevisions(patchConfig) {
-
-	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -sr ${patchConfig.targetInd},${patchConfig.installationTarget},${patchConfig.revision} 2>pipelineErr.log"
-	assert result == 0 : println (new File("${WORKSPACE}/pipelineErr.log").text)
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${patchConfig.revision}"
+	def result = sh returnStatus: true, script: "${cmd}"
+	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
 }
 
 
@@ -347,11 +345,6 @@ def getCoPatchDbFolderName(patchConfig) {
 }
 
 def mergeDbObjectOnHead(patchConfig, envName) {
-
-	if(!envName.equals("Produktion")) {
-		return;
-	}
-
 	/*
 	 * JHE (22.05.2018): Within this function, we're calling a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
 	 * 					 coFromTagcvs method. So far I didn't find an equivalent build-in function allowing to do a merge.
@@ -417,13 +410,14 @@ def buildDockerImage(patchConfig) {
 	def extension = patchConfig.dockerBuildExtention
 	def artifact = patchConfig.jadasServiceArtifactName
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
+	patchConfig.runningNr = env.BUILD_NUMBER
 	def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
 	echo "${mvnCommand}"
 	def mvnCommandCopy = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
 	echo "${mvnCommandCopy}"
 
 	def dropName = jadasServiceDropName(patchConfig)
-	def dockerBuild = "/opt/apgops/docker/build.sh jadas-service ${WORKSPACE}/distributions/${dropName} ${patchConfig.patchNummer}-${patchConfig.revision}-${BUILD_NUMBER}"
+	def dockerBuild = "/opt/apgops/docker/build.sh jadas-service ${WORKSPACE}/distributions/${dropName} ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr}"
 	echo "${dockerBuild}"
 	withMaven( maven: 'apache-maven-3.5.0') {
 		sh "${mvnCommand}"
@@ -441,46 +435,28 @@ def assemble(patchConfig, assemblyName) {
 	}
 }
 
-def predecessorStates(patchConfig) {
-	if (patchConfig.restart.equals('FALSE')) {
-		patchConfig.predecessorsStates = []
+def redoToState(patchConfig) {
+	if (!patchConfig.redo) {
+		patchConfig.redoToState = ""
 		return
 	}
 	node {
-		echo "Retrieving predecessor States of ${patchConfig.patchNummer}"
+		echo "Retrieving Redo ToState for ${patchConfig.patchNummer}"
 		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -rsta ${patchConfig.patchNummer}"
 		echo "Executeing ${cmd}"
-		def stateValues = sh ( returnStdout : true, script: cmd).trim()
-		echo stateValues
-		patchConfig.predecessorStates = stateValues.tokenize('::')
+		patchConfig.redoToState = sh ( returnStdout : true, script: cmd).trim()
+		echo "Redo ToState: ${patchConfig.redoToState}"
 		echo "Executeing ${cmd} done."
 	}
 
 }
 
-def toSkip(target,toState, patchConfig) {
-	if (patchConfig.restart.equals('FALSE')) {
-		return false
-	}
-	def targetToState = mapToState(target,toState)
-	echo "Checking predecessorStates ${patchConfig.predecessorStates} for target State ${targetToState}"
-	def result = patchConfig.predecessorStates.contains(targetToState.toString())
-	echo "Result ${result}"
-	result
 
-}
-
-
-def notify(target,toState,patchConfig) {
-	if (toSkip(target,toState,patchConfig)) {
-		echo "Skipping Notification ${target} and ${toState}"
-		return
-	}
-	failIf("fail=" + mapToState(target,toState))
+def notify(patchConfig) {
+	failIf("fail=${patchConfig.targetToState}")
 	node {
-		echo "Notifying ${target} to ${toState}"
-		def targetToState = mapToState(target,toState)
-		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${targetToState}"
+		echo "Notifying ${patchConfig.targetToState}"
+		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${patchConfig.targetToState}"
 		echo "Executeing ${cmd}"
 		def resultOk = sh ( returnStdout : true, script: cmd).trim()
 		echo resultOk
