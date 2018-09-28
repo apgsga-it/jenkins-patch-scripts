@@ -67,7 +67,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 
 def installationPostProcess(patchConfig) {
 	if(patchConfig.envName.equals("Produktion")) {
-		patchfunctions.mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+		mergeDbObjectOnHead(patchConfig, patchConfig.envName)
 	}
 }
 
