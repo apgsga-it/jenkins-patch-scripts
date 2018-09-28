@@ -171,6 +171,26 @@ def nextRevision(patchConfig) {
 }
 
 def saveRevisions(patchConfig) {
+	if(isPatchForProdTarget(patchConfig)) {
+		saveProdRevision(patchConfig)
+	}
+	else {
+		saveNonProdRevision(patchConfig)
+	}
+}
+
+def isPatchForProdTarget(def patchConfig) {
+	def targetMap = loadTargetsMap()
+	return targetMap.get("Produktion").get("targetName").equalsIgnoreCase("${patchConfig.installationTarget}") 	
+}
+
+def saveProdRevision(def patchConfig) {
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -spr ${patchConfig.revision}"
+	def result = sh returnStatus: true, script: "${cmd}"
+	assert result == 0 : println("Error while setting PROD revision to ${patchConfig.revision}")
+}
+
+def saveNonProdRevision(def patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${patchConfig.revision}"
 	def result = sh returnStatus: true, script: "${cmd}"
 	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
