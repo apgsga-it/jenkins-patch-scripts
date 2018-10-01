@@ -81,6 +81,7 @@ def getPatchConfig(def patch, def target) {
 	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 	patchConfig.dockerBuildExtention = "tar.gz"
 	patchConfig.installationTarget = target
+	patchConfig.patchFilePath = "${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json"
 	echo "patchConfig for patch ${patch} : ${patchConfig}"
 	return patchConfig
 }
