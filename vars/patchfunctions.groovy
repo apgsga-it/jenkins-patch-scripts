@@ -191,15 +191,21 @@ def isPatchForProdTarget(def patchConfig) {
 }
 
 def saveProdRevision(def patchConfig) {
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -spr ${patchConfig.revision}"
+	def fullRev = getFullVersionRevision(patchConfig)
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -spr ${fullRev}"
 	def result = sh returnStatus: true, script: "${cmd}"
 	assert result == 0 : println("Error while setting PROD revision to ${patchConfig.revision}")
 }
 
 def saveNonProdRevision(def patchConfig) {
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${patchConfig.revision}"
+	def fullRev = getFullVersionRevision(patchConfig)
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${fullRev}"
 	def result = sh returnStatus: true, script: "${cmd}"
 	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
+}
+
+def getFullVersionRevision(def patchConfig) {
+	return "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-${patchConfig.revision}"
 }
 
 
