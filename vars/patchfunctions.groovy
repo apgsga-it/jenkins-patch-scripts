@@ -281,7 +281,7 @@ def coFromTagcvs(patchConfig,tag, moduleName) {
 }
 
 def generateVersionProperties(patchConfig) {
-	def previousVersion = mavenVersionNumber(patchConfig,patchConfig.lastRevision)
+	def previousVersion = patchConfig.lastRevision
 	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
