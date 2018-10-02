@@ -282,7 +282,7 @@ def coFromTagcvs(patchConfig,tag, moduleName) {
 
 def generateVersionProperties(patchConfig) {
 	// JHE (01.10.2018): when searching for the last revision, we have one corner case when the target has never had any patch before. Then, its basis is SNAPSHOT, but "SNAPSHOT" only is not enough, in that case we need to complete it with base version and mnemo.
-	//					 Ideally this should have been done within apsrevcli, but apsrevcli has no idea about version and revision information.
+	//					 Ideally this should have been done within apsrevcli, but apsrevcli has no idea about version and revision information (at patch level)
 	def previousVersion = patchConfig.lastRevision.equals("SNAPSHOT") ? "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-${patchConfig.lastRevision}" : patchConfig.lastRevision
 	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
