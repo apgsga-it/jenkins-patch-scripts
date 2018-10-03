@@ -165,9 +165,26 @@ def nextRevision(patchConfig) {
 }
 
 def setPatchLastRevision(patchConfig) {
+	if(isPatchForProdTarget(patchConfig)) {
+		setPatchLastRevisionForProd(patchConfig)
+	}
+	else {
+		setPatchLastRevisionForNonProd(patchConfig)
+	}
+}
+
+def setPatchLastRevisionForProd(patchConfig) {
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
+	def lastProdRevision = sh ( returnStdout : true, script: cmd).trim()
+	patchConfig.lastRevision = lastProdRevision
+	echo "patchConfig.lastRevision has been set with last Prod Revision: ${lastProdRevision}"
+}
+
+def setPatchLastRevisionForNonProd(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.installationTarget}"
-	def lastRevision = sh ( returnStdout : true, script: cmd).trim()
-	patchConfig.lastRevision = lastRevision
+	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim()
+	patchConfig.lastRevision = lastTargetRevision
+	echo "patchConfig.lastRevision has been set with last Revision for target ${patchConfig.installationTarget}: ${lastTargetRevision}"
 }
 
 def setPatchRevision(patchConfig) {
