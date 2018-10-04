@@ -288,26 +288,37 @@ def coFromBranchCvs(patchConfig, moduleName, type) {
 	}
 	def callBack = benchmark()
 	def duration = callBack {
-		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
+		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
+				[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
+						[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [
+								[localName: moduleName, remoteName: moduleName]
+							]]
+					]]
+			], skipChangeLog: false])
 	}
 	echo "Checkoout of ${moduleName} took ${duration} ms"
 }
 def coFromTagcvs(patchConfig,tag, moduleName) {
 	def callBack = benchmark()
 	def duration = callBack {
-		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
+		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
+				[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
+						[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [
+								[localName: moduleName, remoteName: moduleName]
+							]]
+					]]
+			], skipChangeLog: false])
 	}
 	echo "Checkoout of ${moduleName} took ${duration} ms"
 }
 
 def generateVersionProperties(patchConfig) {
-	// JHE (01.10.2018): when searching for the last revision, we have one corner case when the target has never had any patch before. Then, its basis is SNAPSHOT, but "SNAPSHOT" only is not enough, in that case we need to complete it with base version and mnemo.
-	//					 Ideally this should have been done within apsrevcli, but apsrevcli has no idea about version and revision information (at patch level)
-	// CHE (04.10.2018) : i would'nt say SNAPSHOT is a corner case, in contrary each new module is a SNAPSHOT 
+
 	def previousVersion = patchConfig.lastRevision.equals("SNAPSHOT") ? "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-${patchConfig.lastRevision}" : patchConfig.lastRevision
 	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
+		echo "Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion
 		sh "chmod +x ./gradlew"
 		sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} clean it21-ui-dm-version-manager:publish -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
 	}
@@ -324,8 +335,9 @@ def releaseModule(patchConfig,module) {
 
 def buildModule(patchConfig,module) {
 	dir ("${module.name}") {
-		echo "Building Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
-		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} deploy"
+		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
+		echo "Building Module : " + module.name + " for Version: " + buildVersion
+		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} -DbomVersion=${buildVersion}"
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
@@ -335,9 +347,11 @@ def updateBom(patchConfig,module) {
 	echo "Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "Bom source version which will be update: ${buildVersion}"
-	dir ("it21-ui-bundle") {
-		sh "chmod +x ./gradlew"
-		sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+	lock ("BomUpdate${buildVersion}") {
+		dir ("it21-ui-bundle") {
+			sh "chmod +x ./gradlew"
+			sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		}
 	}
 }
 
@@ -354,13 +368,21 @@ def assembleDeploymentArtefacts(patchConfig) {
 
 def dbAssemble(patchConfig) {
 	def PatchDbFolderName = getCoPatchDbFolderName(patchConfig)
-	fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")])
+	fileOperations ([
+		folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")
+	])
 	// Done in order for the config folder to be taken into account when we create the ZIP...
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")
+	])
 	def cmPropertiesContent = "config_name:${PatchDbFolderName}\r\npatch_name:${PatchDbFolderName}\r\ntag_name:${PatchDbFolderName}"
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)
+	])
 	def configInfoContent = "config_name:${PatchDbFolderName}"
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)
+	])
 
 	def installPatchContent = "@echo off\r\n"
 	// TODO (jhe) :  0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
@@ -369,7 +391,9 @@ def dbAssemble(patchConfig) {
 	installPatchContent += "pushd %~dp0 \r\n\r\n"
 	installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
 	installPatchContent += "popd"
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)
+	])
 
 	publishDbAssemble(patchConfig)
 }
@@ -378,7 +402,9 @@ def publishDbAssemble(patchConfig) {
 	def server = patchDeployment.initiateArtifactoryConnection()
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	def zipName = "${patchDbFolderName}.zip"
-	fileOperations ([fileDeleteOperation(includes: zipName)])
+	fileOperations ([
+		fileDeleteOperation(includes: zipName)
+	])
 	zip zipFile: zipName, glob: "${patchDbFolderName}/**"
 
 
@@ -450,8 +476,12 @@ def coDbModules(patchConfig) {
 	def dbObjects = patchConfig.dbObjectsAsVcsPath
 	echo "Following DB Objects will be checked out : ${dbObjects}"
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
-	fileOperations ([folderDeleteOperation(folderPath: "${patchDbFolderName}")])
-	fileOperations ([folderCreateOperation(folderPath: "${patchDbFolderName}")])
+	fileOperations ([
+		folderDeleteOperation(folderPath: "${patchDbFolderName}")
+	])
+	fileOperations ([
+		folderCreateOperation(folderPath: "${patchDbFolderName}")
+	])
 	def tag = tagName(patchConfig)
 	dir(patchDbFolderName) {
 		dbObjects.each{ dbo ->
