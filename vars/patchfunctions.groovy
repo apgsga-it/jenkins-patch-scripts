@@ -333,13 +333,6 @@ def buildModule(patchConfig,module) {
 def updateBom(patchConfig,module) {
 	echo "Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-
-	// TODO JHE: Verify buildVersion for JAVA8MIG-455 .... should probably be "mavenVersionNumber(patchConfig,patchConfig.lastrevision)" .... or apsclirev -lr ????
-	def testLastBuildRevision = mavenVersionNumber(patchConfig,patchConfig.revision) // JHE: Debug variable to be removed
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.installationTarget}" // JHE: Debug  to be removed
-	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim() // JHE: Debug  to be removed
-	echo "testLastBuildRevision = ${testLastBuildRevision} // buildVersion = ${buildVersion} // lastTargetRevision = ${lastTargetRevision}" // JHE: Debug echo to be removed
-
 	echo "Bom source version which will be update: ${buildVersion}"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
