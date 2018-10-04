@@ -328,7 +328,7 @@ def releaseModule(patchConfig,module) {
 	dir ("${module.name}") {
 		echo "Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
-		def mvnCommand = "mvn -DbomVersion=${buildVersion}" + ' help:effective-pom clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
+		def mvnCommand = "mvn -DbomVersion=${buildVersion}" + ' clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
@@ -338,7 +338,7 @@ def buildModule(patchConfig,module) {
 	dir ("${module.name}") {
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 		echo "Building Module : " + module.name + " for Version: " + buildVersion
-		def mvnCommand = "mvn -DbomVersion=${buildVersion} help:effective-pom  clean deploy"
+		def mvnCommand = "mvn -DbomVersion=${buildVersion} clean deploy"
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
