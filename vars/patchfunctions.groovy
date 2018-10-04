@@ -337,7 +337,7 @@ def buildModule(patchConfig,module) {
 	dir ("${module.name}") {
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 		echo "Building Module : " + module.name + " for Version: " + buildVersion
-		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} -DbomVersion=${buildVersion}"
+		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} -DbomVersion=${buildVersion} clean deploy"
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
