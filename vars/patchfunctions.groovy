@@ -340,23 +340,12 @@ def updateBom(patchConfig,module) {
 	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim() // JHE: Debug  to be removed
 	echo "testLastBuildRevision = ${testLastBuildRevision} // buildVersion = ${buildVersion} // lastTargetRevision = ${lastTargetRevision}" // JHE: Debug echo to be removed
 
-	/*
-	echo "Bom source version which will be update: ${lastTargetRevision}"
-	dir ("it21-ui-bundle") {
-		sh "chmod +x ./gradlew"
-		sh "./gradlew clean it21-ui-dm-version-manager:publish -PsourceVersion=${lastTargetRevision} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
-	}
-	*/
-	
-	
 	echo "Bom source version which will be update: ${buildVersion}" 
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		sh "./gradlew clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
 	}
-	
 }
-
 
 def assembleDeploymentArtefacts(patchConfig) {
 	node {
