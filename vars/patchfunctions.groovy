@@ -191,6 +191,7 @@ def setPatchRevision(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -nr"
 	def revision = sh ( returnStdout : true, script: cmd).trim()
 	patchConfig.revision = revision
+	echo "patchConfig.revision has been set with ${revision}"
 }
 
 def saveRevisions(patchConfig) {
@@ -212,6 +213,7 @@ def saveProdRevision(def patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -spr ${fullRev}"
 	def result = sh returnStatus: true, script: "${cmd}"
 	assert result == 0 : println("Error while setting PROD revision to ${patchConfig.revision}")
+	echo "New production Revision has been saved: ${fullRev}"
 }
 
 def saveNonProdRevision(def patchConfig) {
@@ -219,6 +221,7 @@ def saveNonProdRevision(def patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${fullRev}"
 	def result = sh returnStatus: true, script: "${cmd}"
 	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
+	echo "New Revision has been added for ${patchConfig.installationTarget}: ${fullRev}"
 }
 
 def getFullVersionRevision(def patchConfig) {
