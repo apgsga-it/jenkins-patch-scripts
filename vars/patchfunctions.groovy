@@ -305,7 +305,7 @@ def generateVersionProperties(patchConfig) {
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew --refresh-dependencies clean it21-ui-dm-version-manager:publish -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
 	}
 }
 
@@ -333,7 +333,7 @@ def updateBom(patchConfig,module) {
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew --refresh-dependencies clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
 	}
 }
 
@@ -482,7 +482,7 @@ def assemble(patchConfig, assemblyName) {
 	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew --refresh-dependencies ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
+		sh "./gradlew ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
 	}
 }
 
