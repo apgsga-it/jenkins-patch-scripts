@@ -320,7 +320,7 @@ def generateVersionProperties(patchConfig) {
 	dir ("it21-ui-bundle") {
 		echo "Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion
 		sh "chmod +x ./gradlew"
-		sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} clean it21-ui-dm-version-manager:publish -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
 	}
 }
 
@@ -328,7 +328,7 @@ def releaseModule(patchConfig,module) {
 	dir ("${module.name}") {
 		echo "Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
-		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} -DbomVersion=${buildVersion}" + ' help:effective-pom clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
+		def mvnCommand = "mvn -DbomVersion=${buildVersion}" + ' help:effective-pom clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
@@ -338,7 +338,7 @@ def buildModule(patchConfig,module) {
 	dir ("${module.name}") {
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 		echo "Building Module : " + module.name + " for Version: " + buildVersion
-		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} -DbomVersion=${buildVersion} help:effective-pom  clean deploy"
+		def mvnCommand = "mvn -DbomVersion=${buildVersion} help:effective-pom  clean deploy"
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
@@ -351,7 +351,7 @@ def updateBom(patchConfig,module) {
 	lock ("BomUpdate${buildVersion}") {
 		dir ("it21-ui-bundle") {
 			sh "chmod +x ./gradlew"
-			sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+			sh "./gradlew clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
 		}
 	}
 }
@@ -496,9 +496,9 @@ def buildDockerImage(patchConfig) {
 	def artifact = patchConfig.jadasServiceArtifactName
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	patchConfig.runningNr = env.BUILD_NUMBER
-	def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
+	def mvnCommand = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
 	echo "${mvnCommand}"
-	def mvnCommandCopy = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
+	def mvnCommandCopy = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
 	echo "${mvnCommandCopy}"
 
 	def dropName = jadasServiceDropName(patchConfig)
@@ -516,7 +516,7 @@ def assemble(patchConfig, assemblyName) {
 	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
+		sh "./gradlew ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
 	}
 }
 
