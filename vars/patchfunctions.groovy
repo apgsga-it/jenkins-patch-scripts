@@ -327,6 +327,7 @@ def generateVersionProperties(patchConfig) {
 def releaseModule(patchConfig,module) {
 	dir ("${module.name}") {
 		echo "Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
+		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} -DbomVersion=${buildVersion}" + 'help:effective-pom clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
