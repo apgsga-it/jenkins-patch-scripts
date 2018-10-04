@@ -333,7 +333,10 @@ def buildModule(patchConfig,module) {
 def updateBom(patchConfig,module) {
 	echo "Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-	echo "Bom source version which will be update: ${buildVersion}"
+	// TODO JHE: Verify buildVersion for JAVA8MIG-455 .... should probably be "mavenVersionNumber(patchConfig,patchConfig.lastrevision)"
+	def testLastBuildRevision = mavenVersionNumber(patchConfig,patchConfig.revision) // JHE: Debug variable to be removed
+	echo "testLastBuildRevision = ${testLastBuildRevision} // buildVersion = ${buildVersion}" // JHE: Debug echo to be removed
+	echo "Bom source version which will be update: ${buildVersion}" 
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		sh "./gradlew clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
