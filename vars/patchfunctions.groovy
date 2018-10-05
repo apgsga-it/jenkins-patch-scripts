@@ -114,11 +114,11 @@ def mavenVersionNumber(patchConfig,revision) {
 	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
 }
 
-def getCurrentProdRevision() {
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
-	def revision = sh ( returnStdout : true, script: cmd).trim()
-	return revision
-}
+//def getCurrentProdRevision() {
+//	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
+//	def revision = sh ( returnStdout : true, script: cmd).trim()
+//	return revision
+//}
 
 def approveBuild(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
@@ -165,22 +165,6 @@ def nextRevision(patchConfig) {
 }
 
 def setPatchLastRevision(patchConfig) {
-	if(isPatchForProdTarget(patchConfig)) {
-		setPatchLastRevisionForProd(patchConfig)
-	}
-	else {
-		setPatchLastRevisionForNonProd(patchConfig)
-	}
-}
-
-def setPatchLastRevisionForProd(patchConfig) {
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
-	def lastProdRevision = sh ( returnStdout : true, script: cmd).trim()
-	patchConfig.lastRevision = lastProdRevision
-	echo "patchConfig.lastRevision has been set with last Prod Revision: ${lastProdRevision}"
-}
-
-def setPatchLastRevisionForNonProd(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.installationTarget}"
 	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim()
 	patchConfig.lastRevision = lastTargetRevision
@@ -195,28 +179,6 @@ def setPatchRevision(patchConfig) {
 }
 
 def saveRevisions(patchConfig) {
-	if(isPatchForProdTarget(patchConfig)) {
-		saveProdRevision(patchConfig)
-	}
-	else {
-		saveNonProdRevision(patchConfig)
-	}
-}
-
-def isPatchForProdTarget(def patchConfig) {
-	def targetMap = loadTargetsMap()
-	return targetMap.get("Produktion").get("targetName").equalsIgnoreCase("${patchConfig.installationTarget}")
-}
-
-def saveProdRevision(def patchConfig) {
-	def fullRev = getFullVersionRevision(patchConfig)
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -spr ${fullRev}"
-	def result = sh returnStatus: true, script: "${cmd}"
-	assert result == 0 : println("Error while setting PROD revision to ${patchConfig.revision}")
-	echo "New production Revision has been saved: ${fullRev}"
-}
-
-def saveNonProdRevision(def patchConfig) {
 	def fullRev = getFullVersionRevision(patchConfig)
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${fullRev}"
 	def result = sh returnStatus: true, script: "${cmd}"
