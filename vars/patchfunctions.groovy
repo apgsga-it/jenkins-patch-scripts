@@ -114,11 +114,11 @@ def mavenVersionNumber(patchConfig,revision) {
 	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
 }
 
-def getCurrentProdRevision() {
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
-	def revision = sh ( returnStdout : true, script: cmd).trim()
-	return revision
-}
+//def getCurrentProdRevision() {
+//	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
+//	def revision = sh ( returnStdout : true, script: cmd).trim()
+//	return revision
+//}
 
 def approveBuild(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
@@ -165,22 +165,6 @@ def nextRevision(patchConfig) {
 }
 
 def setPatchLastRevision(patchConfig) {
-	if(isPatchForProdTarget(patchConfig)) {
-		setPatchLastRevisionForProd(patchConfig)
-	}
-	else {
-		setPatchLastRevisionForNonProd(patchConfig)
-	}
-}
-
-def setPatchLastRevisionForProd(patchConfig) {
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
-	def lastProdRevision = sh ( returnStdout : true, script: cmd).trim()
-	patchConfig.lastRevision = lastProdRevision
-	echo "patchConfig.lastRevision has been set with last Prod Revision: ${lastProdRevision}"
-}
-
-def setPatchLastRevisionForNonProd(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.installationTarget}"
 	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim()
 	patchConfig.lastRevision = lastTargetRevision
@@ -195,28 +179,6 @@ def setPatchRevision(patchConfig) {
 }
 
 def saveRevisions(patchConfig) {
-	if(isPatchForProdTarget(patchConfig)) {
-		saveProdRevision(patchConfig)
-	}
-	else {
-		saveNonProdRevision(patchConfig)
-	}
-}
-
-def isPatchForProdTarget(def patchConfig) {
-	def targetMap = loadTargetsMap()
-	return targetMap.get("Produktion").get("targetName").equalsIgnoreCase("${patchConfig.installationTarget}")
-}
-
-def saveProdRevision(def patchConfig) {
-	def fullRev = getFullVersionRevision(patchConfig)
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -spr ${fullRev}"
-	def result = sh returnStatus: true, script: "${cmd}"
-	assert result == 0 : println("Error while setting PROD revision to ${patchConfig.revision}")
-	echo "New production Revision has been saved: ${fullRev}"
-}
-
-def saveNonProdRevision(def patchConfig) {
 	def fullRev = getFullVersionRevision(patchConfig)
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${fullRev}"
 	def result = sh returnStatus: true, script: "${cmd}"
@@ -288,34 +250,47 @@ def coFromBranchCvs(patchConfig, moduleName, type) {
 	}
 	def callBack = benchmark()
 	def duration = callBack {
-		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
+		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
+				[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
+						[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [
+								[localName: moduleName, remoteName: moduleName]
+							]]
+					]]
+			], skipChangeLog: false])
 	}
 	echo "Checkoout of ${moduleName} took ${duration} ms"
 }
 def coFromTagcvs(patchConfig,tag, moduleName) {
 	def callBack = benchmark()
 	def duration = callBack {
-		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [[localName: moduleName, remoteName: moduleName]]]]]], skipChangeLog: false])
+		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
+				[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
+						[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [
+								[localName: moduleName, remoteName: moduleName]
+							]]
+					]]
+			], skipChangeLog: false])
 	}
 	echo "Checkoout of ${moduleName} took ${duration} ms"
 }
 
 def generateVersionProperties(patchConfig) {
-	// JHE (01.10.2018): when searching for the last revision, we have one corner case when the target has never had any patch before. Then, its basis is SNAPSHOT, but "SNAPSHOT" only is not enough, in that case we need to complete it with base version and mnemo.
-	//					 Ideally this should have been done within apsrevcli, but apsrevcli has no idea about version and revision information (at patch level)
+
 	def previousVersion = patchConfig.lastRevision.equals("SNAPSHOT") ? "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-${patchConfig.lastRevision}" : patchConfig.lastRevision
 	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "$buildVersion"
 	dir ("it21-ui-bundle") {
+		echo "Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion
 		sh "chmod +x ./gradlew"
-		sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} clean it21-ui-dm-version-manager:publish -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
 	}
 }
 
 def releaseModule(patchConfig,module) {
 	dir ("${module.name}") {
 		echo "Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
-		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} " + 'clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
+		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
+		def mvnCommand = "mvn -DbomVersion=${buildVersion}" + ' clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
@@ -323,8 +298,9 @@ def releaseModule(patchConfig,module) {
 
 def buildModule(patchConfig,module) {
 	dir ("${module.name}") {
-		echo "Building Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
-		def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} deploy"
+		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
+		echo "Building Module : " + module.name + " for Version: " + buildVersion
+		def mvnCommand = "mvn -DbomVersion=${buildVersion} clean deploy"
 		echo "${mvnCommand}"
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
@@ -334,9 +310,11 @@ def updateBom(patchConfig,module) {
 	echo "Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "Bom source version which will be update: ${buildVersion}"
-	dir ("it21-ui-bundle") {
-		sh "chmod +x ./gradlew"
-		sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} clean it21-ui-dm-version-manager:publish -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+	lock ("BomUpdate${buildVersion}") {
+		dir ("it21-ui-bundle") {
+			sh "chmod +x ./gradlew"
+			sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		}
 	}
 }
 
@@ -353,13 +331,21 @@ def assembleDeploymentArtefacts(patchConfig) {
 
 def dbAssemble(patchConfig) {
 	def PatchDbFolderName = getCoPatchDbFolderName(patchConfig)
-	fileOperations ([folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")])
+	fileOperations ([
+		folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")
+	])
 	// Done in order for the config folder to be taken into account when we create the ZIP...
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")
+	])
 	def cmPropertiesContent = "config_name:${PatchDbFolderName}\r\npatch_name:${PatchDbFolderName}\r\ntag_name:${PatchDbFolderName}"
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)
+	])
 	def configInfoContent = "config_name:${PatchDbFolderName}"
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)
+	])
 
 	def installPatchContent = "@echo off\r\n"
 	// TODO (jhe) :  0900C info doesn't exist at the moment witin patchConfig... also datetime ... do we have it somewhere?
@@ -368,7 +354,9 @@ def dbAssemble(patchConfig) {
 	installPatchContent += "pushd %~dp0 \r\n\r\n"
 	installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
 	installPatchContent += "popd"
-	fileOperations ([fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)])
+	fileOperations ([
+		fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)
+	])
 
 	publishDbAssemble(patchConfig)
 }
@@ -377,7 +365,9 @@ def publishDbAssemble(patchConfig) {
 	def server = patchDeployment.initiateArtifactoryConnection()
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	def zipName = "${patchDbFolderName}.zip"
-	fileOperations ([fileDeleteOperation(includes: zipName)])
+	fileOperations ([
+		fileDeleteOperation(includes: zipName)
+	])
 	zip zipFile: zipName, glob: "${patchDbFolderName}/**"
 
 
@@ -449,8 +439,12 @@ def coDbModules(patchConfig) {
 	def dbObjects = patchConfig.dbObjectsAsVcsPath
 	echo "Following DB Objects will be checked out : ${dbObjects}"
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
-	fileOperations ([folderDeleteOperation(folderPath: "${patchDbFolderName}")])
-	fileOperations ([folderCreateOperation(folderPath: "${patchDbFolderName}")])
+	fileOperations ([
+		folderDeleteOperation(folderPath: "${patchDbFolderName}")
+	])
+	fileOperations ([
+		folderCreateOperation(folderPath: "${patchDbFolderName}")
+	])
 	def tag = tagName(patchConfig)
 	dir(patchDbFolderName) {
 		dbObjects.each{ dbo ->
@@ -464,9 +458,9 @@ def buildDockerImage(patchConfig) {
 	def artifact = patchConfig.jadasServiceArtifactName
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	patchConfig.runningNr = env.BUILD_NUMBER
-	def mvnCommand = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
+	def mvnCommand = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
 	echo "${mvnCommand}"
-	def mvnCommandCopy = "mvn -Dmaven.repo.local=${patchConfig.mavenLocalRepo} org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
+	def mvnCommandCopy = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
 	echo "${mvnCommandCopy}"
 
 	def dropName = jadasServiceDropName(patchConfig)
@@ -484,7 +478,7 @@ def assemble(patchConfig, assemblyName) {
 	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew -Dmaven.repo.local=${patchConfig.mavenLocalRepo} ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
+		sh "./gradlew ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
 	}
 }
 
