@@ -165,9 +165,10 @@ def nextRevision(patchConfig) {
 }
 
 def setPatchLastRevision(patchConfig) {
+	def fullRevPrefix = getFullRevisionPrefix(patchConfig)
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.installationTarget}"
 	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim()
-	patchConfig.lastRevision = lastTargetRevision
+	patchConfig.lastRevision = "${fullRevPrefix}${lastTargetRevision}"
 	echo "patchConfig.lastRevision has been set with last Revision for target ${patchConfig.installationTarget}: ${lastTargetRevision}"
 }
 
@@ -179,15 +180,15 @@ def setPatchRevision(patchConfig) {
 }
 
 def saveRevisions(patchConfig) {
-	def fullRev = getFullVersionRevision(patchConfig)
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${fullRev}"
+	def fullRevPrefix = getFullRevisionPrefix(patchConfig)
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${patchConfig.revision},${fullRevPrefix}"
 	def result = sh returnStatus: true, script: "${cmd}"
 	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
 	echo "New Revision has been added for ${patchConfig.installationTarget}: ${fullRev}"
 }
 
-def getFullVersionRevision(def patchConfig) {
-	return "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-${patchConfig.revision}"
+def getFullRevisionPrefix(def patchConfig) {
+	return "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-"
 }
 
 
