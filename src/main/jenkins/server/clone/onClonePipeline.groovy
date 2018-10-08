@@ -5,14 +5,25 @@ import groovy.json.JsonSlurperClassic
 properties([
 	parameters([
 		stringParam(
-		defaultValue: "",
-		description: 'Parameter',
-		name: 'target'
+			defaultValue: "",
+			description: 'Parameter',
+			name: 'source'
+			),
+		stringParam(
+			defaultValue: "",
+			description: 'Parameter',
+			name: 'target'
 		)
 	])
 ])
 
 stage("onclone") {
+	
+	stage("preProcessVerification") {
+		// With current implementation, the target should NEVER be the production environment
+		def String targetStatus = getStatusName(params.target)
+		assert !targetStatus.equalsIgnoreCase("produktion") : println("Target parameter can't be the target define as production!")
+	}
 	
 	stage("cleanArtifactory") {
 		node {
@@ -26,8 +37,9 @@ stage("onclone") {
 	stage("resetRevision") {
 		node {
 			def target = params.target
-			echo "Revision will be reset for target ${target}"
-			def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -rr ${target}"
+			def source = params.source
+			echo "Revision will be reset for target ${target}, and reset with basis from source ${source}"
+			def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -rr ${source},${target}"
 			assert result == 0 : println ("Error while resetting revision for ${target}")
 		}
 	}
@@ -37,7 +49,7 @@ stage("onclone") {
 			echo "Verifying if ${params.target} requires patch to be automatically re-installed..."
 
 			// Check if target corresponds to a status for which we automatically install patches (Informatiktest only for now)
-			def status = getStatusForTarget()
+			def status = getStatusName(params.target)
 			if(status == null || !status.toString().equalsIgnoreCase("informatiktest")) {
 				echo "No patch have to be re-installed on ${params.target}. ${params.target} is not configured as Informatiktest target."
 			}
@@ -49,14 +61,14 @@ stage("onclone") {
 	}
 }
 
-private def getStatusForTarget() {
+private def getStatusName(def env) {
 	def targetSystemFile = new File("/etc/opt/apg-patch-common/TargetSystemMappings.json")
 	assert targetSystemFile.exists() : println ("/etc/opt/apg-patch-common/TargetSystemMappings.json doesn't exist or is not accessible!")
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def status
 	
 	jsonSystemTargets.targetSystems.each{ targetSystem ->
-		if(targetSystem.target.equalsIgnoreCase(params.target)) {
+		if(targetSystem.target.equalsIgnoreCase(env)) {
 			status = targetSystem.name
 		}
 	}
