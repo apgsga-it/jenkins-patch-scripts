@@ -184,7 +184,7 @@ def saveRevisions(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${patchConfig.revision},${fullRevPrefix}"
 	def result = sh returnStatus: true, script: "${cmd}"
 	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
-	echo "New Revision has been added for ${patchConfig.installationTarget}: ${fullRev}"
+	echo "New Revision has been added for ${patchConfig.installationTarget}: ${fullRevPrefix}"
 }
 
 def getFullRevisionPrefix(def patchConfig) {
