@@ -42,7 +42,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
 	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
 	
-	node ("jenkins_installer_windows_prod"){
+	node (env.WINDOWS_INSTALLER_LABEL){
 		
 		def downloadSpec = """{
               "files": [
@@ -62,7 +62,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 }
 
 def installGUI(patchConfig,artifact,extension) {
-	node("jenkins_installer_windows_prod") {
+	node(env.WINDOWS_INSTALLER_LABEL) {
 		
 		def extractedGuiPath = ""
 
