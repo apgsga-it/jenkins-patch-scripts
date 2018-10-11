@@ -17,7 +17,7 @@ properties([
 	])
 ])
 
-println "Parameter ... source = params.source , target = params.target"
+println "Parameter ... source = ${params.source} , target = ${params.target}"
 
 stage("onclone") {
 	
