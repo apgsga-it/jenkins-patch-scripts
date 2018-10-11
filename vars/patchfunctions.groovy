@@ -54,10 +54,13 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	stage(stageText) {
 		if (!skip) {
 			echo "Not skipping"
+			// Save before Stage 
+			savePatchConfigState(patchConfig)
 			callBack(patchConfig)
 			if (patchConfig.redo && patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && task.equals("Notification")) {
 				patchConfig.redo = false
 			}
+			// Save after Stage
 			savePatchConfigState(patchConfig)
 		} else {
 			"Echo skipping"
@@ -488,15 +491,7 @@ def redoToState(patchConfig) {
 		patchConfig.redoToState = ""
 		return
 	}
-	node {
-		echo "Retrieving Redo ToState for ${patchConfig.patchNummer}"
-		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -rsta ${patchConfig.patchNummer}"
-		echo "Executeing ${cmd}"
-		patchConfig.redoToState = sh ( returnStdout : true, script: cmd).trim()
-		echo "Redo ToState: ${patchConfig.redoToState}"
-		echo "Executeing ${cmd} done."
-	}
-
+	patchConfig.redoToState = patchConfig.targetToState
 }
 
 
