@@ -17,12 +17,17 @@ properties([
 	])
 ])
 
+println "Parameter ... source = params.source , target = params.target"
+
 stage("onclone") {
 	
 	stage("preProcessVerification") {
 		// With current implementation, the target should NEVER be the production environment
-		def String targetStatus = getStatusName(params.target)
-		assert !targetStatus.equalsIgnoreCase("produktion") : println("Target parameter can't be the target define as production!")
+//		def String targetStatus = getStatusName(params.target)
+//		assert !targetStatus.equalsIgnoreCase("produktion") : println("Target parameter can't be the target define as production!")
+		
+		// JHE/UGE (11.10.2018): We explicitly want to test against CHPI211, otherwise we can't test the onClone before foing live.
+		assert !params.target.equalsIgnoreCase("chpi211") : println("Target parameter can't be the target define as production!")
 	}
 	
 	stage("cleanArtifactory") {
