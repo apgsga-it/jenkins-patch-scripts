@@ -17,22 +17,27 @@ properties([
 	])
 ])
 
-println "Parameter ... source = ${params.source} , target = ${params.target}"
+def source = params.source
+def target = params.target
+
+println "Parameter ... source = ${source} , target = ${target}"
 
 stage("onclone") {
 	
 	stage("preProcessVerification") {
-		// With current implementation, the target should NEVER be the production environment
-//		def String targetStatus = getStatusName(params.target)
-//		assert !targetStatus.equalsIgnoreCase("produktion") : println("Target parameter can't be the target define as production!")
 		
 		// JHE/UGE (11.10.2018): We explicitly want to test against CHPI211, otherwise we can't test the onClone before foing live.
-		assert !params.target.equalsIgnoreCase("chpi211") : println("Target parameter can't be the target define as production!")
+		assert !target.equalsIgnoreCase("chpi211") : println("Target parameter can't be the target define as production!")
+		
+		// JHE/UGE (11.10.2018): We consider chqi211 same as chpi211 (from source point of view only)
+		if(source.equalsIgnoreCase("chqi211")) {
+			source = "CHPI211"
+		}
+		
 	}
 	
 	stage("cleanArtifactory") {
 		node {
-			def target = params.target
 			echo "Cleaning Artifactory for revisions build for target ${target}"
 			def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -cr ${target}"
 			assert result == 0 : println ("Error while clean Artifactory revision for target ${target}")
@@ -41,8 +46,6 @@ stage("onclone") {
 	
 	stage("resetRevision") {
 		node {
-			def target = params.target
-			def source = params.source
 			echo "Revision will be reset for target ${target}, and reset with basis from source ${source}"
 			def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsrevcli.sh -rr ${source},${target}"
 			assert result == 0 : println ("Error while resetting revision for ${target}")
@@ -51,16 +54,16 @@ stage("onclone") {
 	
 	stage("startReinstallPatchPipeline") {
 		node {
-			echo "Verifying if ${params.target} requires patch to be automatically re-installed..."
+			echo "Verifying if ${target} requires patch to be automatically re-installed..."
 
 			// Check if target corresponds to a status for which we automatically install patches (Informatiktest only for now)
-			def status = getStatusName(params.target)
+			def status = getStatusName(target)
 			if(status == null || !status.toString().equalsIgnoreCase("informatiktest")) {
-				echo "No patch have to be re-installed on ${params.target}. ${params.target} is not configured as Informatiktest target."
+				echo "No patch have to be re-installed on ${target}. ${target} is not configured as Informatiktest target."
 			}
 			else {
-				echo "Patch have to be re-installed on ${params.target}, reinstallPatchAfterClone Pipeline will be started"
-				build job: 'reinstallPatchAfterClone', parameters: [string(name: 'target', value: params.target)]
+				echo "Patch have to be re-installed on ${target}, reinstallPatchAfterClone Pipeline will be started"
+				build job: 'reinstallPatchAfterClone', parameters: [string(name: 'target', value: target)]
 			}
 		}
 	}
