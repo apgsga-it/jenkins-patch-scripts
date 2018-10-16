@@ -96,7 +96,7 @@ def loadTargetsMap() {
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
 	jsonSystemTargets.targetSystems.each( { target ->
-		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target,typeInd:target.typeInd])
+		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target)
 	})
 	println targetSystemMap
 	targetSystemMap
@@ -106,11 +106,10 @@ def tagName(patchConfig) {
 	patchConfig.patchTag
 }
 
-def targetIndicator(patchConfig, target) {
+def saveTarget(patchConfig, target) {
 	patchConfig.targetBean = target
 	patchConfig.envName = target.envName
 	patchConfig.installationTarget = target.targetName
-	patchConfig.targetInd = target.typeInd
 }
 
 def mavenVersionNumber(patchConfig,revision) {

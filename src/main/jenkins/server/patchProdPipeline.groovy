@@ -42,7 +42,7 @@ patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification", pa
 ['Informatiktest', 'Produktion'].each { envName ->
 	target = targetSystemsMap.get(envName)
 	assert target != null
-	patchfunctions.targetIndicator(patchConfig,target)
+	patchfunctions.saveTarget(patchConfig,target)
 
 	// Approve to make Patch "Installationsbereit" for target
 	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.&approveBuild)

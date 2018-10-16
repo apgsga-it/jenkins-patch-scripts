@@ -26,8 +26,8 @@ patchfunctions.mavenLocalRepo(patchConfig)
 println patchConfig.mavenLocalRepo
 
 // Mainline
-def target = [envName:"Download",targetName:patchConfig.installationTarget,typeInd:"T"]
-patchfunctions.targetIndicator(patchConfig,target)
+def target = [envName:"Download",targetName:patchConfig.installationTarget]
+patchfunctions.saveTarget(patchConfig,target)
 stage("${target.targetName} Build & Assembly") {
 	stage("${target.targetName} Build" ) {
 		node {patchfunctions.patchBuildsConcurrent(patchConfig)}

@@ -46,8 +46,8 @@ def reinstallPatch(def patch, def target) {
 	
 		def patchConfig = getPatchConfig(patch,target)
 		
-		def targetBean = [envName:target,targetName:patchConfig.installationTarget,typeInd:"T"]
-		patchfunctions.targetIndicator(patchConfig,targetBean)
+		def targetBean = [envName:target,targetName:patchConfig.installationTarget]
+		patchfunctions.saveTarget(patchConfig,targetBean)
 		patchfunctions.mavenLocalRepo(patchConfig)
 		println patchConfig.mavenLocalRepo
 			
