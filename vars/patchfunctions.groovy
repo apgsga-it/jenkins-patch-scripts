@@ -96,7 +96,7 @@ def loadTargetsMap() {
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
 	jsonSystemTargets.targetSystems.each( { target ->
-		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target)
+		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target])
 	})
 	println targetSystemMap
 	targetSystemMap
