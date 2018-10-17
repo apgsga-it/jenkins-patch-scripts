@@ -18,7 +18,7 @@ def patchJobs = patchView.getItems()
 
 patchJobs.each { job ->
 	def jobName = job.name
-	if(!jobName.endsWith("Download")) {
+	if(!jobName.endsWith("OnDemand")) {
 		def lastSuccesffulbuild = job.getLastSuccessfulBuild()
 		if(lastSuccesffulbuild != null && !job.isBuilding()) {
 			println "Job ${jobName} successfully ended and will be moved"
@@ -26,7 +26,7 @@ patchJobs.each { job ->
 			productivePatchView.doAddJobToView(jobName)
 			patchView.doRemoveJobFromView(jobName)
 			patchJobs.each{ downloadJob -> 
-				if(downloadJob.name.equalsIgnoreCase(jobName + "Download")) {
+				if(downloadJob.name.equalsIgnoreCase(jobName + "OnDemand")) {
 					productivePatchView.doAddJobToView(downloadJob.name)
 					patchView.doRemoveJobFromView(downloadJob.name)
 				}
