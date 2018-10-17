@@ -33,7 +33,7 @@ def deleteJenkinsWorkspaces(def jobName) {
 println "Patch archiver starting ..."
 
 def nbProdJobDeleted = 0
-def nbDownloadJobDeleted = 0
+def nbOnDemandJobDeleted = 0
 def productivePatchView = getProductivePatchView()
 def patchJobs = productivePatchView.getItems()
 def daysToKeepPipeline= build.buildVariableResolver.resolve("daysToKeepPipeline") as Integer
@@ -41,30 +41,30 @@ def dateBeforeToDeleteJobs = (new Date()).minus(daysToKeepPipeline)
 
 patchJobs.each { job ->
 	def jobName = job.name
-	if(!jobName.endsWith("Download")) {
+	if(!jobName.endsWith("OnDemand")) {
 		def lastSuccesffulbuild = job.getLastSuccessfulBuild().getTime()
 
 		if (lastSuccesffulbuild.before(dateBeforeToDeleteJobs)) {
 
-			patchJobs.each{ downloadJob ->
-				def downloadJobName = downloadJob.name
-				if(downloadJobName.equalsIgnoreCase(jobName + "Download")) {
-					if(!downloadJob.isBuilding()) {
+			patchJobs.each{ onDemandJob ->
+				def onDemandJobName = onDemandJob.name
+				if(onDemandJobName.equalsIgnoreCase(jobName + "OnDemand")) {
+					if(!onDemandJob.isBuilding()) {
 
 						// Archive all PROD Pipeline logs
 						def prodBuilds = Jenkins.getInstance().getItemByFullName(jobName).getBuilds()
 						archiveLogsForPipelineJob(prodBuilds,jobName)
 
-						// Archive all Download Pipeline logs
+						// Archive all OnDemand Pipeline logs
 						def downloadBuilds = Jenkins.getInstance().getItemByFullName(downloadJobName).getBuilds()
 						archiveLogsForPipelineJob(downloadBuilds,downloadJobName)
 
 						job.delete()
 						println "${jobName} has been deleted."
 						nbProdJobDeleted++
-						downloadJob.delete()
-						println "${downloadJobName} has been deleted"
-						nbDownloadJobDeleted++
+						onDemandJob.delete()
+						println "${onDemandJob} has been deleted"
+						nbOnDemandJobDeleted++
 					}
 				}
 			}
@@ -77,4 +77,4 @@ patchJobs.each { job ->
 
 println "Patch archiver done."
 println "${nbProdJobDeleted} Prod pipeline Job(s) have been deleted."
-println "${nbDownloadJobDeleted} Download pipeline Job(s) have been deleted."
+println "${nbOnDemandJobDeleted} OnDemand pipeline Job(s) have been deleted."

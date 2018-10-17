@@ -2,7 +2,7 @@ import hudson.model.*
 
 def patchName = "Patch${patchnumber}"
 def jobName = patchName
-def downLoadJobName = jobName + "Download"
+def downLoadJobName = jobName + "OnDemand"
 
 pipelineJob (jobName) {
 	authenticationToken(patchName)
@@ -31,19 +31,19 @@ pipelineJob (downLoadJobName) {
 	concurrentBuild(false)
 	definition {
 		cps {
-			script(readFileFromWorkspace('src/main/jenkins/server/patchDownloadPipeline.groovy'))
+			script(readFileFromWorkspace('src/main/jenkins/server/patchOnDemandPipeline.groovy'))
 			sandbox(false)
 		}
 	}
 	logRotator(5,10,5,-1)
-	description("*Download* Patch Pipeline for : ${patchName}")
+	description("OnDemand Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
 	}
 	properties {
 		jobInclusionJobProperty {
 			useJobGroup(true)
-			jobGroupName('DownloadPatch')
+			jobGroupName('OnDemandPatch')
 		}
 	}
 }
