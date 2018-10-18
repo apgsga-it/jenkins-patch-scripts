@@ -41,7 +41,7 @@ def dateBeforeToDeleteJobs = (new Date()).minus(daysToKeepPipeline)
 
 patchJobs.each { job ->
 	def jobName = job.name
-	if(!jobName.endsWith("OnDemand")) {
+	if(jobName  ==~ /Patch+[0123456789]*/ ) {
 		def lastSuccesffulbuild = job.getLastSuccessfulBuild().getTime()
 
 		if (lastSuccesffulbuild.before(dateBeforeToDeleteJobs)) {
