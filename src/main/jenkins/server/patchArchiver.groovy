@@ -56,8 +56,8 @@ patchJobs.each { job ->
 						archiveLogsForPipelineJob(prodBuilds,jobName)
 
 						// Archive all OnDemand Pipeline logs
-						def downloadBuilds = Jenkins.getInstance().getItemByFullName(downloadJobName).getBuilds()
-						archiveLogsForPipelineJob(downloadBuilds,downloadJobName)
+						def downloadBuilds = Jenkins.getInstance().getItemByFullName(onDemandJob).getBuilds()
+						archiveLogsForPipelineJob(downloadBuilds,onDemandJob)
 
 						job.delete()
 						println "${jobName} has been deleted."
