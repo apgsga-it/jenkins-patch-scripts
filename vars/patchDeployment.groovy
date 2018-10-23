@@ -61,6 +61,15 @@ def installDbPatch(patchConfig,artifact,extension) {
 	}
 }
 
+def getCredentialId(def patchConfig) {
+	if(patchConfig.installationTarget.toLowerCase.startsWith("cht")) {
+		return "svcit21install-t"
+	}
+	else {
+		return "svcit21install"
+	}
+}
+
 def installGUI(patchConfig,artifact,extension) {
 	node(env.WINDOWS_INSTALLER_LABEL) {
 		
@@ -68,7 +77,9 @@ def installGUI(patchConfig,artifact,extension) {
 
 		extractedGuiPath = "\\\\service-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}_gui"
 
-		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'svcit21install',
+		def credentialId = getCredentialId(patchConfig)
+		
+		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: credentialId,
 					usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 	
 				// Mount the share drive
