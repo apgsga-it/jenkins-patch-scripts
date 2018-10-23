@@ -63,7 +63,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 
 def getCredentialId(def patchConfig) {
 	if(patchConfig.installationTarget.toLowerCase().startsWith("cht")) {
-		return "svcit21install-t"
+		return "svcIt21Install-t"
 	}
 	else {
 		return "svcit21install"
