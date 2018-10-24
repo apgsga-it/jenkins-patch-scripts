@@ -26,14 +26,20 @@ stage("onclone") {
 	
 	stage("preProcessVerification") {
 		
-		// JHE/UGE (11.10.2018): We explicitly want to test against CHPI211, otherwise we can't test the onClone before foing live.
+		// JHE/UGE (11.10.2018): We explicitly want to test against CHPI211, otherwise we can't test the onClone before going live.
 		assert !target.equalsIgnoreCase("chpi211") : println("Target parameter can't be the target define as production!")
 		
 		// JHE/UGE (11.10.2018): We consider chqi211 same as chpi211 (from source point of view only)
 		if(source.equalsIgnoreCase("chqi211")) {
 			source = "CHPI211"
 		}
-		
+
+		// As source environment, only the PROD defined environment is allowed
+		def status = getStatusName(source)
+		if(status != null) { 
+			assert status.toString().equalsIgnoreCase("produktion") : println("When cloning, source parameter can only be the one define as production target.") 
+		}
+				
 	}
 	
 	stage("cleanArtifactory") {
