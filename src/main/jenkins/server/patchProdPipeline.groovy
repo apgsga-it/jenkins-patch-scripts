@@ -17,10 +17,6 @@ properties([
 	])
 ])
 
-// Process Parameters
-// TODO  (che, 9.7) When JENKINS-27413 is resolved
-// Passing Patch File Path , because of JAVA8MIG-395 / JENKINS-27413
-
 def patchConfig = patchfunctions.readPatchFile(params.PARAMETER)
 patchfunctions.initPatchConfig(patchConfig,params)
 

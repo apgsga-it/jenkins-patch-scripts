@@ -49,14 +49,18 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
 			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
 			&& task.equals("Approve")))
+	def nop = !skip && patch.mavenArtifacts.empty && patch.dbObjects.empty && !patch.installJadasAndGui && !["Approve","Notification"].contains(task)
 	echo "skip = ${skip}"
-	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : "")
+	echo "nop  = ${nop}"
+	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : (nop ? "(Nop)" : "") )
 	stage(stageText) {
 		if (!skip) {
 			echo "Not skipping"
 			// Save before Stage 
 			savePatchConfigState(patchConfig)
-			callBack(patchConfig)
+			if (!nop) {
+				callBack(patchConfig)
+			}
 			if (patchConfig.redo && patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && task.equals("Notification")) {
 				patchConfig.redo = false
 			}
@@ -116,11 +120,6 @@ def mavenVersionNumber(patchConfig,revision) {
 	return patchConfig.baseVersionNumber + "." + patchConfig.revisionMnemoPart + "-" + revision
 }
 
-//def getCurrentProdRevision() {
-//	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -pr"
-//	def revision = sh ( returnStdout : true, script: cmd).trim()
-//	return revision
-//}
 
 def approveBuild(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
@@ -134,19 +133,6 @@ def approveInstallation(patchConfig) {
 	}
 }
 
-// TODO (che,16.8): Deprecated, with be removed, keep as fallback
-def patchBuilds(patchConfig) {
-	node {
-		deleteDir()
-		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
-			checkoutModules(patchConfig)
-			nextRevision(patchConfig)
-			generateVersionProperties(patchConfig)
-			buildAndReleaseModules(patchConfig)
-			saveRevisions(patchConfig)
-		}
-	}
-}
 
 def patchBuildsConcurrent(patchConfig) {
 	node {
@@ -191,12 +177,6 @@ def saveRevisions(patchConfig) {
 
 def getFullRevisionPrefix(def patchConfig) {
 	return "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-"
-}
-
-
-// TODO (che,16.8): Deprecated, with be removed, keep as fallback
-def buildAndReleaseModules(patchConfig) {
-	patchConfig.mavenArtifactsToBuild.each { buildAndReleaseModule(patchConfig,it) }
 }
 
 def buildAndReleaseModulesConcurrent(patchConfig) {
