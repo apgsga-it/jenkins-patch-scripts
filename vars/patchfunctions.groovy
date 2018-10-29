@@ -208,7 +208,7 @@ def buildAndReleaseModulesConcurrent(patchConfig,module) {
 }
 
 // TODO (che, 29.10) not very efficient
-def coFromTagCvsConcurrent(patch,tag,module) {
+def coFromTagCvsConcurrent(patchConfig,tag,module) {
 	lock ("ConcurrentCvsCheckout") {
 		coFromTagcvs(patchConfig, tag, module)
 	}
