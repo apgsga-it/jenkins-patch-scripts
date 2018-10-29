@@ -201,12 +201,17 @@ def buildAndReleaseModulesConcurrent(patchConfig,module) {
 		node {
 			def tag = tagName(patchConfig)
 			coFromTagcvs(patchConfig,tag,module.name)
-			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+			coIt21BundleFromBranchCvs(patchConfig) 
 			buildAndReleaseModule(patchConfig,module)
 		}
 	}
 }
 
+def coIt21BundleFromBranchCvs(patchConfig) {
+	lock ("Checkout-It21-ui-bundle") {
+		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+	}
+}
 
 def buildAndReleaseModule(patchConfig,module) {
 	echo "buildAndReleaseModule : " + module.name
