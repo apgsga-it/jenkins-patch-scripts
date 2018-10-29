@@ -200,7 +200,7 @@ def buildAndReleaseModulesConcurrent(patchConfig,module) {
 	return {
 		node {
 			def tag = tagName(patchConfig)
-			coFromTagcvs(patchConfig,tag,module.name)
+			coFromTagCvsConcurrent(patchConfig,tag,module.name)
 			coIt21BundleFromBranchCvs(patchConfig) 
 			buildAndReleaseModule(patchConfig,module)
 		}
