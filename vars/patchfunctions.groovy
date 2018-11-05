@@ -200,13 +200,26 @@ def buildAndReleaseModulesConcurrent(patchConfig,module) {
 	return {
 		node {
 			def tag = tagName(patchConfig)
-			coFromTagcvs(patchConfig,tag,module.name)
-			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+			coFromTagCvsConcurrent(patchConfig,tag,module.name)
+			coIt21BundleFromBranchCvs(patchConfig) 
 			buildAndReleaseModule(patchConfig,module)
 		}
 	}
 }
 
+// TODO (che, 29.10) not very efficient
+def coFromTagCvsConcurrent(patchConfig,tag,module) {
+	lock ("ConcurrentCvsCheckout") {
+		coFromTagcvs(patchConfig, tag, module)
+	}
+}
+
+// TODO (che, 29.10) not very efficient
+def coIt21BundleFromBranchCvs(patchConfig) {
+	lock ("ConcurrentCvsCheckout") {
+		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+	}
+}
 
 def buildAndReleaseModule(patchConfig,module) {
 	echo "buildAndReleaseModule : " + module.name
