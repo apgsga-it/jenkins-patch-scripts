@@ -113,7 +113,7 @@ def tagName(patchConfig) {
 def saveTarget(patchConfig, target) {
 	patchConfig.targetBean = target
 	patchConfig.envName = target.envName
-	patchConfig.installationTarget = target.targetName
+	patchConfig.currentTarget = target.targetName
 }
 
 def mavenVersionNumber(patchConfig,revision) {
@@ -123,13 +123,13 @@ def mavenVersionNumber(patchConfig,revision) {
 
 def approveBuild(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
-		userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Build?" , submitter: 'svcjenkinsclient,che')
+		userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.currentTarget}Ok" , message:"Ok for ${patchConfig.currentTarget} Build?" , submitter: 'svcjenkinsclient,che')
 	}
 }
 
 def approveInstallation(patchConfig) {
 	timeout(time:5, unit:'DAYS') {
-		userInput = input (id:"Patch${patchConfig.patchNummer}InstallFor${patchConfig.installationTarget}Ok" , message:"Ok for ${patchConfig.installationTarget} Installation?" , submitter: 'svcjenkinsclient,che')
+		userInput = input (id:"Patch${patchConfig.patchNummer}InstallFor${patchConfig.currentTarget}Ok" , message:"Ok for ${patchConfig.currentTarget} Installation?" , submitter: 'svcjenkinsclient,che')
 	}
 }
 
@@ -137,7 +137,7 @@ def approveInstallation(patchConfig) {
 def patchBuildsConcurrent(patchConfig) {
 	node {
 		deleteDir()
-		lock("${patchConfig.serviceName}${patchConfig.installationTarget}Build") {
+		lock("${patchConfig.serviceName}${patchConfig.currentTarget}Build") {
 			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
 			nextRevision(patchConfig)
 			generateVersionProperties(patchConfig)
@@ -154,10 +154,10 @@ def nextRevision(patchConfig) {
 
 def setPatchLastRevision(patchConfig) {
 	def fullRevPrefix = getFullRevisionPrefix(patchConfig)
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.installationTarget}"
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.currentTarget}"
 	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim()
 	patchConfig.lastRevision = "${fullRevPrefix}${lastTargetRevision}"
-	echo "patchConfig.lastRevision has been set with last Revision for target ${patchConfig.installationTarget}: ${lastTargetRevision}"
+	echo "patchConfig.lastRevision has been set with last Revision for target ${patchConfig.currentTarget}: ${lastTargetRevision}"
 }
 
 def setPatchRevision(patchConfig) {
@@ -169,10 +169,10 @@ def setPatchRevision(patchConfig) {
 
 def saveRevisions(patchConfig) {
 	def fullRevPrefix = getFullRevisionPrefix(patchConfig)
-	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.installationTarget},${patchConfig.revision},${fullRevPrefix}"
+	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.currentTarget},${patchConfig.revision},${fullRevPrefix}"
 	def result = sh returnStatus: true, script: "${cmd}"
-	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.installationTarget}")
-	echo "New Revision has been added for ${patchConfig.installationTarget}: ${fullRevPrefix}"
+	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.currentTarget}")
+	echo "New Revision has been added for ${patchConfig.currentTarget}: ${fullRevPrefix}"
 }
 
 def getFullRevisionPrefix(def patchConfig) {

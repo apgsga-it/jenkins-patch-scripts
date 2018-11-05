@@ -46,12 +46,12 @@ def reinstallPatch(def patch, def target) {
 	
 		def patchConfig = getPatchConfig(patch,target)
 		
-		def targetBean = [envName:target,targetName:patchConfig.installationTarget]
+		def targetBean = [envName:target,targetName:patchConfig.currentTarget]
 		patchfunctions.saveTarget(patchConfig,targetBean)
 		patchfunctions.mavenLocalRepo(patchConfig)
 		println patchConfig.mavenLocalRepo
 			
-		stage("Re-installing patch ${patch} on ${patchConfig.installationTarget}") {
+		stage("Re-installing patch ${patch} on ${patchConfig.currentTarget}") {
 			echo "Starting Build for patch ${patch}"
 			node {patchfunctions.patchBuildsConcurrent(patchConfig)}
 			echo "DONE - Build for patch ${patch}"
@@ -80,7 +80,7 @@ def getPatchConfig(def patch, def target) {
 	patchConfig.cvsroot = env.CVS_ROOT
 	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
 	patchConfig.dockerBuildExtention = "tar.gz"
-	patchConfig.installationTarget = target
+	patchConfig.currentTarget = target
 	patchConfig.patchFilePath = "${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json"
 	echo "patchConfig for patch ${patch} : ${patchConfig}"
 	return patchConfig
