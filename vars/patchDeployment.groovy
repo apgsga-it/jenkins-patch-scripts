@@ -2,7 +2,7 @@
 library 'patch-global-functions'
 
 def installDeploymentArtifacts(patchConfig) {
-	lock("${patchConfig.serviceName}${patchConfig.installationTarget}Install") {
+	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
 		parallel 'ui-client-deployment': {
 			if(patchConfig.installJadasAndGui) {
 				node {install(patchConfig,"client","it21gui-dist-zip","zip")}
@@ -31,7 +31,7 @@ def install(patchConfig, type, artifact,extension) {
 		}
 
 		def dropName = patchfunctions.jadasServiceDropName(patchConfig)
-		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr} ${patchConfig.installationTarget}"
+		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr} ${patchConfig.currentTarget}"
 		echo dockerDeploy
 		sh "${dockerDeploy}"
 	}
@@ -57,12 +57,12 @@ def installDbPatch(patchConfig,artifact,extension) {
 		
 		unzip zipFile: "download/${artifact}.${extension}"
 		
-		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.installationTarget}")
+		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.currentTarget}")
 	}
 }
 
 def getCredentialId(def patchConfig) {
-	if(patchConfig.installationTarget.toLowerCase().startsWith("cht")) {
+	if(patchConfig.currentTarget.toLowerCase().startsWith("cht")) {
 		return "svcIt21Install-t"
 	}
 	else {
@@ -75,7 +75,7 @@ def installGUI(patchConfig,artifact,extension) {
 		
 		def extractedGuiPath = ""
 
-		extractedGuiPath = "\\\\service-${patchConfig.installationTarget}.apgsga.ch\\it21_${patchConfig.installationTarget}_gui"
+		extractedGuiPath = "\\\\service-${patchConfig.currentTarget}.apgsga.ch\\it21_${patchConfig.currentTarget}_gui"
 
 		def credentialId = getCredentialId(patchConfig)
 		
@@ -166,7 +166,7 @@ def renameExtractedGuiZip(extractedGuiPath,extractedFolderName) {
 }
 
 def copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName) {
-	dir("C:\\config\\${patchConfig.installationTarget}\\it21-gui") {
+	dir("C:\\config\\${patchConfig.currentTarget}\\it21-gui") {
 		fileOperations ([fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\${extractedFolderName}\\conf")])
 	}
 }
