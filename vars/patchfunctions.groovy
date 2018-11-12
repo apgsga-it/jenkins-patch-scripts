@@ -190,7 +190,7 @@ def buildAndReleaseModulesConcurrent(patchConfig) {
 		def artifactsToBuildParallel = listsByDepLevel[depLevel]
 		println artifactsToBuildParallel
 		def parallelBuilds = artifactsToBuildParallel.collectEntries {
-			[ "Building Level: ${depLevel} and Module: ${it.name}" : buildAndReleaseModulesConcurrent(patchConfig,it)]
+			[ "Building Level: ${it.dependencyLevel} and Module: ${it.name}" : buildAndReleaseModulesConcurrent(patchConfig,it)]
 		}
 		parallel parallelBuilds
 	}
