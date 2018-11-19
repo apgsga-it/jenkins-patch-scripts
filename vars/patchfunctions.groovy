@@ -298,7 +298,9 @@ def buildModule(patchConfig,module) {
 		echo "Building Module : " + module.name + " for Version: " + buildVersion
 		def mvnCommand = "mvn -DbomVersion=${buildVersion} clean deploy"
 		echo "${mvnCommand}"
-		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+		lock ("BomUpdate${buildVersion}") {
+			withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+		}		
 	}
 }
 
