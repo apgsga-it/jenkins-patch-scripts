@@ -34,8 +34,10 @@ patchfunctions.redoToState(patchConfig)
 // Artefacts are tagged = ready to be buildt and deployed with start of Patch Pipeline
 def target = targetSystemsMap.get('Entwicklung')
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification", patchfunctions.&notify)
+def phases = targetSystemsMap.keySet()
+phases.removeElement('Entwicklung')
 
-['Informatiktest', 'Produktion'].each { envName ->
+phases.each { envName ->
 	target = targetSystemsMap.get(envName)
 	assert target != null
 	patchfunctions.saveTarget(patchConfig,target)
