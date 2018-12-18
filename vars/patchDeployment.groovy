@@ -38,6 +38,17 @@ def install(patchConfig, type, artifact,extension) {
 
 }
 
+def installOldStyle(patchConfig,artifact,extension) {
+
+	def server = initiateArtifactoryConnection()
+		
+	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
+			
+		// jenkins_pipeline_patch_install_oldstyle starts also the installation of Docker Services
+		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install_oldstyle.bat ${patchConfig.patchNummer} ${patchConfig.currentTarget}")
+	}
+}
+
 def installDbPatch(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
 	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
@@ -57,6 +68,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 		
 		unzip zipFile: "download/${artifact}.${extension}"
 		
+		// Here will only the "CVS DB" module installed.
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.currentTarget}")
 	}
 }
@@ -110,7 +122,7 @@ def installGUI(patchConfig,artifact,extension) {
 def removeOldGuiFolder(extractedGuiPath) {
 	// Keep last 2 folders starting with java_gui.
 	def guiFolderNamePrefix = "java_gui"
-	def nbFolderToKeep = "2"
+	def nbFolderToKeep = "10"
 	powershell "Get-ChildItem ${extractedGuiPath} -Directory -Recurse -Include ${guiFolderNamePrefix}* | Sort-Object CreationTime -Descending | Select-Object -Skip ${nbFolderToKeep} | Remove-Item -Recurse -Force"
 	
 }

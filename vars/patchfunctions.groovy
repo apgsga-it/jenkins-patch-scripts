@@ -49,7 +49,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
 			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
 			&& task.equals("Approve")))
-	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !["Approve","Notification"].contains(task)
+	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !["Approve","Notification","InstallOldStyle"].contains(task)
 	echo "skip = ${skip}"
 	echo "nop  = ${nop}"
 	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : (nop ? "(Nop)" : "") )
@@ -298,7 +298,9 @@ def buildModule(patchConfig,module) {
 		echo "Building Module : " + module.name + " for Version: " + buildVersion
 		def mvnCommand = "mvn -DbomVersion=${buildVersion} clean deploy"
 		echo "${mvnCommand}"
-		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+		lock ("BomUpdate${buildVersion}") {
+			withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+		}		
 	}
 }
 
