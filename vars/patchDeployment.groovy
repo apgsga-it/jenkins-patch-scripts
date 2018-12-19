@@ -23,6 +23,7 @@ def install(patchConfig, type, artifact,extension) {
 	}
 	else if (type.equals("db")) {
 		installDbPatch(patchConfig,artifact,extension)
+		installOldStylePatch(patchConfig,artifact,extension)
 	}
 	else {
 		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
@@ -39,7 +40,6 @@ def install(patchConfig, type, artifact,extension) {
 }
 
 def installOldStyle(patchConfig,artifact,extension) {
-
 	def server = initiateArtifactoryConnection()
 		
 	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
