@@ -12,30 +12,12 @@ properties([
 	])
 ])
 
-// Parameter
-// TODO  (che, 9.7) When JENKINS-27413 is resolved
-// Passing Patch File Path , because of JAVA8MIG-395 / JENKINS-27413
-def patchFile = new File(params.PARAMETER)
-def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
-echo patchConfig.toString()
-patchConfig.cvsroot = env.CVS_ROOT
-patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
-patchConfig.dockerBuildExtention = "tar.gz"
-patchConfig.patchFilePath = params.PARAMETER
-patchfunctions.mavenLocalRepo(patchConfig)
-println patchConfig.mavenLocalRepo
+def patchConfig = patchfunctions.readPatchFile(params.PARAMETER)
+patchfunctions.initPatchConfig(patchConfig,params)
 
 // Mainline
 def target = [envName:"OnDemand",targetName:patchConfig.installationTarget]
-patchfunctions.saveTarget(patchConfig,target)
-stage("${target.targetName} Build & Assembly") {
-	stage("${target.targetName} Build" ) {
-		node {patchfunctions.patchBuildsConcurrent(patchConfig)}
-	}
-	stage("${target.targetName} Assembly" ) {
-		node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
-	}
-}
-stage("${target.targetName} Installation") {
-	node {patchDeployment.installDeploymentArtifacts(patchConfig)}
-}
+patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
+patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
+patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)

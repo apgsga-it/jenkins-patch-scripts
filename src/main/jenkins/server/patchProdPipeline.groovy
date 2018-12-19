@@ -31,7 +31,7 @@ patchfunctions.redoToState(patchConfig)
 // Mainline
 
 
-// Artefacts are tagged = ready to be buildt and deployed with start of Patch Pipeline
+// Artefacts are tagged = ready to be built and deployed with start of Patch Pipeline
 def target = targetSystemsMap.get('Entwicklung')
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification", patchfunctions.&notify)
 def phases = targetSystemsMap.keySet()
@@ -51,6 +51,7 @@ phases.each { envName ->
 	// Approve to to install Patch
 	
 	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.&approveInstallation)
+	patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
 	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
 	patchfunctions.stage(target,"Installation",patchConfig,"Postprocess",  patchfunctions.&installationPostProcess)
 	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.&notify)

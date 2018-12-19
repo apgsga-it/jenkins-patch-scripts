@@ -39,8 +39,7 @@ def install(patchConfig, type, artifact,extension) {
 
 }
 
-def installOldStylePatch(patchConfig,artifact,extension) {
-
+def installOldStyle(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
 		
 	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
