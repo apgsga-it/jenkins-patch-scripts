@@ -23,7 +23,6 @@ def install(patchConfig, type, artifact,extension) {
 	}
 	else if (type.equals("db")) {
 		installDbPatch(patchConfig,artifact,extension)
-		installOldStylePatch(patchConfig,artifact,extension)
 	}
 	else {
 		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
