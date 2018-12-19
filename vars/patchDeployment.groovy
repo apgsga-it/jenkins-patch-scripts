@@ -38,8 +38,11 @@ def install(patchConfig, type, artifact,extension) {
 	}
 
 }
+def installOldStyle(patchConfig) {
+	installOldStyleInt(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip")
+}
 
-def installOldStyle(patchConfig,artifact,extension) {
+def installOldStyleInt(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
 		
 	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
