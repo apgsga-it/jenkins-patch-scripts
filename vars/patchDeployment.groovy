@@ -39,7 +39,7 @@ def install(patchConfig, type, artifact,extension) {
 
 }
 def installOldStyle(patchConfig) {
-	installOldStyleInt(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip")
+	installOldStyleInt(patchConfig,"db","zip")
 }
 
 def installOldStyleInt(patchConfig,artifact,extension) {
