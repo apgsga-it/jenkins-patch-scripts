@@ -22,8 +22,6 @@ def readPatchFile(patchFilePath) {
 
 def initPatchConfig(patchConfig, params) {
 	patchConfig.cvsroot = env.CVS_ROOT
-	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
-	patchConfig.dockerBuildExtention = "tar.gz"
 	patchConfig.patchFilePath = params.PARAMETER
 	patchConfig.redo = params.RESTART.equals("TRUE")
 }
@@ -322,7 +320,6 @@ def assembleDeploymentArtefacts(patchConfig) {
 		dbAssemble(patchConfig)
 		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
 		assemble(patchConfig, "it21-ui-pkg-server")
-		buildDockerImage(patchConfig)
 		assemble(patchConfig, "it21-ui-pkg-client")
 	}
 }
@@ -451,32 +448,17 @@ def coDbModules(patchConfig) {
 	}
 }
 
-def buildDockerImage(patchConfig) {
-	def extension = patchConfig.dockerBuildExtention
-	def artifact = patchConfig.jadasServiceArtifactName
-	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-	patchConfig.runningNr = env.BUILD_NUMBER
-	def mvnCommand = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=${artifact}:${buildVersion}:${extension} -Dtransitive=false"
-	echo "${mvnCommand}"
-	def mvnCommandCopy = "mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:copy -Dartifact=${artifact}:${buildVersion}:${extension} -DoutputDirectory=./distributions"
-	echo "${mvnCommandCopy}"
-
-	def dropName = jadasServiceDropName(patchConfig)
-	def dockerBuild = "/opt/apgops/docker/build.sh jadas-service ${WORKSPACE}/distributions/${dropName} ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr}"
-	echo "${dockerBuild}"
-	withMaven( maven: 'apache-maven-3.5.0') {
-		sh "${mvnCommand}"
-		sh "${mvnCommandCopy}"
-	}
-	sh "${dockerBuild}"
-}
-
 def assemble(patchConfig, assemblyName) {
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
+	// TODO JHE: Not sure that for server part, the buildVersion is correct, and what we want.
+	def params = "-PsourceVersion=${buildVersion}"
+	if (assemblyName == "it21-ui-pkg-server") {
+		params += " -PbuildTarget=${patchConfig.installationTarget}"
+	}
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew ${assemblyName}:assemble ${assemblyName}:publish -PsourceVersion=${buildVersion}"
+		sh "./gradlew ${assemblyName}:assemble ${assemblyName}:publish ${params}"
 	}
 }
 
@@ -511,13 +493,4 @@ def mapToState(target,toState) {
 		return "${target.envName}"
 	}
 	// TODO (che, uge, 04.04.2018 ) Errorhandling
-}
-
-def jadasServiceDropName(patchConfig) {
-	def extension = patchConfig.dockerBuildExtention
-	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-	def artifact = patchConfig.jadasServiceArtifactName
-	def pos = artifact.indexOf(':')
-	def artifactName = artifact.substring(pos+1)
-	return "${artifactName}-${buildVersion}.${extension}"
 }

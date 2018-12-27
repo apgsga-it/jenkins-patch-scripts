@@ -9,7 +9,7 @@ def installDeploymentArtifacts(patchConfig) {
 			}
 		}, 'ui-server-deployment': {
 			if(patchConfig.installJadasAndGui) {
-				node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+				node {install(patchConfig,"server",patchConfig.jadasServiceArtifactName,"rpm") }
 			}
 		}, 'db-deployment': {
 			node {install(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip") }
@@ -30,13 +30,14 @@ def install(patchConfig, type, artifact,extension) {
 			return
 		}
 
-		def dropName = patchfunctions.jadasServiceDropName(patchConfig)
-		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr} ${patchConfig.currentTarget}"
-		echo dockerDeploy
-		sh "${dockerDeploy}"
+		// TODO JHE : get the node on which to run the yum command from TargetSystemMapping file. For dev purpose, at the moment, everything will be started from the master
+		echo "Installation of jadas-service-${patchConfig.installationTarget} starting ..."
+		def yumCmd = "yum clean all && yum -y install jadas-service-${patchConfig.installationTarget}"
+		sh "${yumCmd}"
+		echo "Installation of jadas-service-${patchConfig.installationTarget} done!"
 	}
-
 }
+
 def installOldStyle(patchConfig) {
 	installOldStyleInt(patchConfig,"db","zip")
 }

@@ -8,7 +8,7 @@ repositories {
 		maven { 
 		  credentials {
             	username "$repoUser"
-            	password System.env.REPO_RO_PASSWD
+            	password "$repoPassword"
         	}
 			url "${mavenRepoBaseUrl}/repo" 
 		}
