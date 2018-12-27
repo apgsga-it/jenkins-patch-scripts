@@ -453,6 +453,7 @@ def assemble(patchConfig) {
 	// JHE: We assemble and build the bundle in one shot! It saves us tests on hardcoded values ... Careful: not all parameter might be required by both GUI and Jadas, but it doesn't hurt to pass parameter which won't be used.
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
+		// TODO JHE: Adapt parameters as soon as JAVA8MIG544 will be finish.
 		sh "./gradlew assemble publish -PsourceVersion=${buildVersion} -PbuildTarget=${patchConfig.installationTarget}"
 	}
 }
