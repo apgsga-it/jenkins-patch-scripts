@@ -7,8 +7,8 @@ repositories {
 		mavenLocal()
 		maven { 
 		  credentials {
-            	username "$repoUser"
-            	password System.env.REPO_RO_PASSWD
+            	username mavenRepoUser
+            	password mavenRepoPwd
         	}
 			url "${mavenRepoBaseUrl}/repo" 
 		}
