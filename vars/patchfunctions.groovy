@@ -451,7 +451,6 @@ def coDbModules(patchConfig) {
 def assemble(patchConfig, assemblyName) {
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
-	// TODO JHE: Not sure that for server part, the buildVersion is correct, and what we want.
 	def params = "-PsourceVersion=${buildVersion}"
 	if (assemblyName == "it21-ui-pkg-server") {
 		params += " -PbuildTarget=${patchConfig.installationTarget}"
