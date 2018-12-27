@@ -13,6 +13,16 @@ def benchmark() {
 	benchmarkCallback
 }
 
+def nodeLabelFor(serviceName, nodes) {
+	def found = nodes.find { it.serviceName.equals(serviceName)}
+	if (found != null) {
+		found.label
+	} else {
+		found
+	}
+	
+}
+
 def readPatchFile(patchFilePath) {
 	def patchFile = new File(patchFilePath)
 	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
@@ -100,7 +110,7 @@ def loadTargetsMap() {
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
 	jsonSystemTargets.targetSystems.each( { target ->
-		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target])
+		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target, nodes:target.nodes])
 	})
 	println targetSystemMap
 	targetSystemMap
