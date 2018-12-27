@@ -319,8 +319,7 @@ def assembleDeploymentArtefacts(patchConfig) {
 		coDbModules(patchConfig)
 		dbAssemble(patchConfig)
 		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
-		assemble(patchConfig, "it21-ui-pkg-server")
-		assemble(patchConfig, "it21-ui-pkg-client")
+		assemble(patchConfig)
 	}
 }
 
@@ -448,16 +447,13 @@ def coDbModules(patchConfig) {
 	}
 }
 
-def assemble(patchConfig, assemblyName) {
+def assemble(patchConfig) {
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-	echo "Building Assembly ${assemblyName} with version: ${buildVersion} "
-	def params = "-PsourceVersion=${buildVersion}"
-	if (assemblyName == "it21-ui-pkg-server") {
-		params += " -PbuildTarget=${patchConfig.installationTarget}"
-	}
+	echo "Building Assembly with version: ${buildVersion} "
+	// JHE: We assemble and build the bundle in one shot! It saves us tests on hardcoded values ... Careful: not all parameter might be required by both GUI and Jadas, but it doesn't hurt to pass parameter which won't be used.
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		sh "./gradlew ${assemblyName}:assemble ${assemblyName}:publish ${params}"
+		sh "./gradlew assemble publish -PsourceVersion=${buildVersion} -PbuildTarget=${patchConfig.installationTarget}"
 	}
 }
 
