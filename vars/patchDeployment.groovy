@@ -5,38 +5,28 @@ def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
 		parallel 'ui-client-deployment': {
 			if(patchConfig.installJadasAndGui) {
-				node {install(patchConfig,"client","it21gui-dist-zip","zip")}
+				node {
+					installGUI(patchConfig,"it21gui-dist-zip","zip")
+				}
 			}
 		}, 'ui-server-deployment': {
 			if(patchConfig.installJadasAndGui) {
-				node {install(patchConfig,"docker",patchConfig.jadasServiceArtifactName,patchConfig.dockerBuildExtention) }
+				// TODO JHE : get the node on which to run the yum command from TargetSystemMapping file. For dev purpose, at the moment, everything will be started from the master
+				node {
+					echo "Installation of jadas-service-${patchConfig.installationTarget} starting ..."
+					def yumCmd = "yum clean all && yum -y install jadas-service-${patchConfig.installationTarget}"
+					sh "${yumCmd}"
+					echo "Installation of jadas-service-${patchConfig.installationTarget} done!"
+				}
 			}
 		}, 'db-deployment': {
-			node {install(patchConfig,"db",patchfunctions.getCoPatchDbFolderName(patchConfig),"zip") }
+			node {
+				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip")
+			}
 		}
 	}
 }
 
-def install(patchConfig, type, artifact,extension) {
-	if (type.equals("client")) {
-		installGUI(patchConfig,artifact,extension)
-	}
-	else if (type.equals("db")) {
-		installDbPatch(patchConfig,artifact,extension)
-	}
-	else {
-		if(!artifact.equals(patchConfig.jadasServiceArtifactName)) {
-			echo "Don't know how to install services apart from jadas-service : TODO"
-			return
-		}
-
-		def dropName = patchfunctions.jadasServiceDropName(patchConfig)
-		def dockerDeploy = "/opt/apgops/docker/deploy.sh jadas-service ${patchConfig.patchNummer}-${patchConfig.revision}-${patchConfig.runningNr} ${patchConfig.currentTarget}"
-		echo dockerDeploy
-		sh "${dockerDeploy}"
-	}
-
-}
 def installOldStyle(patchConfig) {
 	installOldStyleInt(patchConfig,"db","zip")
 }

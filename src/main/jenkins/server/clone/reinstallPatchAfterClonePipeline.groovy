@@ -78,8 +78,6 @@ def getPatchConfig(def patch, def target) {
 	assert patchFile.exists() : println ("Patch file ${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json doesn't exist")
 	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
 	patchConfig.cvsroot = env.CVS_ROOT
-	patchConfig.jadasServiceArtifactName = "com.affichage.it21:it21-jadas-service-dist-gtar"
-	patchConfig.dockerBuildExtention = "tar.gz"
 	patchConfig.currentTarget = target
 	patchConfig.patchFilePath = "${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json"
 	echo "patchConfig for patch ${patch} : ${patchConfig}"

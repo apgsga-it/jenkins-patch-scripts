@@ -9,7 +9,7 @@ repositories {
 		  credentials {
             	username mavenRepoUser
             	password mavenRepoPwd
-        	}
+      }
 			url "${mavenRepoBaseUrl}/repo" 
 		}
 }
