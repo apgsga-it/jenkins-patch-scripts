@@ -464,7 +464,7 @@ def assemble(patchConfig) {
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		// TODO JHE: Adapt parameters as soon as JAVA8MIG544 will be finish.
-		sh "./gradlew assemble publish -PsourceVersion=${buildVersion} -PbuildTarget=${patchConfig.installationTarget}"
+		sh "./gradlew assemble publish -PsourceVersion=${buildVersion} -PbuildTarget=${patchConfig.currentTarget}"
 	}
 }
 
