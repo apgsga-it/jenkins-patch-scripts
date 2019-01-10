@@ -14,7 +14,7 @@ def installDeploymentArtifacts(patchConfig) {
 				// TODO JHE : get the node on which to run the yum command from TargetSystemMapping file. For dev purpose, at the moment, everything will be started from the master
 				node {
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
-					def yumCmd = "yum clean all && yum -y install apg-jadas-service-${patchConfig.currentTarget}"
+					def yumCmd = "sudo yum clean all && sudo yum -y install apg-jadas-service-${patchConfig.currentTarget}"
 					sh "${yumCmd}"
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
 				}
