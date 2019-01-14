@@ -463,7 +463,7 @@ def jadasVersionNumber(patchConfig) {
 
 def assemble(patchConfig) {
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-	def jadasBuildVersion = jadasVersionNumber(patchConfig)
+	def jadasPublishVersion = jadasVersionNumber(patchConfig)
 	echo "Building Assembly with version: ${buildVersion} "
 	// JHE: We assemble and build the bundle in one shot! It saves us tests on hardcoded values ... Careful: not all parameter might be required by both GUI and Jadas, but it doesn't hurt to pass parameter which won't be used.
 	dir ("it21-ui-bundle") {
@@ -472,7 +472,7 @@ def assemble(patchConfig) {
 		// Assemble and publish GUI
 		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}"
 		// Assemble and publish Jadas
-		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PjadasBuildVersion=${jadasBuildVersion} -PbuildTarget=${patchConfig.currentTarget}"
+		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget}"
 	}
 }
 
