@@ -48,7 +48,7 @@ def savePatchConfigState(patchConfig) {
 	}
 }
 
-def jadasInstallationNode(target) {
+def jadasInstallationNodeLabel(target) {
 	return target.nodes.label
 }
 
