@@ -467,7 +467,7 @@ def assemble(patchConfig) {
 	echo "Building Assembly with version: ${buildVersion} "
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		// JHE : Probably we can run these tasks (assemble) in parallel
+		// JHE : Probably we can run these tasks (assemble and publish) in parallel
 		// Assemble and publish GUI
 		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}"
 		// Assemble and publish Jadas
