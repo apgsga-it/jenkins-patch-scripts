@@ -457,14 +457,22 @@ def coDbModules(patchConfig) {
 	}
 }
 
+def jadasVersionNumber(patchConfig) {
+	return "${patchConfig.baseVersionNumber}.${patchConfig.revision}.${patchConfig.patchNummer}.${currentBuild.number}"
+}
+
 def assemble(patchConfig) {
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
+	def jadasBuildVersion = jadasVersionNumber(patchConfig)
 	echo "Building Assembly with version: ${buildVersion} "
 	// JHE: We assemble and build the bundle in one shot! It saves us tests on hardcoded values ... Careful: not all parameter might be required by both GUI and Jadas, but it doesn't hurt to pass parameter which won't be used.
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
-		// TODO JHE: Adapt parameters as soon as JAVA8MIG544 will be finish.
-		sh "./gradlew assemble publish -PsourceVersion=${buildVersion} -PbuildTarget=${patchConfig.currentTarget}"
+		// JHE : Probably we can run these tasks (assemble) in parallel
+		// Assemble and publish GUI
+		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}"
+		// Assemble and publish Jadas
+		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${jadasBuildVersion} -PbuildTarget=${patchConfig.currentTarget}"
 	}
 }
 
