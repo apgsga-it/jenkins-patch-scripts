@@ -48,9 +48,14 @@ def savePatchConfigState(patchConfig) {
 	}
 }
 
+def jadasInstallationNode(target) {
+	return target.nodes.label
+}
+
 def stage(target,toState,patchConfig,task, Closure callBack) {
 	echo "target: ${target}, toState: ${toState}, task: ${task} "
 	patchConfig.targetToState = mapToState(target,toState)
+	patchConfig.jadasInstallationNodeLabel = jadasInstallationNodeLabel(target)
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
 	def skip = patchConfig.redo &&
