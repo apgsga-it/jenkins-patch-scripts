@@ -472,7 +472,7 @@ def assemble(patchConfig) {
 		// Assemble and publish GUI
 		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}"
 		// Assemble and publish Jadas
-		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${jadasBuildVersion} -PbuildTarget=${patchConfig.currentTarget}"
+		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PjadasBuildVersion=${jadasBuildVersion} -PbuildTarget=${patchConfig.currentTarget}"
 	}
 }
 
