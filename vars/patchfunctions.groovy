@@ -463,7 +463,7 @@ def coDbModules(patchConfig) {
 }
 
 def jadasVersionNumber(patchConfig) {
-	return "${patchConfig.baseVersionNumber}.${patchConfig.revision}.${patchConfig.patchNummer}.${currentBuild.number}"
+	return "${patchConfig.revision}.${patchConfig.patchNummer}"
 }
 
 def assemble(patchConfig) {
