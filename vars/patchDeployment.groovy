@@ -11,10 +11,8 @@ def installDeploymentArtifacts(patchConfig) {
 			}
 		}, 'ui-server-deployment': {
 			if(patchConfig.installJadasAndGui) {
-				// TODO JHE : get the node on which to run the yum command from TargetSystemMapping file. For dev purpose, at the moment, everything will be started from the master
-				//			  Also for dev purpose, at the moment we echo the node information on which the YUM should have ran.
-				echo "Installation of jadas Service should have ran on : ${patchConfig.jadasInstallationNodeLabel}"
-				node {
+				echo "Installation of jadas Service will be done on Node : ${patchConfig.jadasInstallationNodeLabel}"
+				node (patchConfig.jadasInstallationNodeLabel){
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
 					def yumCmd = "sudo yum clean all && sudo yum -y install apg-jadas-service-${patchConfig.currentTarget}"
 					sh "${yumCmd}"
