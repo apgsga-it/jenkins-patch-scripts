@@ -12,7 +12,7 @@ def installDeploymentArtifacts(patchConfig) {
 		}, 'ui-server-deployment': {
 			if(patchConfig.installJadasAndGui) {
 				echo "Installation of jadas Service will be done on Node : ${patchConfig.jadasInstallationNodeLabel}"
-				node ("${patchConfig.jadasInstallationNodeLabel}"){
+				node (patchConfig.jadasInstallationNodeLabel){
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
 					def yumCmd = "sudo yum clean all && sudo yum -y install apg-jadas-service-${patchConfig.currentTarget}"
 					sh "${yumCmd}"
