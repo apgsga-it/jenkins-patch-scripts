@@ -15,6 +15,8 @@ def installDeploymentArtifacts(patchConfig) {
 				node (patchConfig.jadasInstallationNodeLabel){
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
 					def yumCmd = "sudo yum clean all && sudo yum -y install apg-jadas-service-${patchConfig.currentTarget}"
+					// JHE: For debug purpose (whoami)
+					sh "whoami"
 					sh "${yumCmd}"
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
 				}
