@@ -16,9 +16,7 @@ def patchConfig = patchfunctions.readPatchFile(params.PARAMETER)
 patchfunctions.initPatchConfig(patchConfig,params)
 
 // Mainline
-def target = [envName:"OnDemand",targetName:patchConfig.installationTarget]
-target.nodes = []
-target.nodes[0].label = "jadas-t"
+def target = [envName:"OnDemand",targetName:patchConfig.installationTarget, nodes:[label:"jadas-t"]]
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
 patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
