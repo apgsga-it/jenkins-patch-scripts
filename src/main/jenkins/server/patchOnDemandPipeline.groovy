@@ -17,6 +17,8 @@ patchfunctions.initPatchConfig(patchConfig,params)
 
 // Mainline
 def target = [envName:"OnDemand",targetName:patchConfig.installationTarget]
+// TODO JHE: Verify if that's only a workaround, or needed, or should be solved differently ?
+patchConfig.currentTarget = patchConfig.installationTarget
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
 patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
