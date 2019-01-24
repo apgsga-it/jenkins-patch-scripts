@@ -51,12 +51,7 @@ def savePatchConfigState(patchConfig) {
 def jadasInstallationNodeLabel(target) {
 	// JHE : at the moment we only have one node pro target, and all dedicated to jadas...
 	// TODO JHE: support fetching service name, and return node accordingly.
-	if(target.nodes == null) {
-		return "jadas-t"
-	}
-	else {
-		return target.nodes[0].label
-	}
+	return target.nodes[0].label
 }
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
