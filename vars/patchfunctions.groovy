@@ -122,12 +122,17 @@ def loadTargetsMap() {
 }
 
 def tagName(patchConfig) {
-	patchConfig.patchTag
+	if (patchConfig.patchTag?.trim()) {
+		patchConfig.patchTag
+	} else {
+		patchConfig.developerBranch
+	}
+		
 }
 
 def saveTarget(patchConfig, target) {
 	patchConfig.targetBean = target
-	patchConfig.envName = target.envName
+	patchConfig.envName = target.envName‹
 	patchConfig.currentTarget = target.targetName
 }
 
