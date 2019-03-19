@@ -46,9 +46,12 @@ def reinstallPatch(def patch, def target) {
 	
 		def patchConfig = getPatchConfig(patch,target)
 		
-		def targetBean = [envName:target,targetName:patchConfig.currentTarget]
+		def defaultNodes = [[label:env.DEFAULT_JADAS_REINSTALL_PATCH_NODE,serviceName:"jadas"]]
+		def targetBean = [envName:target,targetName:patchConfig.currentTarget,nodes:defaultNodes]
 		patchfunctions.saveTarget(patchConfig,targetBean)
 		patchfunctions.mavenLocalRepo(patchConfig)
+		patchConfig.jadasInstallationNodeLabel = patchfunctions.jadasInstallationNodeLabel(targetBean)
+		echo "patchConfig.jadasInstallationNodeLabel set with ${patchConfig.jadasInstallationNodeLabel}"
 		println patchConfig.mavenLocalRepo
 			
 		stage("Re-installing patch ${patch} on ${patchConfig.currentTarget}") {
