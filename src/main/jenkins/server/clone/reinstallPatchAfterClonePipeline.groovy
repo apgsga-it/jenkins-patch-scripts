@@ -61,6 +61,9 @@ def reinstallPatch(def patch, def target) {
 			echo "Starting Deployment Artefact for patch ${patch}"
 			node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
 			echo "DONE - Deployment Artefact for patch ${patch}"
+			echo "Starting old Style installation for patch ${patch}"
+			node {patchDeployment.installOldStyle(patchConfig)}
+			echo "DONE - Starting old Style installation for patch ${patch}"
 			echo "Starting Installation Artefact for patch ${patch}"
 			node {patchDeployment.installDeploymentArtifacts(patchConfig)}
 			echo "DONE - Installation Artefact for patch ${patch}"
