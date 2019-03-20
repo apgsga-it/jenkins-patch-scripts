@@ -387,7 +387,7 @@ def publishDbAssemble(patchConfig) {
 		"files": [
 		{
 			"pattern": "*.zip",
-			"target": "dbpatch/"
+			"target": "${env.DB_PATCH_REPO}"
 		  }
 		]
 	}"""
