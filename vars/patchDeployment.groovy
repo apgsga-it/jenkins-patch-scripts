@@ -131,7 +131,7 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 	def downloadSpec = """{
               "files": [
                     {
-                      "pattern": "releases/*${zip}",
+                      "pattern": "${env.RELEASES_PATCH_REPO}*${zip}",
 					   "target": "download/"
 					   }
 			 ]
