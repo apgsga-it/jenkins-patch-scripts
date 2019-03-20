@@ -52,7 +52,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 		def downloadSpec = """{
               "files": [
                     {
-                     "pattern": "dbpatch/*${artifact}.${extension}",
+                     "pattern": "${env.DB_PATCH_REPO}*${artifact}.${extension}",
 					 "target": "download/"
 					 }
 				   ]
