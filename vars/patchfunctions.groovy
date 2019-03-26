@@ -132,7 +132,7 @@ def tagName(patchConfig) {
 
 def saveTarget(patchConfig, target) {
 	patchConfig.targetBean = target
-	patchConfig.envName = target.envName‹
+	patchConfig.envName = target.envName
 	patchConfig.currentTarget = target.targetName
 }
 
@@ -392,7 +392,7 @@ def publishDbAssemble(patchConfig) {
 		"files": [
 		{
 			"pattern": "*.zip",
-			"target": "dbpatch/"
+			"target": "${env.DB_PATCH_REPO}"
 		  }
 		]
 	}"""

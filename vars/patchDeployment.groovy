@@ -52,7 +52,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 		def downloadSpec = """{
               "files": [
                     {
-                     "pattern": "dbpatch/*${artifact}.${extension}",
+                     "pattern": "${env.DB_PATCH_REPO}*${artifact}.${extension}",
 					 "target": "download/"
 					 }
 				   ]
@@ -131,7 +131,7 @@ def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
 	def downloadSpec = """{
               "files": [
                     {
-                      "pattern": "releases/*${zip}",
+                      "pattern": "${env.RELEASES_PATCH_REPO}*${zip}",
 					   "target": "download/"
 					   }
 			 ]
