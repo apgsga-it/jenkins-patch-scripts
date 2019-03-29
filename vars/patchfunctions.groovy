@@ -122,7 +122,12 @@ def loadTargetsMap() {
 }
 
 def tagName(patchConfig) {
-	patchConfig.patchTag
+	if (patchConfig.patchTag?.trim()) {
+		patchConfig.patchTag
+	} else {
+		patchConfig.developerBranch
+	}
+		
 }
 
 def saveTarget(patchConfig, target) {
