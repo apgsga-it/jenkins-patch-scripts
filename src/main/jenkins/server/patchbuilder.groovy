@@ -13,7 +13,7 @@ pipelineJob (jobName) {
 			sandbox(false)
 		}
 	}
-	logRotator(3653,10,3653,-1) // ten years legal retention period
+	logRotator(3653,10,3653,-1) // ten years legal retention period 
 	description("Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "Pfad zum Patch*.json File")
