@@ -13,7 +13,7 @@ pipelineJob (jobName) {
 			sandbox(false)
 		}
 	}
-	logRotator(5,10,5,-1)
+	logRotator(3653,10,3653,-1) // ten years legal retention period
 	description("Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "Pfad zum Patch*.json File")
@@ -35,7 +35,7 @@ pipelineJob (downLoadJobName) {
 			sandbox(false)
 		}
 	}
-	logRotator(5,10,5,-1)
+	logRotator(3653,10,3653,-1) // ten years legal retention period
 	description("OnDemand Patch Pipeline for : ${patchName}")
 	parameters {
 		stringParam('PARAMETER', "", "String mit dem die PatchConfig Parameter als JSON transportiert werden")
