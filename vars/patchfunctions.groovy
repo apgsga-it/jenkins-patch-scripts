@@ -56,6 +56,8 @@ def jadasInstallationNodeLabel(target) {
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
 	echo "target: ${target}, toState: ${toState}, task: ${task} "
+	def targetSystemsMap = patchfunctions.loadTargetsMap()
+	def targetName= targetSystemsMap.get(target.envName)
 	patchConfig.targetToState = mapToState(target,toState)
 	patchConfig.jadasInstallationNodeLabel = jadasInstallationNodeLabel(target)
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
@@ -72,15 +74,18 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 		if (!skip) {
 			echo "Not skipping"
 			// Save before Stage 
-			savePatchConfigState(patchConfig)
+			if (targetName != null) {
+				savePatchConfigState(patchConfig)
+			}
 			if (!nop) {
 				callBack(patchConfig)
 			}
 			if (patchConfig.redo && patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && task.equals("Notification")) {
 				patchConfig.redo = false
 			}
-			// Save after Stage
-			savePatchConfigState(patchConfig)
+			if (targetName != null) {
+				savePatchConfigState(patchConfig)
+			}
 		} else {
 			"Echo skipping"
 		}
