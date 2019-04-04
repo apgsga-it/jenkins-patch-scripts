@@ -162,13 +162,11 @@ def approveInstallation(patchConfig) {
 def patchBuildsConcurrent(patchConfig) {
 	node {
 		deleteDir()
-		lock("${patchConfig.serviceName}${patchConfig.currentTarget}Build") {
-			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
-			nextRevision(patchConfig)
-			generateVersionProperties(patchConfig)
-			buildAndReleaseModulesConcurrent(patchConfig)
-			saveRevisions(patchConfig)
-		}
+		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+		nextRevision(patchConfig)
+		generateVersionProperties(patchConfig)
+		buildAndReleaseModulesConcurrent(patchConfig)
+		saveRevisions(patchConfig)
 	}
 }
 

@@ -44,9 +44,12 @@ phases.each { envName ->
 
 	// Approve to make Patch "Installationsbereit" for target
 	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.&approveBuild)
-	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
-	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+	lock("${patchConfig.serviceName}${patchConfig.currentTarget}BuildAndAssebly") {
+		patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
+		patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+	}
 	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification",  patchfunctions.&notify)
+	
 	
 	// Approve to to install Patch
 	

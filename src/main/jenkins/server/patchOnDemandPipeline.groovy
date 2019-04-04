@@ -19,7 +19,9 @@ patchfunctions.initPatchConfig(patchConfig,params)
 def defaultNodes = [[label:env.DEFAULT_JADAS_ONDEMAND_NODE,serviceName:"jadas"]]
 def target = [envName:"OnDemand",targetName:patchConfig.installationTarget,nodes:defaultNodes]
 patchConfig.currentTarget = patchConfig.installationTarget
-patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
-patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+lock("${patchConfig.serviceName}${patchConfig.currentTarget}BuildAndAssebly") {
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+}
 patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
 patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
