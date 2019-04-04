@@ -56,7 +56,7 @@ def jadasInstallationNodeLabel(target) {
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
 	echo "target: ${target}, toState: ${toState}, task: ${task} "
-	def targetSystemsMap = patchfunctions.loadTargetsMap()
+	def targetSystemsMap = loadTargetsMap()
 	def targetName= targetSystemsMap.get(target.envName)
 	patchConfig.targetToState = mapToState(target,toState)
 	patchConfig.jadasInstallationNodeLabel = jadasInstallationNodeLabel(target)
