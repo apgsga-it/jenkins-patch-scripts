@@ -135,6 +135,14 @@ def tagName(patchConfig) {
 		
 }
 
+def tagNameForModule(patchConfig,moduleName) {
+	patchConfig.mavenArtifactsToBuild.each({ma ->
+		if(ma.name.equals(moduleName)) {
+			return ma.patchTag
+		}
+	})
+}
+
 def saveTarget(patchConfig, target) {
 	patchConfig.targetBean = target
 	patchConfig.envName = target.envName
@@ -224,7 +232,13 @@ def buildAndReleaseModulesConcurrent(patchConfig) {
 def buildAndReleaseModulesConcurrent(patchConfig,module) {
 	return {
 		node {
-			def tag = tagName(patchConfig)
+			def tag
+			if(patchConfig.patchNummer.contains("aggregate")) {
+				tag = tagNameForModule(patchConfig,module)	
+			}
+			else {
+				tag = tagName(patchConfig)
+			}
 			coFromTagCvsConcurrent(patchConfig,tag,module.name)
 			coIt21BundleFromBranchCvs(patchConfig) 
 			buildAndReleaseModule(patchConfig,module)
