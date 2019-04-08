@@ -366,7 +366,6 @@ def updateBom(patchConfig,module) {
 
 def assembleDeploymentArtefacts(patchConfig) {
 	node {
-		// JHE: parallelized first 2 and last 2
 		parallel 'checkOutAndAssembleDbModules': {
 			coDbModules(patchConfig)
 			dbAssemble(patchConfig)
