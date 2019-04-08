@@ -366,10 +366,15 @@ def updateBom(patchConfig,module) {
 
 def assembleDeploymentArtefacts(patchConfig) {
 	node {
-		coDbModules(patchConfig)
-		dbAssemble(patchConfig)
-		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
-		assemble(patchConfig)
+		// JHE: parallelized first 2 and last 2
+		parallel 'checkOutAndAssembleDbModules': {
+			coDbModules(patchConfig)
+			dbAssemble(patchConfig)
+		},
+		'checkoutAndAssembleMavenArtifacts': {
+			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+			assemble(patchConfig)
+		}
 	}
 }
 
