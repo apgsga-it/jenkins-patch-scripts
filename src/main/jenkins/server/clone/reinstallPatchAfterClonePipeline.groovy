@@ -23,16 +23,12 @@ stage("reinstallPatchAfterClone") {
 		def target = params.target
 		echo "Starting to re-install Patch after clone on ${target}"
 		
-		def patchListFilePath = getPatchListFile(target) 
+		def patchListFile = getPatchListFile(target) 
 		
-		if(patchListFilePath.exists()) {
-			echo "Patch will be re-installed on ${target}"
-			def patchList = new JsonSlurperClassic().parseText(patchListFilePath.text)
-			echo "Following json has been produced by apsdbcli: ${patchList}"
-			def patches = patchList.patchlist
-			patches.each{patch ->
-				reinstallPatch(patch,target)
-			}
+		if(patchListFile.exists()) {
+			def aggregatePatch = getNewAggregatePatchName(patchListFile)
+			echo "Aggregate patch called ${aggregatePatch} will be re-installed on ${target}"
+			reinstallPatch(aggregatePatch, target)
 		}
 		else {
 			echo "No patch have to be re-installed on ${target}"
@@ -95,4 +91,14 @@ def getPatchListFile(def target) {
 	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac Informatiktest"
 	assert result == 0 : println ("Error while getting list of patch to be re-installed on ${target} for status Informatiktest")
 	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled.json")
+}
+
+def getNewAggregatePatchName(def patchListFile) {
+	def patchList = new JsonSlurperClassic().parseText(patchListFile.text)
+	echo "Following json has been produced by apsdbcli: ${patchList}"
+	def patches = patchList.patchlist
+	echo "Calling apscli to aggregate following patches in a single patch: ${patches}"
+	def result = sh returnStatus: true, script: "/opt/apg-patch-cli/bin/apscli.sh -ap ${patches}"
+	assert result == 0 : println ("Error while trying to generate an aggregated patch for the following list of patches: ${patches}")
+	return result.results.ap.aggregatePatchName
 }
