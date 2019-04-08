@@ -135,7 +135,15 @@ def tagName(patchConfig) {
 		
 }
 
-def tagNameForModule(patchConfig,moduleName) {
+def tagNameForDbModule(patchConfig,vcsDboName) {
+	patchConfig.dbObjects.each({dbo -> 
+		if(vcsDboName.contains(dbo.moduleName)) {
+			return dbo.patchTag
+		}
+	})
+}
+
+def tagNameForMavenModule(patchConfig,moduleName) {
 	patchConfig.mavenArtifactsToBuild.each({ma ->
 		if(ma.name.equals(moduleName)) {
 			return ma.patchTag
@@ -234,7 +242,7 @@ def buildAndReleaseModulesConcurrent(patchConfig,module) {
 		node {
 			def tag
 			if(patchConfig.patchNummer.contains("aggregate")) {
-				tag = tagNameForModule(patchConfig,module)	
+				tag = tagNameForMavenModule(patchConfig,module)	
 			}
 			else {
 				tag = tagName(patchConfig)
@@ -269,7 +277,8 @@ def buildAndReleaseModule(patchConfig,module) {
 
 }
 
-
+// JHE: Deprecated function? Can't find where it eventually would be called from
+@Deprecated
 def checkoutModules(patchConfig) {
 	def tag = tagName(patchConfig)
 	patchConfig.mavenArtifactsToBuild.each {
@@ -483,6 +492,9 @@ def coDbModules(patchConfig) {
 	def tag = tagName(patchConfig)
 	dir(patchDbFolderName) {
 		dbObjects.each{ dbo ->
+			if(patchConfig.patchNummer.contains("aggregate")) {
+				tag = tagNameForDbModule(patchConfig,dbo)
+			}
 			coFromTagcvs(patchConfig,tag, dbo)
 		}
 	}
