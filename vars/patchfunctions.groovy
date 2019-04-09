@@ -147,15 +147,11 @@ def mavenVersionNumber(patchConfig,revision) {
 
 
 def approveBuild(patchConfig) {
-	timeout(time:5, unit:'DAYS') {
-		userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.currentTarget}Ok" , message:"Ok for ${patchConfig.currentTarget} Build?" , submitter: 'svcjenkinsclient,che')
-	}
+	userInput = input (id:"Patch${patchConfig.patchNummer}BuildFor${patchConfig.currentTarget}Ok" , message:"Ok for ${patchConfig.currentTarget} Build?" , submitter: 'svcjenkinsclient')
 }
 
 def approveInstallation(patchConfig) {
-	timeout(time:5, unit:'DAYS') {
-		userInput = input (id:"Patch${patchConfig.patchNummer}InstallFor${patchConfig.currentTarget}Ok" , message:"Ok for ${patchConfig.currentTarget} Installation?" , submitter: 'svcjenkinsclient,che')
-	}
+	userInput = input (id:"Patch${patchConfig.patchNummer}InstallFor${patchConfig.currentTarget}Ok" , message:"Ok for ${patchConfig.currentTarget} Installation?" , submitter: 'svcjenkinsclient')
 }
 
 
