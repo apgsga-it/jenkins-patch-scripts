@@ -62,10 +62,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	patchConfig.jadasInstallationNodeLabel = jadasInstallationNodeLabel(target)
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
-	def skip = patchConfig.redo &&
-			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
-			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
-			&& task.equals("Approve")))
+	def skip = patchConfig.redo && !patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
 	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !["Approve","Notification","InstallOldStyle"].contains(task)
 	echo "skip = ${skip}"
 	echo "nop  = ${nop}"
