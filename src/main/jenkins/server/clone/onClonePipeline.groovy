@@ -59,13 +59,12 @@ stage("onclone") {
 	}
 	
 	stage("startReinstallPatch") {
-		node {
+		node { 
 			echo "Starting to re-install Patch after clone on ${target}"
-						
-			def patchListFilePath = getPatchListFile(target)
-			
+			def File patchListFile = getPatchListFile(target)
+			assert patchListFile.exists() : println ("${patchListFile.getPath()} doesn't exist, cannot determine if patch needs to be re-install or not")
 			echo "Patch will be re-installed on ${target}"
-			def patchList = new JsonSlurperClassic().parseText(patchListFilePath.text)
+			def patchList = new JsonSlurperClassic().parseText(patchListFile.text)
 			echo "Following json has been produced by apsdbcli: ${patchList}"
 			def patches = patchList.patchlist
 			patches.size() > 0 ? patches.each{patch -> reinstallPatch(patch,target)} : "No patch have to be re-installed on ${target}"
