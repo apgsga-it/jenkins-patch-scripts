@@ -1,6 +1,9 @@
+import org.codehaus.groovy.util.StringUtil
+
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
+import groovyjarjarantlr.StringUtils
 import hudson.model.*
 
 def benchmark() {
@@ -48,10 +51,15 @@ def savePatchConfigState(patchConfig) {
 	}
 }
 
-def jadasInstallationNodeLabel(target) {
-	// JHE : at the moment we only have one node pro target, and all dedicated to jadas...
-	// TODO JHE: support fetching service name, and return node accordingly.
-	return target.nodes[0].label
+def serviceInstallationNodeLabel(target,serviceName) {
+	def label = ""
+	target.nodes.each{node -> 
+		if(node.equalsIgnoreCase(serviceName)) {
+			label = node.label
+		}
+	}
+	assert !label?.trim() : "No label found for ${serviceName}"
+	return label
 }
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
@@ -59,7 +67,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	def targetSystemsMap = loadTargetsMap()
 	def targetName= targetSystemsMap.get(target.envName)
 	patchConfig.targetToState = mapToState(target,toState)
-	patchConfig.jadasInstallationNodeLabel = jadasInstallationNodeLabel(target)
+	patchConfig.jadasInstallationNodeLabel = serviceInstallationNodeLabel(target,"jadas")
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
 	def skip = patchConfig.redo &&
