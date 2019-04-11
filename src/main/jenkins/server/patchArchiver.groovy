@@ -43,7 +43,7 @@ patchJobs.each { job ->
 	def jobName = job.name
 	if(jobName  ==~ /Patch+[0123456789]*/ ) {
 		def lastSuccesffulbuild = job.getLastSuccessfulBuild().getTime()
-
+		assert job.getLastSuccessfulBuild() != null : println("${job.name} never had any successful job!")
 		if (lastSuccesffulbuild.before(dateBeforeToDeleteJobs)) {
 
 			patchJobs.each{ onDemandJob ->
