@@ -63,7 +63,9 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
 	def skip = patchConfig.redo &&
-			(!(patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && patchConfig.lastPipelineTask.toString().equals(task.toString())))
+			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
+			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
+			&& task.equals("Approve")))
 	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !["Approve","Notification","InstallOldStyle"].contains(task)
 	echo "skip = ${skip}"
 	echo "nop  = ${nop}"
@@ -77,9 +79,8 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 			}
 			if (!nop) {
 				callBack(patchConfig)
-				patchConfig.lastPipelineTask = task
 			}
-			if (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && patchConfig.lastPipelineTask.toString().equals(task.toString())) {
+			if (patchConfig.redo && patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && task.equals("Notification")) {
 				patchConfig.redo = false
 			}
 			if (targetName != null) {
