@@ -67,7 +67,6 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	def targetSystemsMap = loadTargetsMap()
 	def targetName= targetSystemsMap.get(target.envName)
 	patchConfig.targetToState = mapToState(target,toState)
-	patchConfig.jadasInstallationNodeLabel = serviceInstallationNodeLabel(target,"jadas")
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
 	def skip = patchConfig.redo &&
