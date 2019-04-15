@@ -97,7 +97,7 @@ private def reinstallPatch(def patch, def target) {
 		def targetBean = [envName:target,targetName:patchConfig.currentTarget,nodes:defaultNodes]
 		patchfunctions.saveTarget(patchConfig,targetBean)
 		patchfunctions.mavenLocalRepo(patchConfig)
-		patchConfig.jadasInstallationNodeLabel = patchfunctions.jadasInstallationNodeLabel(targetBean)
+		patchConfig.jadasInstallationNodeLabel = patchfunctions.serviceInstallationNodeLabel(targetBean,"jadas")
 		echo "patchConfig.jadasInstallationNodeLabel set with ${patchConfig.jadasInstallationNodeLabel}"
 		println patchConfig.mavenLocalRepo
 			
