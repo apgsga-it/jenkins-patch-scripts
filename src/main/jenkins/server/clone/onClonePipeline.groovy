@@ -58,19 +58,16 @@ stage("onclone") {
 		}
 	}
 	
-	stage("startReinstallPatchPipeline") {
-		node {
-			echo "Verifying if ${target} requires patch to be automatically re-installed..."
-
-			// Check if target corresponds to a status for which we automatically install patches (Informatiktest only for now)
-			def status = getStatusName(target)
-			if(status == null || !status.toString().equalsIgnoreCase("informatiktest")) {
-				echo "No patch have to be re-installed on ${target}. ${target} is not configured as Informatiktest target."
-			}
-			else {
-				echo "Patch have to be re-installed on ${target}, reinstallPatchAfterClone Pipeline will be started"
-				build job: 'reinstallPatchAfterClone', parameters: [string(name: 'target', value: target)]
-			}
+	stage("startReinstallPatch") {
+		node { 
+			echo "Starting to re-install Patch after clone on ${target}"
+			def File patchListFile = getPatchListFile(target)
+			assert patchListFile.exists() : println ("${patchListFile.getPath()} doesn't exist, cannot determine if patch needs to be re-install or not")
+			echo "Patch will be re-installed on ${target}"
+			def patchList = new JsonSlurperClassic().parseText(patchListFile.text)
+			echo "Following json has been produced by apsdbcli: ${patchList}"
+			def patches = patchList.patchlist
+			patches.size() > 0 ? patches.each{patch -> reinstallPatch(patch,target)} : "No patch have to be re-installed on ${target}"
 		}
 	}
 }
@@ -88,4 +85,63 @@ private def getStatusName(def env) {
 	}
 	
 	return status
+}
+
+private def reinstallPatch(def patch, def target) {
+	
+	if(patchFileExists(patch)) {
+	
+		def patchConfig = getPatchConfig(patch,target)
+		
+		def defaultNodes = [[label:env.DEFAULT_JADAS_REINSTALL_PATCH_NODE,serviceName:"jadas"]]
+		def targetBean = [envName:target,targetName:patchConfig.currentTarget,nodes:defaultNodes]
+		patchfunctions.saveTarget(patchConfig,targetBean)
+		patchfunctions.mavenLocalRepo(patchConfig)
+		patchConfig.jadasInstallationNodeLabel = patchfunctions.jadasInstallationNodeLabel(targetBean)
+		echo "patchConfig.jadasInstallationNodeLabel set with ${patchConfig.jadasInstallationNodeLabel}"
+		println patchConfig.mavenLocalRepo
+			
+		stage("Re-installing patch ${patch} on ${patchConfig.currentTarget}") {
+			echo "Starting Build for patch ${patch}"
+			node {patchfunctions.patchBuildsConcurrent(patchConfig)}
+			echo "DONE - Build for patch ${patch}"
+			echo "Starting assemble Artefact for patch ${patch}"
+			node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
+			echo "DONE - assemble Artefact for patch ${patch}"
+			echo "Starting old Style installation for patch ${patch}"
+			node {patchDeployment.installOldStyle(patchConfig)}
+			echo "DONE - Starting old Style installation for patch ${patch}"
+			echo "Starting Installation Artefact for patch ${patch}"
+			node {patchDeployment.installDeploymentArtifacts(patchConfig)}
+			echo "DONE - Installation Artefact for patch ${patch}"
+		}
+	}
+	else {
+		echo "Patch ${patch} has not been re-installed because the corresponding JSON file has not been found."
+	}
+}
+
+private def patchFileExists(def patch) {
+	return new File("${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json").exists()
+}
+
+private def getPatchConfig(def patch, def target) {
+	echo "Getting patchConfig for patch ${patch} on target ${target}..."
+	def patchFile = new File("${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json")
+	assert patchFile.exists() : println ("Patch file ${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json doesn't exist")
+	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
+	patchConfig.cvsroot = env.CVS_ROOT
+	patchConfig.currentTarget = target
+	patchConfig.patchFilePath = "${env.PATCH_DB_FOLDER}${env.PATCH_FILE_PREFIX}${patch.toString()}.json"
+	echo "patchConfig for patch ${patch} : ${patchConfig}"
+	return patchConfig
+}
+
+private def getPatchListFile(def target) {
+	// We first call apsDbCli in order to produce a file containing the list of patch to be re-installed.
+	def status = getStatusName(target)
+	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${status}"
+	def result = sh (returnStdout: true, script: cmd).trim()
+	assert result : println ("Error while getting list of patch to be re-installed on ${target}")
+	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled${status}.json")
 }
