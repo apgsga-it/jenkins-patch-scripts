@@ -1,9 +1,6 @@
-import org.codehaus.groovy.util.StringUtil
-
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
-import groovyjarjarantlr.StringUtils
 import hudson.model.*
 
 def benchmark() {
