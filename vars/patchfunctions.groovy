@@ -58,7 +58,7 @@ def serviceInstallationNodeLabel(target,serviceName) {
 			label = node.label
 		}
 	}
-	assert !label?.trim() : "No label found for ${serviceName}"
+	assert label?.trim() : "No label found for ${serviceName}"
 	return label
 }
 
