@@ -54,7 +54,7 @@ def savePatchConfigState(patchConfig) {
 def serviceInstallationNodeLabel(target,serviceName) {
 	def label = ""
 	target.nodes.each{node -> 
-		if(node.equalsIgnoreCase(serviceName)) {
+		if(node.serviceName.equalsIgnoreCase(serviceName)) {
 			label = node.label
 		}
 	}
