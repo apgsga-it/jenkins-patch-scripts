@@ -143,10 +143,6 @@ def tagName(patchConfig) {
 }
 
 def saveTarget(patchConfig, target) {
-	echo "save Target ......"
-	echo "=================="
-	echo "patchConfig = ${patchConfig}"
-	echo "target = ${target}"
 	patchConfig.targetBean = target
 	patchConfig.envName = target.envName
 	patchConfig.currentTarget = target.targetName
