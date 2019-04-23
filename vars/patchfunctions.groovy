@@ -61,6 +61,8 @@ def serviceInstallationNodeLabel(target,serviceName) {
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
 	echo "target: ${target}, toState: ${toState}, task: ${task} "
+	patchConfig.step = "${task} starting"
+	logPatchStep(patchConfig)
 	def targetSystemsMap = loadTargetsMap()
 	def targetName= targetSystemsMap.get(target.envName)
 	patchConfig.targetToState = mapToState(target,toState)
@@ -93,6 +95,19 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 		} else {
 			"Echo skipping"
 		}
+	}
+	patchConfig.step = "${task} done"
+	logPatchStep(patchConfig)
+}
+
+private def logPatchStep(def patchConfig) {
+	savePatchConfigState(patchConfig)
+	node {
+		def patchFileName = "Patch${patchConfig.patchNummer}.json"
+		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -log ${patchFileName}"
+		echo "Executeing ${cmd}"
+		sh "${cmd}"
+		echo "Executeing ${cmd} done."
 	}
 }
 
