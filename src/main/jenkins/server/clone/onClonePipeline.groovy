@@ -106,20 +106,6 @@ private def reinstallPatch(def patch, def target) {
 			patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
 			patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
 			patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
-			
-			// JHE (23.04.2019): the below will be removed, keeping it temporarily for code comparison purpose ...
-//			echo "Starting Build for patch ${patch}"
-//			node {patchfunctions.patchBuildsConcurrent(patchConfig)}
-//			echo "DONE - Build for patch ${patch}"
-//			echo "Starting assemble Artefact for patch ${patch}"
-//			node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
-//			echo "DONE - assemble Artefact for patch ${patch}"
-//			echo "Starting old Style installation for patch ${patch}"
-//			node {patchDeployment.installOldStyle(patchConfig)}
-//			echo "DONE - Starting old Style installation for patch ${patch}"
-//			echo "Starting Installation Artefact for patch ${patch}"
-//			node {patchDeployment.installDeploymentArtifacts(patchConfig)}
-//			echo "DONE - Installation Artefact for patch ${patch}"
 		}
 	}
 	else {
