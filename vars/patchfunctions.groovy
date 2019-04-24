@@ -101,9 +101,9 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 }
 
 private def logPatchStep(def patchConfig) {
-	savePatchConfigState(patchConfig)
 	node {
-		def patchFileName = "Patch${patchConfig.patchNummer}.json"
+		def patchFileName = "PatchLog${patchConfig.patchNummer}.json" 
+		writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
 		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -log ${patchFileName}"
 		echo "Executeing ${cmd}"
 		sh "${cmd}"
