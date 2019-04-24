@@ -100,20 +100,12 @@ private def reinstallPatch(def patch, def target) {
 		patchConfig.jadasInstallationNodeLabel = patchfunctions.serviceInstallationNodeLabel(targetBean,"jadas")
 		echo "patchConfig.jadasInstallationNodeLabel set with ${patchConfig.jadasInstallationNodeLabel}"
 		println patchConfig.mavenLocalRepo
-			
+		
 		stage("Re-installing patch ${patch} on ${patchConfig.currentTarget}") {
-			echo "Starting Build for patch ${patch}"
-			node {patchfunctions.patchBuildsConcurrent(patchConfig)}
-			echo "DONE - Build for patch ${patch}"
-			echo "Starting assemble Artefact for patch ${patch}"
-			node {patchfunctions.assembleDeploymentArtefacts(patchConfig)}
-			echo "DONE - assemble Artefact for patch ${patch}"
-			echo "Starting old Style installation for patch ${patch}"
-			node {patchDeployment.installOldStyle(patchConfig)}
-			echo "DONE - Starting old Style installation for patch ${patch}"
-			echo "Starting Installation Artefact for patch ${patch}"
-			node {patchDeployment.installDeploymentArtifacts(patchConfig)}
-			echo "DONE - Installation Artefact for patch ${patch}"
+			patchfunctions.stage(targetBean,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
+			patchfunctions.stage(targetBean,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+			patchfunctions.stage(targetBean,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
+			patchfunctions.stage(targetBean,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
 		}
 	}
 	else {
