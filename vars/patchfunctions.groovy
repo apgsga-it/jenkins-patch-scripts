@@ -61,21 +61,20 @@ def serviceInstallationNodeLabel(target,serviceName) {
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
 	echo "target: ${target}, toState: ${toState}, task: ${task} "
-	patchConfig.step = "${task} starting"
-	logPatchStep(patchConfig)
+	patchConfig.currentPipelineTask = "${task}"
+	logPatch(patchConfig,"started")
 	def targetSystemsMap = loadTargetsMap()
 	def targetName= targetSystemsMap.get(target.envName)
 	patchConfig.targetToState = mapToState(target,toState)
 	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
 	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
 	def skip = patchConfig.redo &&
-			(!patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
-			|| (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString())
-			&& task.equals("Approve")))
+			(!(patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && patchConfig.lastPipelineTask.toString().equals(task.toString())))
 	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !["Approve","Notification","InstallOldStyle"].contains(task)
 	echo "skip = ${skip}"
 	echo "nop  = ${nop}"
 	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : (nop ? "(Nop)" : "") )
+	def logText
 	stage(stageText) {
 		if (!skip) {
 			echo "Not skipping"
@@ -85,23 +84,27 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 			}
 			if (!nop) {
 				callBack(patchConfig)
+				patchConfig.lastPipelineTask = task
 			}
-			if (patchConfig.redo && patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && task.equals("Notification")) {
+			if (patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && patchConfig.lastPipelineTask.toString().equals(task.toString())) {
 				patchConfig.redo = false
 			}
 			if (targetName != null) {
 				savePatchConfigState(patchConfig)
 			}
+			// JHE: instead of "nop", what could we better write for the developer?
+			logText =  nop ? "nop" : "done"
 		} else {
 			"Echo skipping"
+			logText = "skipped"
 		}
 	}
-	patchConfig.step = "${task} done"
-	logPatchStep(patchConfig)
+	logPatch(patchConfig, logText)
 }
 
-private def logPatchStep(def patchConfig) {
+private def logPatch(def patchConfig, def logText) {
 	node {
+		patchConfig.logText = logText
 		def patchFileName = "PatchLog${patchConfig.patchNummer}.json" 
 		writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
 		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -log ${patchFileName}"
