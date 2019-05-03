@@ -16,9 +16,9 @@ def installDeploymentArtifacts(patchConfig) {
 				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
 				node (installationNodeLabel){
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
-					def yumCmd = "sudo yum clean all && sudo yum -y install apg-jadas-service-${patchConfig.currentTarget}"
-					// JHE: For debug purpose (whoami)
-					sh "whoami"
+					def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
+					def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${patchConfig.currentTarget}"
+					sh "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
 					sh "${yumCmd}"
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
 				}
