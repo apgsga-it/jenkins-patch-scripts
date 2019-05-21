@@ -133,7 +133,7 @@ private def getPatchListFile(def target) {
 	// We first call apsDbCli in order to produce a file containing the list of patch to be re-installed.
 	def status = getStatusName(target)
 	// temporary workaround because LIGHT is quite urgent, proper solution planned with JAVA8MIG-753
-	if ( target.endWith(".light") {
+	if ( target.endWith(".light") ) {
 		status = "Produktion"
 	}
 	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${status}"
