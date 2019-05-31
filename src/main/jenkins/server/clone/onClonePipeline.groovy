@@ -2,23 +2,25 @@ package clone
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 
+/*
 properties([
 	parameters([
 		stringParam(
-			//defaultValue: "",
+			defaultValue: "",
 			description: 'Parameter',
 			name: 'source'
 			),
 		stringParam(
-			//defaultValue: "",
+			defaultValue: "",
 			description: 'Parameter',
 			name: 'target'
 		)
 	])
 ])
+*/
 
-def source = params.source
-def target = params.target
+def source = env.source
+def target = env.target
 
 println "Parameter ... source = ${source} , target = ${target}"
 
