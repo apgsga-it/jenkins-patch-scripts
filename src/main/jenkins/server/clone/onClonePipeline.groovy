@@ -5,12 +5,12 @@ import groovy.json.JsonSlurperClassic
 properties([
 	parameters([
 		stringParam(
-			defaultValue: "",
+			//defaultValue: "",
 			description: 'Parameter',
 			name: 'source'
 			),
 		stringParam(
-			defaultValue: "",
+			//defaultValue: "",
 			description: 'Parameter',
 			name: 'target'
 		)
