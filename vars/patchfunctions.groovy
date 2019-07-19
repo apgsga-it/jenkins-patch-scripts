@@ -439,13 +439,17 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 	 */
 
 	node {
-		echo "Following object will be merge from ${patchConfig.patchTag} to ${patchConfig.prodBranch}:"
+		echo "Following objects will be merged from ${patchConfig.patchTag} to ${patchConfig.prodBranch}:"
 		echo "${patchConfig.dbObjectsAsVcsPath}"
 
 		def dbObjects = patchConfig.dbObjectsAsVcsPath
 		def folder = ""
-		def tag = tagName(patchConfig)
+		def patchTag = patchConfig.patchTag
+		def prodBranch = patchConfig.prodBranch
 		def cvsRoot = patchConfig.cvsroot
+		
+		def tagBeforeMerge = "${prodBranch}_merge_${patchConfig.dbPatchBranch}_before"
+		def tagAfterMerge = "${prodBranch}_merge_${patchConfig.dbPatchBranch}_after"
 
 		/*
 		 * JHE (22.05.2018): Not sure if we really want to separate the merge and the commit. Idea for separation is obviously that if we encounter an issue during merge, we
@@ -457,14 +461,15 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 		dbObjects.each{ dbo ->
 			//coFromTagcvs(patchConfig,tag,dbo)
 			// JHE(22.05.2018): ideally we would like to use the coFromTagCvs method. But we need a .CVS in the checked out folders, which doesn't happen with our coFromTagCvs method.
-			sh "cvs -d${cvsRoot} co ${dbo}"
+			sh "cvs -d${cvsRoot} co -r${prodBranch} ${dbo}"
+			sh "cvs -d${cvsRoot} tag -F ${tagBeforeMerge} ${dbo}"
+			echo "${dbo} has been tagged as ${tagBeforeMerge}"
+
 			folder = dbo.substring(0,dbo.lastIndexOf("/"))
 			dir(folder) {
-				// Switch to head
-				sh "cvs -d${cvsRoot} up -A"
 				// Merge from tag
-				sh "cvs -d${cvsRoot} up -j ${tag}"
-				echo "${dbo} has been merged from ${tag} to head"
+				sh "cvs -d${cvsRoot} up -j ${patchTag}"
+				echo "${dbo} has been merged from ${patchTag} to ${prodBranch}"
 			}
 		}
 
@@ -472,9 +477,11 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 			folder = dbo.substring(0,dbo.lastIndexOf("/"))
 			dir(folder) {
 				// Commit
-				sh "cvs -d${cvsRoot} commit -m'Commit of merged ${dbo} from ${tag} tag.'"
-				echo "${dbo} has been committed on head after beeing merged from ${tag}."
+				sh "cvs -d${cvsRoot} commit -m'Commit of merged ${dbo} from ${patchTag} tag.'"
+				echo "${dbo} has been committed on head after being merged from ${patchTag}."
 			}
+			sh "cvs -d${cvsRoot} tag -F ${tagAfterMerge} ${dbo}"
+			echo "${dbo} has been tagged as ${tagAfterMerge}"
 		}
 	}
 }
