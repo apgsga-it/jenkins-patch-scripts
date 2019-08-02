@@ -450,7 +450,7 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 		def dbTagAfterMerge = "${dbProdBranch}_merge_${dbPatchBranch}_after"
 
 		echo "Patch \"${patchNumber}\" being merged to production branch"
-		patchConfig.dbObjects.collect(moduleName).unique().each { dbModule ->
+		patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
 			echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\""
 			sh "cvs -d${cvsRoot} co -r${dbProdBranch} ${dbModule}"
 			echo "... ${dbModule} checked out from branch \"${dbProdBranch}\""
