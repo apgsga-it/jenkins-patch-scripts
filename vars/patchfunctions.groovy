@@ -439,50 +439,32 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 	 */
 
 	node {
-		echo "Following objects will be merged from ${patchConfig.patchTag} to ${patchConfig.prodBranch}:"
-		echo "${patchConfig.dbObjectsAsVcsPath}"
-
-		def dbObjects = patchConfig.dbObjectsAsVcsPath
-		def folder = ""
-		def patchTag = patchConfig.patchTag
-		def prodBranch = patchConfig.prodBranch
 		def cvsRoot = patchConfig.cvsroot
 		
-		def tagBeforeMerge = "${prodBranch}_merge_${patchConfig.dbPatchBranch}_before"
-		def tagAfterMerge = "${prodBranch}_merge_${patchConfig.dbPatchBranch}_after"
+		def patchNumber = patchConfig.patchNummer
+		def dbPatchTag = patchConfig.patchTag
+		def dbProdBranch = patchConfig.prodBranch
+		def dbPatchBranch = patchConfig.dbPatchBranch
+		
+		def dbTagBeforeMerge = "${dbProdBranch}_merge_${dbPatchBranch}_before"
+		def dbTagAfterMerge = "${dbProdBranch}_merge_${dbPatchBranch}_after"
 
-		/*
-		 * JHE (22.05.2018): Not sure if we really want to separate the merge and the commit. Idea for separation is obviously that if we encounter an issue during merge, we
-		 * 					 don't commit anything. 
-		 * TODO JHE: verify the above is actually true? Do we really get an exception?? 
-		 * 
-		 */
-
-		dbObjects.each{ dbo ->
-			//coFromTagcvs(patchConfig,tag,dbo)
-			// JHE(22.05.2018): ideally we would like to use the coFromTagCvs method. But we need a .CVS in the checked out folders, which doesn't happen with our coFromTagCvs method.
-			sh "cvs -d${cvsRoot} co -r${prodBranch} ${dbo}"
-			sh "cvs -d${cvsRoot} tag -F ${tagBeforeMerge} ${dbo}"
-			echo "${dbo} has been tagged as ${tagBeforeMerge}"
-
-			folder = dbo.substring(0,dbo.lastIndexOf("/"))
-			dir(folder) {
-				// Merge from tag
-				sh "cvs -d${cvsRoot} up -j ${patchTag}"
-				echo "${dbo} has been merged from ${patchTag} to ${prodBranch}"
-			}
+		echo "Patch \"${patchNumber}\" being merged to production branch"
+		patchConfig.dbObjects.collect(moduleName).unique().each { dbModule ->
+			echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\""
+			sh "cvs -d${cvsRoot} co -r${dbProdBranch} ${dbModule}"
+			echo "... ${dbModule} checked out from branch \"${dbProdBranch}\""
+			sh "cvs -d${cvsRoot} tag -F ${dbTagBeforeMerge} ${dbModule}"
+			echo "... ${dbModule} tagged ${dbTagBeforeMerge}"
+			sh "cvs -d${cvsRoot} up -j ${dbPatchTag}"
+			echo "... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\""
+			sh "cvs -d${cvsRoot} commit -m'merge \"${dbPatchTag}\" to branch \"${dbProdBranch}\"'"
+			echo "... ${dbModule} commited"
+		    sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
+			echo "... ${dbModule} tagged ${dbTagAfterMerge}"
+			echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\""
 		}
-
-		dbObjects.each{ dbo ->
-			folder = dbo.substring(0,dbo.lastIndexOf("/"))
-			dir(folder) {
-				// Commit
-				sh "cvs -d${cvsRoot} commit -m'Commit of merged ${dbo} from ${patchTag} tag.'"
-				echo "${dbo} has been committed on head after being merged from ${patchTag}."
-			}
-			sh "cvs -d${cvsRoot} tag -F ${tagAfterMerge} ${dbo}"
-			echo "${dbo} has been tagged as ${tagAfterMerge}"
-		}
+		echo "Patch \"${patchNumber}\" merged to production branch"
 	}
 }
 
