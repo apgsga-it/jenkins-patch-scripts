@@ -458,7 +458,7 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 			echo "... ${dbModule} tagged ${dbTagBeforeMerge}"
 			sh "cvs -d${cvsRoot} up -j ${dbPatchTag} ${dbModule}"
 			echo "... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\""
-			sh "cvs -d${cvsRoot} commit -m'merge \"${dbPatchTag}\" to branch \"${dbProdBranch}\"' ${dbModule}"
+			sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
 			echo "... ${dbModule} commited"
 		    sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
 			echo "... ${dbModule} tagged ${dbTagAfterMerge}"
