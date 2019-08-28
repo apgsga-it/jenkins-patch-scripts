@@ -470,7 +470,8 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 
 def coDbModules(patchConfig) {
 	def dbObjects = patchConfig.dbObjectsAsVcsPath
-	echo "Following DB Objects will be checked out : ${dbObjects}"
+	echo "Following DB Objects should get checked out : ${dbObjects}"
+	
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	fileOperations ([
 		folderDeleteOperation(folderPath: "${patchDbFolderName}")
@@ -478,12 +479,21 @@ def coDbModules(patchConfig) {
 	fileOperations ([
 		folderCreateOperation(folderPath: "${patchDbFolderName}")
 	])
-	def tag = tagName(patchConfig)
-	dir(patchDbFolderName) {
-		dbObjects.each{ dbo ->
-			coFromTagcvs(patchConfig,tag, dbo)
+
+	def cvsRoot = patchConfig.cvsroot
+	
+	def patchNumber = patchConfig.patchNummer
+	def dbPatchTag = patchConfig.patchTag
+	
+	echo "Patch \"${patchNumber}\" being checked out to \"${patchDbFolderName}\""
+	patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
+		echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" being checked out"
+		dir(patchDbFolderName) {
+			sh "cvs -d${cvsRoot} co -r${dbPatchTag} ${dbModule}"
 		}
 	}
+	echo "Patch \"${patchNumber}\" checked out"
+
 }
 
 def jadasVersionNumber(patchConfig) {
