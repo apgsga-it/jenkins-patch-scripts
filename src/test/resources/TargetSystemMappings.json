@@ -3,12 +3,6 @@
 		{
 			"name": "Entwicklung",
 			"target": "CHEI212",
-			"nodes": [
-				{
-					"label": "jadas-t",
-					"serviceName": "jadas"
-				}
-			],
 			"stages": [
 				{
 					"name": "startPipelineAndTag",
@@ -27,12 +21,6 @@
 		{
 			"name": "Informatiktest",
 			"target": "CHEI212",
-			"nodes": [
-				{
-					"label": "jadas-t",
-					"serviceName": "jadas"
-				}
-			],
 			"stages": [
 				{
 					"name": "BuildFor",
@@ -67,7 +55,46 @@
 			]
 		}
 	],
-	"otherTargetInstances": [
-		"CHEI212"
+	"targetInstances": [
+		{
+			"name": "dev-bsp",
+			"services": [
+				{
+					"type": "oracle-db-light",
+					"name": "it21-db",
+					"host": "dev-bsp.light.apgsga.ch"
+				}
+			]
+		},
+		{
+			"name": "CHEI212",
+			"services": [
+				{
+					"type": "oracle-db",
+					"name": "it21-db",
+					"host": "chei212.apgsga.ch"
+				}
+			]
+		},
+		{
+			"name": "CHTI214",
+			"services": [
+				{
+					"type": "oracle-db",
+					"name": "it21-db",
+					"host": "chti214.apgsga.ch"
+				}
+			]
+		},
+		{
+			"name": "CHQI211",
+			"services": [
+				{
+					"type": "oracle-db",
+					"name": "it21-db",
+					"host": "chqi211.apgsga.ch"
+				}
+			]
+		}
 	]
 }

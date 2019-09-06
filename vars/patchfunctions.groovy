@@ -141,16 +141,29 @@ def mavenLocalRepo(patchConfig) {
 }
 
 def loadTargetsMap() {
-	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/etc/opt/apg-patch-common/TargetSystemMappings.json"
-	def targetSystemFile = new File(configFileLocation)
-	assert targetSystemFile.exists()
-	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	def targetSystemMap = [:]
-	jsonSystemTargets.targetSystems.each( { target ->
+	getTargetSystemMappingJson().targetSystems.each( { target ->
 		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target, nodes:target.nodes])
 	})
 	println targetSystemMap
 	targetSystemMap
+}
+
+def getTargetSystemMappingJson() {
+	def configFileLocation = env.PATCH_SERVICE_COMMON_CONFIG ? env.PATCH_SERVICE_COMMON_CONFIG	: "/etc/opt/apg-patch-common/TargetSystemMappings.json"
+	def targetSystemFile = new File(configFileLocation)
+	assert targetSystemFile.exists()
+	return new JsonSlurper().parseText(targetSystemFile.text)
+}
+
+def getTargetInstance(targetInstanceName,targetSystemMappingJson) {
+	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
+		if(targetInstance.name == targetInstanceName) {
+			return targetInstance
+		}
+	})
+	println "${targetInstanceName} not define as targetInstance"
+	return null
 }
 
 def tagName(patchConfig) {
