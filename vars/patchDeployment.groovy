@@ -4,13 +4,13 @@ library 'patch-global-functions'
 def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
 		parallel 'ui-client-deployment': {
-			if(patchConfig.installJadasAndGui) {
+			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget)) {
 				node {
 					installGUI(patchConfig,"it21gui-dist-zip","zip")
 				}
 			}
 		}, 'ui-server-deployment': {
-			if(patchConfig.installJadasAndGui) {
+			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget)) {
 				echo "patchConfig.targetBean = ${patchConfig.targetBean}"
 				def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
 				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
@@ -29,6 +29,22 @@ def installDeploymentArtifacts(patchConfig) {
 			}
 		}
 	}
+}
+
+// JHE (06.09.2019): ARCH-90. For now, only DB Modules can be installed on Light-Instances. Therefore, we need to know if the target is a Light, in order to determine if we have to start the Jadas installation.
+//				   : The method assumes that the service type contains "light". This should be done only temporarily until Jadas will be installed on Light as well.
+//				   : If the need to determine if a target is a Light still remains, we might want to find a better than relying on a name which should contain a specific string...
+def isLightInstallation(target) {
+	def isLight = false
+	patchfunctions.getTargetSystemMappingJson().targetInstances.each ({ targetInstance ->
+		if(targetInstance.name == target) {
+			targetInstance.services.each ({ service ->
+				isLight = service.name == "it21-db" && service.type.contains("light")
+			})
+		}
+	})
+	println "is ${target} a Light-Instance: ${isLight}"
+	isLight
 }
 
 def installOldStyle(patchConfig) {
