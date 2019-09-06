@@ -156,6 +156,16 @@ def getTargetSystemMappingJson() {
 	return new JsonSlurper().parseText(targetSystemFile.text)
 }
 
+def getTargetInstance(targetInstanceName,targetSystemMappingJson) {
+	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
+		if(targetInstance.name == targetInstanceName) {
+			return targetInstance
+		}
+	})
+	println "${targetInstanceName} not define as targetInstance"
+	return null
+}
+
 def tagName(patchConfig) {
 	if (patchConfig.patchTag?.trim()) {
 		patchConfig.patchTag

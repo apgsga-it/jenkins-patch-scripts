@@ -2,15 +2,18 @@
 library 'patch-global-functions'
 
 def installDeploymentArtifacts(patchConfig) {
+	
+	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
+	
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
 		parallel 'ui-client-deployment': {
-			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget)) {
+			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
 				node {
 					installGUI(patchConfig,"it21gui-dist-zip","zip")
 				}
 			}
 		}, 'ui-server-deployment': {
-			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget)) {
+			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
 				echo "patchConfig.targetBean = ${patchConfig.targetBean}"
 				def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
 				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
@@ -25,18 +28,54 @@ def installDeploymentArtifacts(patchConfig) {
 			}
 		}, 'db-deployment': {
 			node {
-				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip")
+				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getTargetHost("it21-db",patchConfig.currentTarget,targetSystemMappingJson),getTargetType("it21-db",patchConfig.currentTarget,targetSystemMappingJson))
 			}
 		}
 	}
 }
 
+def getTargetHost(service,target,targetSystemMappingJson) {
+	// JHE (06.09.2019): By default, for hosts not listed under targetInstances, we consider the host same as target
+	//					 This will be improved with ARCH-92, when all host will have additional services information
+	//					 For now, this is used only at the time we install DB-Module
+	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
+	def targetInstance = patchfunctions.getTargetInstance(target)
+	if(targetInstance != null) {
+		targetInstance.services.each ({ s ->
+			if(s.name == service) {
+				println "host value for ${target} was ${service.host}"
+				return service.host
+			}
+		})
+	}
+	println "no host configured for ${target} ... host=${target}"
+	return target
+}
+
+def getTargetType(service,target,targetSystemMappingJson) {
+	// JHE (06.09.2019): By default, for host not listed under targetInstances, we consider the target type as default with "oracle-db"
+	//					 This will be improved with ARCH-92, when all host will have additional services information
+	//					 For now, this is used only at the time we install DB-Module
+	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
+	def targetInstance = patchfunctions.getTargetInstance(target)
+	if(targetInstance != null) {
+		targetInstance.services.each ({ s ->
+			if(s.name == service) {
+				println "service type value for ${target} was ${service.type}"
+				return service.type
+			}
+		})
+	}
+	println "no service type configured for ${target} ... serviceType=oracle-db"
+	return "oracle-db"
+}
+
 // JHE (06.09.2019): ARCH-90. For now, only DB Modules can be installed on Light-Instances. Therefore, we need to know if the target is a Light, in order to determine if we have to start the Jadas installation.
 //				   : The method assumes that the service type contains "light". This should be done only temporarily until Jadas will be installed on Light as well.
 //				   : If the need to determine if a target is a Light still remains, we might want to find a better than relying on a name which should contain a specific string...
-def isLightInstallation(target) {
+def isLightInstallation(target,targetSystemMappingJson) {
 	def isLight = false
-	patchfunctions.getTargetSystemMappingJson().targetInstances.each ({ targetInstance ->
+	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
 		if(targetInstance.name == target) {
 			targetInstance.services.each ({ service ->
 				isLight = service.name == "it21-db" && service.type.contains("light")
@@ -61,7 +100,7 @@ def installOldStyleInt(patchConfig,artifact,extension) {
 	}
 }
 
-def installDbPatch(patchConfig,artifact,extension) {
+def installDbPatch(patchConfig,artifact,extension,host,type) {
 	def server = initiateArtifactoryConnection()
 	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
 	
@@ -81,7 +120,7 @@ def installDbPatch(patchConfig,artifact,extension) {
 		unzip zipFile: "download/${artifact}.${extension}"
 		
 		// Here will only the "CVS DB" module installed.
-		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.currentTarget}")
+		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.currentTarget} ${host} ${type}")
 	}
 }
 
