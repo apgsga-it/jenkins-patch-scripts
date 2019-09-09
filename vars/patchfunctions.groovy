@@ -157,14 +157,9 @@ def getTargetSystemMappingJson() {
 }
 
 def getTargetInstance(targetInstanceName,targetSystemMappingJson) {
-	println "Fetching targetInstance called ${targetInstanceName} into following JSON: ${targetSystemMappingJson}"
-	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
-		if(targetInstance.name == targetInstanceName) {
-			return targetInstance
-		}
-	})
-	println "${targetInstanceName} not define as targetInstance"
-	return null
+	println "Fetching targetInstance called ${targetInstanceName} from following JSON: ${targetSystemMappingJson}"
+	def res = targetSystemMappingJson.targetInstances.find{it.name == targetInstanceName}
+	return res
 }
 
 def tagName(patchConfig) {

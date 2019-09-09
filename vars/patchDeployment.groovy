@@ -41,12 +41,10 @@ def getTargetHost(service,target,targetSystemMappingJson) {
 	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
 	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
 	if(targetInstance != null) {
-		targetInstance.services.each ({ s ->
-			if(s.name == service) {
-				println "host value for ${target} was ${service.host}"
-				return service.host
-			}
-		})
+		def s = targetInstance.services.find{it.name == service}
+		assert s != null : "${target} is configured as a targetInstance, but service ${service} has not been configured."
+		assert s.host != null : "Host has not been configured for target ${target}"
+		return s.host
 	}
 	println "no host configured for ${target} ... host=${target}"
 	return target
@@ -59,12 +57,10 @@ def getTargetType(service,target,targetSystemMappingJson) {
 	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
 	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
 	if(targetInstance != null) {
-		targetInstance.services.each ({ s ->
-			if(s.name == service) {
-				println "service type value for ${target} was ${service.type}"
-				return service.type
-			}
-		})
+		def s = targetInstance.services.find{it.name == service}
+		assert s != null : "${target} is configured as a targetInstance, but service ${service} has not been configured."
+		assert s.type != null : "Type of service has not been configured for target ${target}"
+		return s.type
 	}
 	println "no service type configured for ${target} ... serviceType=oracle-db"
 	return "oracle-db"
