@@ -57,7 +57,7 @@ def getTargetType(service,target,targetSystemMappingJson) {
 	//					 This will be improved with ARCH-92, when all host will have additional services information
 	//					 For now, this is used only at the time we install DB-Module
 	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
-	def targetInstance = patchfunctions.getTargetInstance(target)
+	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
 	if(targetInstance != null) {
 		targetInstance.services.each ({ s ->
 			if(s.name == service) {
