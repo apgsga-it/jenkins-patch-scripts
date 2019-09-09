@@ -157,6 +157,7 @@ def getTargetSystemMappingJson() {
 }
 
 def getTargetInstance(targetInstanceName,targetSystemMappingJson) {
+	println "Fetching targetInstance called ${targetInstanceName} into following JSON: ${targetSystemMappingJson}"
 	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
 		if(targetInstance.name == targetInstanceName) {
 			return targetInstance
