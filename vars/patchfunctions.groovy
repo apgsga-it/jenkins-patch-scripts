@@ -156,8 +156,7 @@ def getTargetSystemMappingJson() {
 	return new JsonSlurper().parseText(targetSystemFile.text)
 }
 
-def getTargetInstance(targetInstanceName) {
-	def targetSystemMappingJson = getTargetSystemMappingJson()
+def getTargetInstance(targetInstanceName,targetSystemMappingJson) {
 	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
 		if(targetInstance.name == targetInstanceName) {
 			return targetInstance
