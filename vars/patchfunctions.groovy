@@ -504,7 +504,7 @@ def coDbModules(patchConfig) {
 	patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
 		echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" being checked out"
 		dir("${patchDbFolderName}/oracle") {
-			def moduleDirectory = (dbModule.replace("com.affichage.","")).replace(".sql","")
+			def moduleDirectory = dbModule.replace(".","_")
 			sh "cvs -d${cvsRoot} co -r${dbPatchTag} -d${moduleDirectory} ${dbModule}"
 		}
 	}
