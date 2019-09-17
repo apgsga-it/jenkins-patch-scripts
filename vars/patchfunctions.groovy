@@ -488,16 +488,22 @@ def coDbModules(patchConfig) {
 	fileOperations ([
 		folderCreateOperation(folderPath: "${patchDbFolderName}")
 	])
+	/*
+	** work-around for not yet existing packaging of db scripts, see ticket CM-216
+	*/
+	fileOperations ([
+		folderCreateOperation(folderPath: "oracle")
+	])
 
 	def cvsRoot = patchConfig.cvsroot
 	
 	def patchNumber = patchConfig.patchNummer
 	def dbPatchTag = patchConfig.patchTag
 	
-	echo "Patch \"${patchNumber}\" being checked out to \"${patchDbFolderName}\""
+	echo "Patch \"${patchNumber}\" being checked out to \"${patchDbFolderName}/oracle\""
 	patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
 		echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" being checked out"
-		dir(patchDbFolderName) {
+		dir("${patchDbFolderName}/oracle") {
 			sh "cvs -d${cvsRoot} co -r${dbPatchTag} ${dbModule}"
 		}
 	}
