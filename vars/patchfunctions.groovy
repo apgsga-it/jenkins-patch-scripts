@@ -492,7 +492,7 @@ def coDbModules(patchConfig) {
 	** work-around for not yet existing packaging of db scripts, see ticket CM-216
 	*/
 	fileOperations ([
-		folderCreateOperation(folderPath: "oracle")
+		folderCreateOperation(folderPath: "${patchDbFolderName}/oracle")
 	])
 
 	def cvsRoot = patchConfig.cvsroot
