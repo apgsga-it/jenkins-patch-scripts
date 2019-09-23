@@ -156,6 +156,7 @@ def installGUI(patchConfig,artifact,extension) {
 		def extractedFolderName = guiExtractedFolderName()
 		
 		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		sleep(time:60,unit:"SECONDS")
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
