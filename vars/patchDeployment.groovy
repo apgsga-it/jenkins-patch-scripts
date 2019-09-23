@@ -156,8 +156,10 @@ def installGUI(patchConfig,artifact,extension) {
 		def extractedFolderName = guiExtractedFolderName()
 		
 		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		println "Waiting 60 seconds before trying to rename the extracted ZIP."
 		sleep(time:60,unit:"SECONDS")
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+		println "ZIP file correctly renamed."
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		removeOldGuiFolder(extractedGuiPath)
