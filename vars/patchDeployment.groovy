@@ -154,7 +154,8 @@ def installJadasGUI(patchConfig) {
 
 		def extractedFolderName = guiExtractedFolderName()
 		
-		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		def zipDist = "${artifact}-${buildVersion}.${artifactType}"
+		extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
 		println "Waiting 60 seconds before trying to rename the extracted ZIP."
 		sleep(time:60,unit:"SECONDS")
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
