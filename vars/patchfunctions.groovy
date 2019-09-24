@@ -49,15 +49,9 @@ def savePatchConfigState(patchConfig) {
 }
 
 def serviceInstallationNodeLabel(target,serviceName) {
-	def label = ""
-	// temporary workaround because LIGHT is quite urgent, proper solution planned with JAVA8MIG-753
-	if (target.targetName.endsWith(".light")) {
-		label = "jadas-${target.targetName}"
-	} else {
-		target.nodes.each{node -> 
-			if(node.serviceName.equalsIgnoreCase(serviceName)) {
-				label = node.label
-			}
+	target.nodes.each{node -> 
+		if(node.serviceName.equalsIgnoreCase(serviceName)) {
+			label = node.label
 		}
 	}
 	assert label?.trim() : "No label found for ${serviceName}"
