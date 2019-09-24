@@ -61,7 +61,9 @@ private def getStatusName(def env) {
 	def targetSystemFile = new File("/etc/opt/apg-patch-common/TargetSystemMappings.json")
 	assert targetSystemFile.exists() : println ("/etc/opt/apg-patch-common/TargetSystemMappings.json doesn't exist or is not accessible!")
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
-	def status
+	
+	// By default, if the target is not part of the "standard workflow" (Informatiktest,Anwendertest,Produktion), we assume the basis for patch installation is "Produktion"
+	def status = "Produktion"
 	
 	jsonSystemTargets.targetSystems.each{ targetSystem ->
 		if(targetSystem.target.equalsIgnoreCase(env)) {
@@ -117,10 +119,6 @@ private def getPatchConfig(def patch, def target) {
 private def getPatchListFile(def target) {
 	// We first call apsDbCli in order to produce a file containing the list of patch to be re-installed.
 	def status = getStatusName(target)
-	// temporary workaround because LIGHT is quite urgent, proper solution planned with JAVA8MIG-753
-	if ( target.endsWith(".light") ) {
-		status = "Produktion"
-	}
 	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${status}"
 	def result = sh (returnStdout: true, script: cmd).trim()
 	assert result : println ("Error while getting list of patch to be re-installed on ${target}")
