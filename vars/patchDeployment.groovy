@@ -184,22 +184,10 @@ def guiExtractedFolderName() {
 }
 
 def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
-	/*
 	def downloadSpec = """{
               "files": [
                     {
                       "pattern": "${env.RELEASES_PATCH_REPO}*${zip}",
-					   "target": "download/"
-					   }
-			 ]
-	}"""
-	*/
-	
-	// JHE, 21.08.2019: Because of CM-201, we temporarily have to fetch the ZIP in a generic Repository
-	def downloadSpec = """{
-              "files": [
-                    {
-                      "pattern": "${env.ZIP_DIST_REPO}*${zip}",
 					   "target": "download/"
 					   }
 			 ]
