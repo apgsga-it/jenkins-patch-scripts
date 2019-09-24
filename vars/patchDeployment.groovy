@@ -185,7 +185,7 @@ def guiExtractedFolderName() {
 def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion) {
 	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s C:/local/software/maven/settings.xml -X"
 	echo "Downloading GUI-ZIP with following command: ${mvnCommand}"
-	withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+	withMaven( maven: 'apache-maven-3.5.0') { bat "${mvnCommand}" }
 	echo "GUI-ZIP correctly downloaded."
 }
 
