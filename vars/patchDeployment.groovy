@@ -213,7 +213,7 @@ def extractGuiZip(downloadedZip,extractedGuiPath,extractedFolderName) {
 
 def copyCitrixBatchFile(extractedGuiPath,extractedFolderName) {
 	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
-	dir("${extractedGuiPath}\\${extractedFolderName}") {
+	dir("${extractedGuiPath}\\getting_extracted_${extractedFolderName}") {
 		fileOperations ( [fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "${extractedGuiPath}"), fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')])
 	}
 }
