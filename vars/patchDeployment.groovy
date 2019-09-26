@@ -157,11 +157,11 @@ def installJadasGUI(patchConfig) {
 		def zipDist = "${artifact}-${buildVersion}.${artifactType}"
 		extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
-		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		println "Waiting 60 seconds before trying to rename the extracted ZIP."
 		sleep(time:60,unit:"SECONDS")
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
 		println "GUI Folder correctly renamed."
+		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		removeOldGuiFolder(extractedGuiPath)
 
 		// Unmount the share drive
@@ -213,7 +213,7 @@ def extractGuiZip(downloadedZip,extractedGuiPath,extractedFolderName) {
 
 def copyCitrixBatchFile(extractedGuiPath,extractedFolderName) {
 	// We need to move one bat one level-up -> this is the batch which will be called from Citrix
-	dir("${extractedGuiPath}\\getting_extracted_${extractedFolderName}") {
+	dir("${extractedGuiPath}\\${extractedFolderName}") {
 		fileOperations ( [fileCopyOperation(flattenFiles: true, excludes: '', includes: '*start_it21_gui_run.bat', targetLocation: "${extractedGuiPath}"), fileDeleteOperation(includes: '*start_it21_gui_run.bat', excludes: '')])
 	}
 }
