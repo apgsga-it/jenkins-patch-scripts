@@ -22,5 +22,4 @@ patchConfig.currentTarget = patchConfig.installationTarget
 patchConfig.targetBean = target
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
 patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
-patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
 patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)

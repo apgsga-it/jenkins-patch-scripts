@@ -91,7 +91,6 @@ private def reinstallPatch(def patch, def target) {
 		stage("Re-installing patch ${patch} on ${patchConfig.currentTarget}") {
 			patchfunctions.stage(targetBean,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
 			patchfunctions.stage(targetBean,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
-			patchfunctions.stage(targetBean,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
 			patchfunctions.stage(targetBean,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
 		}
 	}

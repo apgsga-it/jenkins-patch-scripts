@@ -6,6 +6,10 @@ def installDeploymentArtifacts(patchConfig) {
 	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
+		// CM-225: old style needs to be part of the "installLock" (It can not run parallel to "db-deployment")
+		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Starting installOldStyle"
+		installOldStyle(patchConfig)
+		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
 		parallel 'ui-client-deployment': {
 			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
 				node {
