@@ -9,7 +9,7 @@ def installDeploymentArtifacts(patchConfig) {
 		parallel 'ui-client-deployment': {
 			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
 				node {
-					installGUI(patchConfig,"it21gui-dist-zip","zip")
+					installJadasGUI(patchConfig)
 				}
 			}
 		}, 'ui-server-deployment': {
@@ -129,7 +129,7 @@ def getCredentialId(def patchConfig) {
 	}
 }
 
-def installGUI(patchConfig,artifact,extension) {
+def installJadasGUI(patchConfig) {
 	node(env.WINDOWS_INSTALLER_LABEL) {
 		
 		def extractedGuiPath = ""
@@ -145,22 +145,22 @@ def installGUI(patchConfig,artifact,extension) {
 				powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
 		}
 
-		def artifactoryServer = initiateArtifactoryConnection()
-
 		def buildVersion =  patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
-		def zip = "${artifact}-${buildVersion}.${extension}"
+		def group = "com.affichage.it21"
+		def artifact = "it21gui-dist-zip"
+		def artifactType = "zip"
 
-		//TODO (jhe) : here we should probably pass the repo type as well -> snapshot or relaease, althought it might always be relaease...
-		downloadGuiZipToBeInstalled(artifactoryServer,zip)
+		downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion)
 
 		def extractedFolderName = guiExtractedFolderName()
 		
-		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
+		def zipDist = "${artifact}-${buildVersion}.${artifactType}"
+		extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
+		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
 		println "Waiting 60 seconds before trying to rename the extracted ZIP."
 		sleep(time:60,unit:"SECONDS")
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
-		println "ZIP file correctly renamed."
-		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
+		println "GUI Folder correctly renamed."
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		removeOldGuiFolder(extractedGuiPath)
 
@@ -183,17 +183,11 @@ def guiExtractedFolderName() {
 	return extractedFolderName
 }
 
-def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
-	def downloadSpec = """{
-              "files": [
-                    {
-                      "pattern": "${env.RELEASES_PATCH_REPO}*${zip}",
-					   "target": "download/"
-					   }
-			 ]
-	}"""
-	
-	artifactoryServer.download(downloadSpec)
+def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion) {
+	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s C:/local/software/maven/settings.xml"
+	echo "Downloading GUI-ZIP with following command: ${mvnCommand}"
+	withMaven( maven: 'apache-maven-3.5.0') { bat "${mvnCommand}" }
+	echo "GUI-ZIP correctly downloaded."
 }
 
 def initiateArtifactoryConnection() {
@@ -230,6 +224,6 @@ def renameExtractedGuiZip(extractedGuiPath,extractedFolderName) {
 
 def copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName) {
 	dir("C:\\config\\${patchConfig.currentTarget}\\it21-gui") {
-		fileOperations ([fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\${extractedFolderName}\\conf")])
+		fileOperations ([fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}\\conf")])
 	}
 }
