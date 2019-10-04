@@ -51,7 +51,6 @@ phases.each { envName ->
 	// Approve to to install Patch
 	
 	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.&approveInstallation)
-	patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
 	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
 	patchfunctions.stage(target,"Installation",patchConfig,"Postprocess",  patchfunctions.&installationPostProcess)
 	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.&notify)
