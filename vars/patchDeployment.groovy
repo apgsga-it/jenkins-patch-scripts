@@ -3,6 +3,9 @@ library 'patch-global-functions'
 
 def installDeploymentArtifacts(patchConfig) {
 	
+	def ex = new MyExample()
+	echo "${ex.example}"
+	
 	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
