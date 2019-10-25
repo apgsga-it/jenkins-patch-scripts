@@ -21,6 +21,8 @@ def installDeploymentArtifacts(patchConfig) {
 				echo "patchConfig.targetBean = ${patchConfig.targetBean}"
 				def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
 				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
+				println "SSH DEBUG : ui-server-deployment via SSH"
+				/*
 				node (installationNodeLabel){
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
 					def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
@@ -29,6 +31,7 @@ def installDeploymentArtifacts(patchConfig) {
 					sh "${yumCmd}"
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
 				}
+				*/
 			}
 		}, 'db-deployment': {
 			node {
@@ -39,51 +42,23 @@ def installDeploymentArtifacts(patchConfig) {
 }
 
 def getTargetHost(service,target,targetSystemMappingJson) {
-	// JHE (06.09.2019): By default, for hosts not listed under targetInstances, we consider the host same as target
-	//					 This will be improved with ARCH-92, when all host will have additional services information
-	//					 For now, this is used only at the time we install DB-Module
-	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
-	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
-	if(targetInstance != null) {
-		def s = targetInstance.services.find{it.name == service}
-		assert s != null : "${target} is configured as a targetInstance, but service ${service} has not been configured."
-		assert s.host != null : "Host has not been configured for target ${target}"
-		return s.host
-	}
-	println "no host configured for ${target} ... host=${target}"
-	return target
+	def s = getTargetInstanceService(service, target, targetSystemMappingJson)
+	assert s.host != null : "Host has not been configured for target ${target}"
+	return s.host
 }
 
 def getTargetType(service,target,targetSystemMappingJson) {
-	// JHE (06.09.2019): By default, for host not listed under targetInstances, we consider the target type as default with "oracle-db"
-	//					 This will be improved with ARCH-92, when all host will have additional services information
-	//					 For now, this is used only at the time we install DB-Module
-	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
-	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
-	if(targetInstance != null) {
-		def s = targetInstance.services.find{it.name == service}
-		assert s != null : "${target} is configured as a targetInstance, but service ${service} has not been configured."
-		assert s.type != null : "Type of service has not been configured for target ${target}"
-		return s.type
-	}
-	println "no service type configured for ${target} ... serviceType=oracle-db"
-	return "oracle-db"
+	def s = getTargetInstanceService(service, target, targetSystemMappingJson)
+	assert s.type != null : "Type of service has not been configured for target ${target}"
+	return s.type
 }
 
-// JHE (06.09.2019): ARCH-90. For now, only DB Modules can be installed on Light-Instances. Therefore, we need to know if the target is a Light, in order to determine if we have to start the Jadas installation.
-//				   : The method assumes that the service type contains "light". This should be done only temporarily until Jadas will be installed on Light as well.
-//				   : If the need to determine if a target is a Light still remains, we might want to find a better than relying on a name which should contain a specific string...
-def isLightInstallation(target,targetSystemMappingJson) {
-	def isLight = false
-	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
-		if(targetInstance.name == target) {
-			targetInstance.services.each ({ service ->
-				isLight = service.name == "it21-db" && service.type.contains("light")
-			})
-		}
-	})
-	println "is ${target} a Light-Instance: ${isLight}"
-	isLight
+def getTargetInstanceService(service,target,targetSystemMappingJson) {
+	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
+	assert targetInstance != null : "${target} should be configured as a targetInstance!"
+	def s = targetInstance.services.find{it.name == service}
+	assert s != null : "${target} is configured as a targetInstance, but service ${service} has not been configured."
+	return s
 }
 
 def installOldStyle(patchConfig) {
@@ -92,18 +67,25 @@ def installOldStyle(patchConfig) {
 
 def installOldStyleInt(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
+	
+	println "SSH DEBUG : installOldStyleInt via SSH"
 		
+	/*
 	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
 			
 		// jenkins_pipeline_patch_install_oldstyle starts also the installation of Docker Services
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install_oldstyle.bat ${patchConfig.patchNummer} ${patchConfig.currentTarget}")
 	}
+	*/
 }
 
 def installDbPatch(patchConfig,artifact,extension,host,type) {
 	def server = initiateArtifactoryConnection()
 	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
 	
+	println "SSH DEBUG : installDbPatch via SSH"
+	
+	/*
 	node (env.WINDOWS_INSTALLER_LABEL){
 		
 		def downloadSpec = """{
@@ -122,6 +104,7 @@ def installDbPatch(patchConfig,artifact,extension,host,type) {
 		// Here will only the "CVS DB" module installed.
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.currentTarget} ${host} ${type}")
 	}
+	*/
 }
 
 def getCredentialId(def patchConfig) {
@@ -134,6 +117,10 @@ def getCredentialId(def patchConfig) {
 }
 
 def installJadasGUI(patchConfig) {
+	
+	println "SSH DEBUG : installJadasGUI via SSH"
+	
+	/*
 	node(env.WINDOWS_INSTALLER_LABEL) {
 		
 		def extractedGuiPath = ""
@@ -171,6 +158,7 @@ def installJadasGUI(patchConfig) {
 		// Unmount the share drive
 		powershell("net use ${extractedGuiPath} /delete")
 	}
+	*/
 }
 
 def removeOldGuiFolder(extractedGuiPath) {

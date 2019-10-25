@@ -136,8 +136,8 @@ def mavenLocalRepo(patchConfig) {
 
 def loadTargetsMap() {
 	def targetSystemMap = [:]
-	getTargetSystemMappingJson().targetSystems.each( { target ->
-		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target, nodes:target.nodes])
+	getTargetSystemMappingJson().stageMappings.each( { target ->
+		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target])
 	})
 	println targetSystemMap
 	targetSystemMap
