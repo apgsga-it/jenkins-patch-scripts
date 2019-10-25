@@ -1,4 +1,5 @@
 #!groovy
+import com.apgsga.pipeline.installers.MyExample
 library 'patch-global-functions'
 
 def installDeploymentArtifacts(patchConfig) {

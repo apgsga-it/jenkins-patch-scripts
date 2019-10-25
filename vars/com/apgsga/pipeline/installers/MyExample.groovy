@@ -1,3 +1,4 @@
+package com.apgsga.pipeline.installers
 
 class MyExample {
 	
