@@ -11,13 +11,13 @@ def installDeploymentArtifacts(patchConfig) {
 		installOldStyle(patchConfig)
 		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
 		parallel 'ui-client-deployment': {
-			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
+			if(patchConfig.installJadasAndGui) {
 				node {
 					installJadasGUI(patchConfig)
 				}
 			}
 		}, 'ui-server-deployment': {
-			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
+			if(patchConfig.installJadasAndGui) {
 				echo "patchConfig.targetBean = ${patchConfig.targetBean}"
 				def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
 				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
