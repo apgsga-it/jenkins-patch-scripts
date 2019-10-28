@@ -23,6 +23,23 @@ def installDeploymentArtifacts(patchConfig) {
 	echo "DONE - calling closure"
 	
 	
+	
+	// ANOTHER ONE TO BE REMOVED
+	// TEST FROM SSH connection
+	echo "trying to do an SSH connection"
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
+		usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
+	
+		def remote = [:]
+		remote.name = 'test'
+		remote.host = 'dev-jhe.light.apgsga.ch'
+		remote.user = SSHUsername
+		remote.password = SSHUserpassword
+		remote.allowAnyHosts = true
+		sshCommand remote: remote, command: "ls /opt/apgops"
+	}
+	echo "DONE - trying to do an SSH connection"
+	
 	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
