@@ -123,24 +123,28 @@ def linuxServiceInstaller() {
 	def installer = {
 		echo 'This is a linux service installer'
 	}
+	return installer
 }
 
 def it21UiInstaller() {
 	def installer = {
 		echo 'This is a it21-ui service installer'
 	}
+	return installer
 }
 
 def oracleDbInstaller() {
 	def installer = {
 		echo 'This is an oracle-db service installer'
 	}
+	return installer
 }
 
 def nopInstaller() {
 	def installer = {
 		echo 'No installer define for this service: todo -> add service name'
 	}
+	return installer
 }
 
 def getHost(service,target) {
