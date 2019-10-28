@@ -4,6 +4,7 @@ library 'patch-global-functions'
 def installDeploymentArtifacts(patchConfig) {
 	
 	// TEST TO BE REMOVED
+	/*
 	node {
 		def shCmd = """
 					echo 'apg-patch-cli'
@@ -16,8 +17,10 @@ def installDeploymentArtifacts(patchConfig) {
 		
 		sh shCmd
 	}
-	
-	
+	*/
+	echo "calling closure"
+	installerFactory('jadas').call()
+	echo "DONE - calling closure"
 	
 	
 	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
@@ -55,6 +58,19 @@ def installDeploymentArtifacts(patchConfig) {
 				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getTargetHost("it21-db",patchConfig.currentTarget,targetSystemMappingJson),getTargetType("it21-db",patchConfig.currentTarget,targetSystemMappingJson))
 			}
 		}
+	}
+}
+
+def installerFactory(def serviceName) {
+	if(serviceName.equals("jadas")) {
+		def installer = {
+			echo "this was within the closure..."
+		}
+		return installer 
+	}
+	else {
+		echo "No known installer for ${serviceName}"
+		return null // should return a NOP installed instead
 	}
 }
 
