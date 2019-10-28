@@ -64,7 +64,20 @@ def installDeploymentArtifacts(patchConfig) {
 def installerFactory(def serviceName) {
 	if(serviceName.equals("jadas")) {
 		def installer = {
-			echo "this was within the closure..."
+			echo "from within the closure..."
+			node {
+				def shCmd = """
+						echo 'apg-patch-cli'
+						echo '-------------'
+						ls /var/opt/apg-patch-cli
+						echo 'apg-patch-service-server'
+						echo '-------------'
+						ls /var/opt/apg-patch-service-server
+						"""
+	
+				sh shCmd
+			}
+			echo "DONE - from within the closure..."
 		}
 		return installer 
 	}
