@@ -1,11 +1,7 @@
 #!groovy
-import com.apgsga.pipeline.installers.MyExample
 library 'patch-global-functions'
 
 def installDeploymentArtifacts(patchConfig) {
-	
-	def ex = new MyExample()
-	echo "${ex.example}"
 	
 	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	
