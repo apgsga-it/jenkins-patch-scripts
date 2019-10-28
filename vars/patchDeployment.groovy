@@ -108,7 +108,7 @@ def installerFactory(serviceName,target) {
 	if(serviceType.equals("linuxservice")) {
 		return linuxServiceInstaller()
 	}
-	else if(serviceType.equals("it21_ui")) {
+	else if(serviceType.equals("linuxbasedwindowsfilesystem")) {
 		return it21UiInstaller()
 	}
 	else if(serviceType.equals("oracle-db")) {
