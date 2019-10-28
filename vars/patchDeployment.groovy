@@ -6,16 +6,7 @@ def installDeploymentArtifacts(patchConfig) {
 	// TEST TO BE REMOVED
 	/*
 	node {
-		def shCmd = """
-					echo 'apg-patch-cli'
-					echo '-------------'
-					ls /var/opt/apg-patch-cli
-					echo 'apg-patch-service-server'
-					echo '-------------'
-					ls /var/opt/apg-patch-service-server
-					"""
-		
-		sh shCmd
+
 	}
 	*/
 	echo "calling closure"
@@ -31,13 +22,24 @@ def installDeploymentArtifacts(patchConfig) {
 		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
 			usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
 		
+		
+		def shCmd = """
+					echo 'this is a test'
+					echo '-------------'
+					ls /opt/apgops
+					echo 'this is a 2nd test'
+					echo '-------------'
+					ls /etc
+					"""
+
+		
 			def remote = [:]
 			remote.name = 'test'
 			remote.host = 'dev-jhe.light.apgsga.ch'
 			remote.user = SSHUsername
 			remote.password = SSHUserpassword
 			remote.allowAnyHosts = true
-			sshCommand remote: remote, command: "ls /opt/apgops"
+			sshCommand remote: remote, command: shCmd
 		}
 		echo "DONE - trying to do an SSH connection"
 	}
