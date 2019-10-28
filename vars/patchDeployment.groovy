@@ -106,7 +106,7 @@ def installerFactory(serviceName,target) {
 	def serviceType = getType(serviceName,target)
 	
 	if(serviceType.equals("linuxservice")) {
-		return linuxServiceInstaller()
+		return linuxServiceInstaller(target)
 	}
 	else if(serviceType.equals("linuxbasedwindowsfilesystem")) {
 		return it21UiInstaller()
@@ -119,9 +119,9 @@ def installerFactory(serviceName,target) {
 	}
 }
 
-def linuxServiceInstaller() {
+def linuxServiceInstaller(def target) {
 	def installer = {
-		echo 'This is a linux service installer'
+		echo "This is a linux service installer. Installation will be made on ${target}"
 	}
 	return installer
 }
