@@ -4,16 +4,18 @@ library 'patch-global-functions'
 def installDeploymentArtifacts(patchConfig) {
 	
 	// TEST TO BE REMOVED
-	def shCmd = """
-				echo 'apg-patch-cli'
-				echo '-------------'
-				ls /var/opt/apg-patch-cli
-				echo 'apg-patch-service-server'
-				echo '-------------'
-				ls /var/opt/apg-patch-service-server
-				"""
-	
-	sh shCmd
+	node {
+		def shCmd = """
+					echo 'apg-patch-cli'
+					echo '-------------'
+					ls /var/opt/apg-patch-cli
+					echo 'apg-patch-service-server'
+					echo '-------------'
+					ls /var/opt/apg-patch-service-server
+					"""
+		
+		sh shCmd
+	}
 	
 	
 	
