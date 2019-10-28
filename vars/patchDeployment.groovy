@@ -9,14 +9,16 @@ def installDeploymentArtifacts(patchConfig) {
 
 	}
 	*/
+	/*
 	echo "calling closure"
 	installerFactory('jadas').call()
 	echo "DONE - calling closure"
-	
+	*/
 	
 	
 	// ANOTHER ONE TO BE REMOVED
 	// TEST FROM SSH connection
+	/*
 	node {
 		echo "trying to do an SSH connection"
 		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
@@ -43,6 +45,7 @@ def installDeploymentArtifacts(patchConfig) {
 		}
 		echo "DONE - trying to do an SSH connection"
 	}
+	*/
 	
 	
 	
@@ -50,9 +53,6 @@ def installDeploymentArtifacts(patchConfig) {
 	
 	
 	
-	
-	
-	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
 		// CM-225: old style needs to be part of the "installLock" (It can not run parallel to "db-deployment")
@@ -60,18 +60,23 @@ def installDeploymentArtifacts(patchConfig) {
 		installOldStyle(patchConfig)
 		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
 		parallel 'ui-client-deployment': {
+			installerFactory('it21_ui', patchConfig.currentTarget).call()
+			/*
 			if(patchConfig.installJadasAndGui) {
 				node {
 					installJadasGUI(patchConfig)
 				}
 			}
+			*/
 		}, 'ui-server-deployment': {
+			installerFactory('jadas', patchConfig.currentTarget).call()
+			/*
 			if(patchConfig.installJadasAndGui) {
 				echo "patchConfig.targetBean = ${patchConfig.targetBean}"
 				def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
 				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
 				println "SSH DEBUG : ui-server-deployment via SSH"
-				/*
+				
 				node (installationNodeLabel){
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
 					def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
@@ -80,55 +85,78 @@ def installDeploymentArtifacts(patchConfig) {
 					sh "${yumCmd}"
 					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
 				}
-				*/
 			}
+			*/
 		}, 'db-deployment': {
+			installerFactory('it21-db', patchConfig.currentTarget).call()
+			/*
 			node {
-				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getTargetHost("it21-db",patchConfig.currentTarget,targetSystemMappingJson),getTargetType("it21-db",patchConfig.currentTarget,targetSystemMappingJson))
+				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getHost("it21-db",patchConfig.currentTarget),getType("it21-db",patchConfig.currentTarget))
 			}
+			*/
 		}
 	}
 }
 
-def installerFactory(def serviceName) {
-	if(serviceName.equals("jadas")) {
-		def installer = {
-			echo "from within the closure..."
-			node {
-				def shCmd = """
-						echo 'apg-patch-cli'
-						echo '-------------'
-						ls /var/opt/apg-patch-cli
-						echo 'apg-patch-service-server'
-						echo '-------------'
-						ls /var/opt/apg-patch-service-server
-						"""
+def installerFactory(serviceName,target) {
+	// JHE (28.10.2019): For now we only support 3 services to be installed over SSH. Do we really want an assert, or rather an empty implementation for any unkown type?
+	//					 Or don't we need this test, and do we want to rely 100% on what's define within TargetSystemMappings.json? (if a service is not find, then fail, or skip, or return NOP implementation)
+	assert ['it21-db','jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
 	
-				sh shCmd
-			}
-			echo "DONE - from within the closure..."
-		}
-		return installer 
+	def serviceType = getType(serviceName,target)
+	
+	if(serviceType.equals("linuxservice")) {
+		return linuxServiceInstaller()
+	}
+	else if(serviceType.equals("it21_ui")) {
+		return it21UiInstaller()
+	}
+	else if(serviceType.equals("oracle-db")) {
+		return oracleDbInstaller()
 	}
 	else {
-		echo "No known installer for ${serviceName}"
-		return null // should return a NOP installed instead
+		return nopInstaller()
 	}
 }
 
-def getTargetHost(service,target,targetSystemMappingJson) {
-	def s = getTargetInstanceService(service, target, targetSystemMappingJson)
+def linuxServiceInstaller() {
+	def installer = {
+		echo 'This is a linux service installer'
+	}
+}
+
+def it21UiInstaller() {
+	def installer = {
+		echo 'This is a it21-ui service installer'
+	}
+}
+
+def oracleDbInstaller() {
+	def installer = {
+		echo 'This is an oracle-db service installer'
+	}
+}
+
+def nopInstaller() {
+	def installer = {
+		echo 'No installer define for this service: todo -> add service name'
+	}
+}
+
+def getHost(service,target) {
+	def s = getTargetInstanceService(service, target)
 	assert s.host != null : "Host has not been configured for target ${target}"
 	return s.host
 }
 
-def getTargetType(service,target,targetSystemMappingJson) {
-	def s = getTargetInstanceService(service, target, targetSystemMappingJson)
+def getType(service,target) {
+	def s = getTargetInstanceService(service, target)
 	assert s.type != null : "Type of service has not been configured for target ${target}"
 	return s.type
 }
 
-def getTargetInstanceService(service,target,targetSystemMappingJson) {
+def getTargetInstanceService(service,target) {
+	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
 	assert targetInstance != null : "${target} should be configured as a targetInstance!"
 	def s = targetInstance.services.find{it.name == service}
