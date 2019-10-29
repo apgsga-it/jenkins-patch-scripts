@@ -120,7 +120,7 @@ def linuxServiceInstaller(target, host) {
 				remote.password = SSHUserpassword
 				remote.allowAnyHosts = true
 				sshCommand remote: remote, comamnd: "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
-				sshCommand remote: remote, command: yumCmd
+				//sshCommand remote: remote, command: yumCmd
 			}
 		}
 		
