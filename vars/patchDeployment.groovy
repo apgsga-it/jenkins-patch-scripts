@@ -68,7 +68,9 @@ def isLightInstallation(target) {
 				println "(DEBUG) service = ${service}"
 				println "(DEBUG) service.name = ${service.name}"
 				println "(DEBUG) service.host = ${service.host}"
-				isLight = service.name == "it21-db" && service.host.contains("light")
+				if(service.name == "it21-db") {
+					isLight = service.host.contains("light")
+				}
 			})
 		}
 	})
