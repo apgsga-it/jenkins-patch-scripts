@@ -62,7 +62,7 @@ def isLightInstallation(target) {
 	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
 		if(targetInstance.name == target) {
 			targetInstance.services.each ({ service ->
-				isLight = service.name == "it21-db" && service.type.contains("light")
+				isLight = service.name == "it21-db" && service.host.contains("light")
 			})
 		}
 	})
