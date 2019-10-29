@@ -106,13 +106,13 @@ def linuxServiceInstaller(target, host) {
 				usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
 
 			
-				echo "Installation of apg-jadas-service-${target} starting ..."
+				echo "Installation of apg-jadas-service-${target} starting on host ${host}"
 				def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
 				def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${target}"
 				
 				
 				echo "yumCmd: ${yumCmd}"
-						
+				
 				def remote = [:]
 				remote.name = "${target}-${host}"
 				remote.host = host
