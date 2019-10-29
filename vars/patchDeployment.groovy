@@ -2,126 +2,119 @@
 library 'patch-global-functions'
 
 def installDeploymentArtifacts(patchConfig) {
-	
-	// TEST TO BE REMOVED
-	/*
-	node {
-
-	}
-	*/
-	/*
-	echo "calling closure"
-	installerFactory('jadas').call()
-	echo "DONE - calling closure"
-	*/
-	
-	
-	// ANOTHER ONE TO BE REMOVED
-	// TEST FROM SSH connection
-	/*
-	node {
-		echo "trying to do an SSH connection"
-		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
-			usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
-		
-		
-		def shCmd = """
-					echo 'this is a test'
-					echo '-------------'
-					ls /opt/apgops
-					echo 'this is a 2nd test'
-					echo '-------------'
-					ls /etc
-					"""
-
-		
-			def remote = [:]
-			remote.name = 'test'
-			remote.host = 'dev-jhe.light.apgsga.ch'
-			remote.user = SSHUsername
-			remote.password = SSHUserpassword
-			remote.allowAnyHosts = true
-			sshCommand remote: remote, command: shCmd
-		}
-		echo "DONE - trying to do an SSH connection"
-	}
-	*/
-	
-	
-	
-	
-	
-	
-	
-	
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
 		// CM-225: old style needs to be part of the "installLock" (It can not run parallel to "db-deployment")
 		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Starting installOldStyle"
 		installOldStyle(patchConfig)
 		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
 		parallel 'ui-client-deployment': {
-			installerFactory('it21_ui', patchConfig.currentTarget).call()
-			/*
+
 			if(patchConfig.installJadasAndGui) {
-				node {
-					installJadasGUI(patchConfig)
-				}
-			}
-			*/
-		}, 'ui-server-deployment': {
-			installerFactory('jadas', patchConfig.currentTarget).call()
-			/*
-			if(patchConfig.installJadasAndGui) {
-				echo "patchConfig.targetBean = ${patchConfig.targetBean}"
-				def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
-				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
-				println "SSH DEBUG : ui-server-deployment via SSH"
 				
-				node (installationNodeLabel){
-					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
-					def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
-					def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${patchConfig.currentTarget}"
-					sh "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
-					sh "${yumCmd}"
-					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
+				installerFactory('it21_ui', patchConfig.currentTarget).call()
+				
+				// JHE (29.10.2019): In a first step, we still do the installation following old method
+				if(!isLightInstallation(patchConfig.currentTarget)) {
+					node {
+						installJadasGUI(patchConfig)
+					}
 				}
 			}
-			*/
+		}, 'ui-server-deployment': {
+			
+			if(patchConfig.installJadasAndGui) {
+				
+				installerFactory('jadas', patchConfig.currentTarget).call()
+				
+				// JHE (29.10.2019): In a first step, we still do the installation following old method
+				//					 --> Mmhh, really for this part too ???
+				if(!isLightInstallation(patchConfig.currentTarget)) {
+					echo "patchConfig.targetBean = ${patchConfig.targetBean}"
+					def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
+					echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
+					
+					node (installationNodeLabel){
+						echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
+						def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
+						def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${patchConfig.currentTarget}"
+						sh "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
+						sh "${yumCmd}"
+						echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
+					}
+				}
+			}
 		}, 'db-deployment': {
-			installerFactory('it21-db', patchConfig.currentTarget).call()
-			/*
+			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
+			// installerFactory('it21-db', patchConfig.currentTarget).call()
 			node {
 				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getHost("it21-db",patchConfig.currentTarget),getType("it21-db",patchConfig.currentTarget))
 			}
-			*/
 		}
 	}
 }
 
+// JHE (06.09.2019): ARCH-90. For now, only DB Modules can be installed on Light-Instances. Therefore, we need to know if the target is a Light, in order to determine if we have to start the Jadas installation.
+//				   : The method assumes that the service type contains "light". This should be done only temporarily until Jadas will be installed on Light as well.
+//				   : If the need to determine if a target is a Light still remains, we might want to find a better than relying on a name which should contain a specific string...
+def isLightInstallation(target) {
+	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
+	def isLight = false
+	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
+		if(targetInstance.name == target) {
+			targetInstance.services.each ({ service ->
+				isLight = service.name == "it21-db" && service.type.contains("light")
+			})
+		}
+	})
+	println "is ${target} a Light-Instance: ${isLight}"
+	isLight
+}
+
 def installerFactory(serviceName,target) {
-	// JHE (28.10.2019): For now we only support 3 services to be installed over SSH. Do we really want an assert, or rather an empty implementation for any unkown type?
+	// JHE (28.10.2019): For now we only support 2 services to be installed over SSH. Do we really want an assert, or rather an empty implementation for any unkown type?
 	//					 Or don't we need this test, and do we want to rely 100% on what's define within TargetSystemMappings.json? (if a service is not find, then fail, or skip, or return NOP implementation)
-	assert ['it21-db','jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
+	assert ['jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
 	
 	def serviceType = getType(serviceName,target)
+	def host = getHost(serviceName, target)
 	
 	if(serviceType.equals("linuxservice")) {
-		return linuxServiceInstaller(target)
+		return linuxServiceInstaller(target,host)
 	}
 	else if(serviceType.equals("linuxbasedwindowsfilesystem")) {
 		return it21UiInstaller()
 	}
 	else if(serviceType.equals("oracle-db")) {
-		return oracleDbInstaller()
+		return nopInstaller()
 	}
 	else {
 		return nopInstaller()
 	}
 }
 
-def linuxServiceInstaller(def target) {
+def linuxServiceInstaller(target, host) {
 	def installer = {
-		echo "This is a linux service installer. Installation will be made on ${target}"
+		echo "Installation of apg-jadas-service-${target} starting ..."
+		def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
+		def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${target}"
+		
+		node {
+			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
+				usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
+			
+				def remote = [:]
+				remote.name = "${target}-${host}"
+				remote.host = host
+				remote.user = SSHUsername
+				remote.password = SSHUserpassword
+				remote.allowAnyHosts = true
+				sshCommand remote: remote, comamnd: "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
+				sshCommand remote: remote, command: yumCmd
+			}
+		}
+		
+		
+		echo "Installation of apg-jadas-service-${target} done!"
 	}
 	return installer
 }
@@ -129,13 +122,6 @@ def linuxServiceInstaller(def target) {
 def it21UiInstaller() {
 	def installer = {
 		echo 'This is a it21-ui service installer'
-	}
-	return installer
-}
-
-def oracleDbInstaller() {
-	def installer = {
-		echo 'This is an oracle-db service installer'
 	}
 	return installer
 }
@@ -175,24 +161,16 @@ def installOldStyle(patchConfig) {
 def installOldStyleInt(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
 	
-	println "SSH DEBUG : installOldStyleInt via SSH"
-		
-	/*
 	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
-			
 		// jenkins_pipeline_patch_install_oldstyle starts also the installation of Docker Services
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install_oldstyle.bat ${patchConfig.patchNummer} ${patchConfig.currentTarget}")
 	}
-	*/
 }
 
 def installDbPatch(patchConfig,artifact,extension,host,type) {
 	def server = initiateArtifactoryConnection()
 	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
 	
-	println "SSH DEBUG : installDbPatch via SSH"
-	
-	/*
 	node (env.WINDOWS_INSTALLER_LABEL){
 		
 		def downloadSpec = """{
@@ -211,7 +189,6 @@ def installDbPatch(patchConfig,artifact,extension,host,type) {
 		// Here will only the "CVS DB" module installed.
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.currentTarget} ${host} ${type}")
 	}
-	*/
 }
 
 def getCredentialId(def patchConfig) {
@@ -225,9 +202,6 @@ def getCredentialId(def patchConfig) {
 
 def installJadasGUI(patchConfig) {
 	
-	println "SSH DEBUG : installJadasGUI via SSH"
-	
-	/*
 	node(env.WINDOWS_INSTALLER_LABEL) {
 		
 		def extractedGuiPath = ""
@@ -265,7 +239,6 @@ def installJadasGUI(patchConfig) {
 		// Unmount the share drive
 		powershell("net use ${extractedGuiPath} /delete")
 	}
-	*/
 }
 
 def removeOldGuiFolder(extractedGuiPath) {
