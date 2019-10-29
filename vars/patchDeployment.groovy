@@ -9,6 +9,7 @@ def installDeploymentArtifacts(patchConfig) {
 		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
 		parallel 'ui-client-deployment': {
 
+			/*
 			if(patchConfig.installJadasAndGui) {
 				
 				installerFactory('it21_ui', patchConfig.currentTarget).call()
@@ -20,6 +21,7 @@ def installDeploymentArtifacts(patchConfig) {
 					}
 				}
 			}
+			*/
 		}, 'ui-server-deployment': {
 			
 			if(patchConfig.installJadasAndGui) {
@@ -46,9 +48,12 @@ def installDeploymentArtifacts(patchConfig) {
 		}, 'db-deployment': {
 			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
 			// installerFactory('it21-db', patchConfig.currentTarget).call()
+			
+			/*
 			node {
 				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getHost("it21-db",patchConfig.currentTarget),getType("it21-db",patchConfig.currentTarget))
 			}
+			*/
 		}
 	}
 }
@@ -96,14 +101,18 @@ def installerFactory(serviceName,target) {
 
 def linuxServiceInstaller(target, host) {
 	def installer = {
-		echo "Installation of apg-jadas-service-${target} starting ..."
-		def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
-		def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${target}"
-		
 		node {
 			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
 				usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
+
 			
+				echo "Installation of apg-jadas-service-${target} starting ..."
+				def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
+				def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${target}"
+				
+				
+				echo "yumCmd: ${yumCmd}"
+						
 				def remote = [:]
 				remote.name = "${target}-${host}"
 				remote.host = host
