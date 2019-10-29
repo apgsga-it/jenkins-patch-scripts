@@ -60,14 +60,8 @@ def isLightInstallation(target) {
 	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	def isLight = false
 	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
-		println "(DEBUG) targetInstance = ${targetInstance}"
-		println "(DEBUG) target = ${target}"
-		println "(DEBUG) targetInstance.name = ${targetInstance.name}"
 		if(targetInstance.name == target) {
 			targetInstance.services.each ({ service ->
-				println "(DEBUG) service = ${service}"
-				println "(DEBUG) service.name = ${service.name}"
-				println "(DEBUG) service.host = ${service.host}"
 				if(service.name == "it21-db") {
 					isLight = service.host.contains("light")
 				}
