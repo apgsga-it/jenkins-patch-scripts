@@ -91,7 +91,7 @@ def installerFactory(serviceName,target,patchConfig) {
 		return linuxServiceInstaller(target,host)
 	}
 	else if(serviceType.equals("linuxbasedwindowsfilesystem")) {
-		return it21UiInstaller(patchConfig)
+		return it21UiInstaller(target,host,patchConfig)
 	}
 	else if(serviceType.equals("oracle-db")) {
 		return nopInstaller()
@@ -132,7 +132,7 @@ def linuxServiceInstaller(target, host) {
 	return installer
 }
 
-def it21UiInstaller(patchConfig) {
+def it21UiInstaller(target,host,patchConfig) {
 	def installer = {
 		node {
 			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
