@@ -154,7 +154,16 @@ def it21UiInstaller(target,host,patchConfig) {
 				remote.user = SSHUsername
 				remote.password = SSHUserpassword
 				remote.allowAnyHosts = true
-				sshPut remote: remote, from: "./download/${zipDist}", into: "/etc/opt/it21_ui_dev-jhe/${zipDist}" 
+				
+				def newFolderName = guiExtractedFolderName()
+				
+				
+				// TODO JHE: Probably best to run all in one script ... but ok, for now easier to ensure everything works...
+				sshCommand remote: remote, command: "mkdir /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
+				
+				sshPut remote: remote, from: "./download/${zipDist}", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist}"
+				
+				sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist}"
 						
 				/*
 				def extractedFolderName = guiExtractedFolderName()
