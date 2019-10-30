@@ -166,6 +166,8 @@ def it21UiInstaller(target,host,patchConfig) {
 				sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
 				
 				sshCommand remote: remote, command: "mv /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName} /etc/opt/it21_ui_dev-jhe/${newFolderName}"
+				
+				sshCommand remote: remote, command: "cd /etc/opt/it21_ui_dev-jhe/ && rm -rf `ls -t | awk 'NR>2'`"
 						
 				/*
 				def extractedFolderName = guiExtractedFolderName()
