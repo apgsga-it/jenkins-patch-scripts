@@ -9,24 +9,24 @@ def installDeploymentArtifacts(patchConfig) {
 		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
 		parallel 'ui-client-deployment': {
 
-			/*
 			if(patchConfig.installJadasAndGui) {
 				
-				installerFactory('it21_ui', patchConfig.currentTarget).call()
-				
+				installerFactory('it21_ui', patchConfig.currentTarget, patchConfig).call()
+
+				/*				
 				// JHE (29.10.2019): In a first step, we still do the installation following old method
 				if(!isLightInstallation(patchConfig.currentTarget)) {
 					node {
 						installJadasGUI(patchConfig)
 					}
 				}
+				*/
 			}
-			*/
 		}, 'ui-server-deployment': {
 			
 			if(patchConfig.installJadasAndGui) {
 				
-				installerFactory('jadas', patchConfig.currentTarget).call()
+				installerFactory('jadas', patchConfig.currentTarget, patchConfig).call()
 				
 				// JHE (29.10.2019): In a first step, we still do the installation following old method
 				//					 --> Mmhh, really for this part too ???
@@ -77,7 +77,9 @@ def isLightInstallation(target) {
 	isLight
 }
 
-def installerFactory(serviceName,target) {
+
+// TODO JHE: Parameter are not what should be .... for now, just taking what I need
+def installerFactory(serviceName,target,patchConfig) {
 	// JHE (28.10.2019): For now we only support 2 services to be installed over SSH. Do we really want an assert, or rather an empty implementation for any unkown type?
 	//					 Or don't we need this test, and do we want to rely 100% on what's define within TargetSystemMappings.json? (if a service is not find, then fail, or skip, or return NOP implementation)
 	assert ['jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
@@ -89,7 +91,7 @@ def installerFactory(serviceName,target) {
 		return linuxServiceInstaller(target,host)
 	}
 	else if(serviceType.equals("linuxbasedwindowsfilesystem")) {
-		return it21UiInstaller()
+		return it21UiInstaller(patchConfig)
 	}
 	else if(serviceType.equals("oracle-db")) {
 		return nopInstaller()
@@ -130,9 +132,58 @@ def linuxServiceInstaller(target, host) {
 	return installer
 }
 
-def it21UiInstaller() {
+def it21UiInstaller(patchConfig) {
 	def installer = {
-		echo 'This is a it21-ui service installer'
+		node {
+			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
+				usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
+
+				// 	================================================
+				def buildVersion =  patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
+				def group = "com.affichage.it21"
+				def artifact = "it21gui-dist-zip"
+				def artifactType = "zip"
+		
+				downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion)
+
+				def zipDist = "${artifact}-${buildVersion}.${artifactType}"
+				
+				def remote = [:]
+				remote.name = "${target}-${host}"
+				remote.host = host
+				remote.user = SSHUsername
+				remote.password = SSHUserpassword
+				remote.allowAnyHosts = true
+				sshPut remote: remote, from: "./download/${zipDist}", into: '/etc/opt/it21_ui_dev-jhe' 
+						
+				/*
+				def extractedFolderName = guiExtractedFolderName()
+				
+				def zipDist = "${artifact}-${buildVersion}.${artifactType}"
+				extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
+				copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
+				println "Waiting 60 seconds before trying to rename the extracted ZIP."
+				sleep(time:60,unit:"SECONDS")
+				renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+				println "GUI Folder correctly renamed."
+				copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
+				removeOldGuiFolder(extractedGuiPath)
+				*/
+		
+				// 	================================================
+			
+				
+				/*
+				def remote = [:]
+				remote.name = "${target}-${host}"
+				remote.host = host
+				remote.user = SSHUsername
+				remote.password = SSHUserpassword
+				remote.allowAnyHosts = true
+				sshCommand remote: remote, command: "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
+				*/
+			}
+		}
 	}
 	return installer
 }
