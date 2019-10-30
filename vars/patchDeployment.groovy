@@ -318,7 +318,8 @@ def guiExtractedFolderName() {
 }
 
 def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion) {
-	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s C:/local/software/maven/settings.xml"
+	// TODO JHE: -s option with patch to jenkins home folder, really needed? If needed, really what we want?
+	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s /home/jenkins/.m2/settings.xml"
 	echo "Downloading GUI-ZIP with following command: ${mvnCommand}"
 	withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	echo "GUI-ZIP correctly downloaded."
