@@ -92,13 +92,8 @@ def linuxServiceInstaller(target, host) {
 			echo "Installation of apg-jadas-service-${target} starting on host ${host}"
 			def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
 			def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${target}"
-			
-			
-			echo "yumCmd: ${yumCmd}"
-			
-			def remote = getRemoteSSHConnection(host)
-			sshCommand remote: remote, command: "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
-			sshCommand remote: remote, command: yumCmd
+			ssh(host, "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )")
+			ssh(host, yumCmd)
 		}
 		
 		echo "Installation of apg-jadas-service-${target} done!"
@@ -118,18 +113,17 @@ def it21UiInstaller(target,host,buildVersion) {
 			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion)
 			def zipDist = "${artifact}-${buildVersion}.${artifactType}"
 			
-			def remote = getRemoteSSHConnection(host)
 			def newFolderName = guiExtractedFolderName()
 			
 			// TODO JHE: Best to run all in one script ? ... not sure
-			sshCommand remote: remote, command: "mkdir /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}"
-			sshPut remote: remote, from: "./download/${zipDist}", into: "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist}"
-			sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}"
-			sshPut remote: remote, from: "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", into: "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/AdGIS.properties"
-			sshPut remote: remote, from: "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", into: "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/serviceurl.properties"
-			sshCommand remote: remote, command: "chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*"
-			sshCommand remote: remote, command: "mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}"
-			sshCommand remote: remote, command: "cd /etc/opt/it21_ui_${target}/ && rm -rf `ls -t | awk 'NR>2'`"
+			ssh(host, "mkdir /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
+			put(host, "./download/${zipDist}", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist}")
+			ssh(host, "unzip /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
+			put(host, "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/AdGIS.properties")
+			put(host, "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/serviceurl.properties")
+			ssh(host, "chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
+			ssh(host, "mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}")
+			ssh(host, "cd /etc/opt/it21_ui_${target}/ && rm -rf `ls -t | awk 'NR>2'`")
 				
 			echo "Installation of it21-ui done for ${target}"
 		}
@@ -142,6 +136,20 @@ def nopInstaller(serviceName) {
 		echo "No installer define for service ${serviceName}"
 	}
 	return installer
+}
+
+def ssh(host,cmd) {
+	echo "Running following command on ${host} via SSH: ${cmd}"
+	def remote = getRemoteSSHConnection(host)
+	sshCommand remote: remote, command: cmd
+	echo "DONE - following command on ${host} via SSH: ${cmd}"
+}
+
+def put(host,src,dest) {
+	echo "Putting ${src} on ${host} into ${dest}"
+	def remote = getRemoteSSHConnection(host)
+	sshPut remote: remote, from: src, into: dest
+	echo "DONE - Putting ${src} on ${host} into ${dest}"
 }
 
 def getHost(service,target) {
