@@ -8,61 +8,31 @@ def installDeploymentArtifacts(patchConfig) {
 		installOldStyle(patchConfig)
 		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
 		parallel 'ui-client-deployment': {
-
 			if(patchConfig.installJadasAndGui) {
-				
 				installerFactory('it21_ui', patchConfig).call()
-
-				/*				
 				// JHE (29.10.2019): In a first step, we still do the installation following old method
 				if(!isLightInstallation(patchConfig.currentTarget)) {
 					node {
 						installJadasGUI(patchConfig)
 					}
 				}
-				*/
 			}
 		}, 'ui-server-deployment': {
-			
 			if(patchConfig.installJadasAndGui) {
-				
 				installerFactory('jadas', patchConfig).call()
-				
-				// JHE (29.10.2019): In a first step, we still do the installation following old method
-				//					 --> Mmhh, really for this part too ??? Probably not because of service-name build within our RPM
-				/*
-				if(!isLightInstallation(patchConfig.currentTarget)) {
-					echo "patchConfig.targetBean = ${patchConfig.targetBean}"
-					def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
-					echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
-					
-					node (installationNodeLabel){
-						echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
-						def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
-						def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${patchConfig.currentTarget}"
-						sh "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
-						sh "${yumCmd}"
-						echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
-					}
-				}
-				*/
 			}
 		}, 'db-deployment': {
 			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
 			// installerFactory('it21-db', patchConfig.currentTarget).call()
-			
-			/*
 			node {
 				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getHost("it21-db",patchConfig.currentTarget),getType("it21-db",patchConfig.currentTarget))
 			}
-			*/
 		}
 	}
 }
 
-// JHE (06.09.2019): ARCH-90. For now, only DB Modules can be installed on Light-Instances. Therefore, we need to know if the target is a Light, in order to determine if we have to start the Jadas installation.
-//				   : The method assumes that the service type contains "light". This should be done only temporarily until Jadas will be installed on Light as well.
-//				   : If the need to determine if a target is a Light still remains, we might want to find a better than relying on a name which should contain a specific string...
+// JHE (31.10.2019): For now we're still installing the it21-ui using old method, which doesn't work on Light.
+//					 It will be removed as soon as we're 100% sure the new method correctly works. 
 def isLightInstallation(target) {
 	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	def isLight = false
@@ -79,11 +49,8 @@ def isLightInstallation(target) {
 	isLight
 }
 
-
-// TODO JHE: Parameter are not what should be .... for now, just taking what I need
 def installerFactory(serviceName,patchConfig) {
-	// JHE (28.10.2019): For now we only support 2 services to be installed over SSH. Do we really want an assert, or rather an empty implementation for any unkown type?
-	//					 Or don't we need this test, and do we want to rely 100% on what's define within TargetSystemMappings.json? (if a service is not find, then fail, or skip, or return NOP implementation)
+	// JHE (28.10.2019): For now we only support 2 services to be installed over SSH. Anything else wouldn't be ready yet
 	assert ['jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
 	
 	def target = patchConfig.currentTarget
@@ -98,7 +65,7 @@ def installerFactory(serviceName,patchConfig) {
 		return it21UiInstaller(target,host,buildVersion)
 	}
 	else {
-		return nopInstaller()
+		return nopInstaller(serviceName)
 	}
 }
 
@@ -175,9 +142,9 @@ def it21UiInstaller(target,host,buildVersion) {
 	return installer
 }
 
-def nopInstaller() {
+def nopInstaller(serviceName) {
 	def installer = {
-		echo 'No installer define for this service: todo -> add service name'
+		echo "No installer define for service ${serviceName}"
 	}
 	return installer
 }
