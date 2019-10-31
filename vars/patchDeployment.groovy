@@ -11,7 +11,7 @@ def installDeploymentArtifacts(patchConfig) {
 
 			if(patchConfig.installJadasAndGui) {
 				
-				installerFactory('it21_ui', patchConfig.currentTarget, patchConfig).call()
+				installerFactory('it21_ui', patchConfig).call()
 
 				/*				
 				// JHE (29.10.2019): In a first step, we still do the installation following old method
@@ -26,10 +26,11 @@ def installDeploymentArtifacts(patchConfig) {
 			
 			if(patchConfig.installJadasAndGui) {
 				
-				installerFactory('jadas', patchConfig.currentTarget, patchConfig).call()
+				installerFactory('jadas', patchConfig).call()
 				
 				// JHE (29.10.2019): In a first step, we still do the installation following old method
-				//					 --> Mmhh, really for this part too ???
+				//					 --> Mmhh, really for this part too ??? Probably not because of service-name build within our RPM
+				/*
 				if(!isLightInstallation(patchConfig.currentTarget)) {
 					echo "patchConfig.targetBean = ${patchConfig.targetBean}"
 					def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
@@ -44,6 +45,7 @@ def installDeploymentArtifacts(patchConfig) {
 						echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
 					}
 				}
+				*/
 			}
 		}, 'db-deployment': {
 			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
@@ -79,11 +81,12 @@ def isLightInstallation(target) {
 
 
 // TODO JHE: Parameter are not what should be .... for now, just taking what I need
-def installerFactory(serviceName,target,patchConfig) {
+def installerFactory(serviceName,patchConfig) {
 	// JHE (28.10.2019): For now we only support 2 services to be installed over SSH. Do we really want an assert, or rather an empty implementation for any unkown type?
 	//					 Or don't we need this test, and do we want to rely 100% on what's define within TargetSystemMappings.json? (if a service is not find, then fail, or skip, or return NOP implementation)
 	assert ['jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
 	
+	def target = patchConfig.currentTarget
 	def serviceType = getType(serviceName,target)
 	def host = getHost(serviceName, target)
 	
@@ -91,7 +94,8 @@ def installerFactory(serviceName,target,patchConfig) {
 		return linuxServiceInstaller(target,host)
 	}
 	else if(serviceType.equals("linuxbasedwindowsfilesystem")) {
-		return it21UiInstaller(target,host,patchConfig)
+		def buildVersion = patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
+		return it21UiInstaller(target,host,buildVersion)
 	}
 	else if(serviceType.equals("oracle-db")) {
 		return nopInstaller()
@@ -132,14 +136,14 @@ def linuxServiceInstaller(target, host) {
 	return installer
 }
 
-def it21UiInstaller(target,host,patchConfig) {
+def it21UiInstaller(target,host,buildVersion) {
 	def installer = {
 		node {
 			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
 				usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
+			
+				echo "Installation of it21-ui starting for ${target} on host ${host}"
 
-				// 	================================================
-				def buildVersion =  patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
 				def group = "com.affichage.it21"
 				def artifact = "it21gui-dist-zip"
 				def artifactType = "zip"
@@ -157,52 +161,18 @@ def it21UiInstaller(target,host,patchConfig) {
 				
 				def newFolderName = guiExtractedFolderName()
 				
-				
 				// TODO JHE: Probably best to run all in one script ... but ok, for now easier to ensure everything works...
 				// TODO JHE: remove hardcoded values used for test !!!
 				sshCommand remote: remote, command: "mkdir /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
-				
 				sshPut remote: remote, from: "./download/${zipDist}", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist}"
-				
 				sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
-				
 				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/AdGIS.properties", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/AdGIS.properties"
 				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/serviceurl.properties", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/serviceurl.properties"
-				
 				sshCommand remote: remote, command: "chmod 755 /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/*.*"
-				
 				sshCommand remote: remote, command: "mv /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName} /etc/opt/it21_ui_dev-jhe/${newFolderName}"
-				
-				
-				
 				sshCommand remote: remote, command: "cd /etc/opt/it21_ui_dev-jhe/ && rm -rf `ls -t | awk 'NR>2'`"
-						
-				/*
-				def extractedFolderName = guiExtractedFolderName()
 				
-				def zipDist = "${artifact}-${buildVersion}.${artifactType}"
-				extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
-				copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
-				println "Waiting 60 seconds before trying to rename the extracted ZIP."
-				sleep(time:60,unit:"SECONDS")
-				renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
-				println "GUI Folder correctly renamed."
-				copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
-				removeOldGuiFolder(extractedGuiPath)
-				*/
-		
-				// 	================================================
-			
-				
-				/*
-				def remote = [:]
-				remote.name = "${target}-${host}"
-				remote.host = host
-				remote.user = SSHUsername
-				remote.password = SSHUserpassword
-				remote.allowAnyHosts = true
-				sshCommand remote: remote, command: "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
-				*/
+				echo "Installation of it21-ui done for ${target}"
 			}
 		}
 	}
