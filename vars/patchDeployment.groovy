@@ -159,13 +159,18 @@ def it21UiInstaller(target,host,patchConfig) {
 				
 				
 				// TODO JHE: Probably best to run all in one script ... but ok, for now easier to ensure everything works...
+				// TODO JHE: remove hardcoded values used for test !!!
 				sshCommand remote: remote, command: "mkdir /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
 				
 				sshPut remote: remote, from: "./download/${zipDist}", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist}"
 				
 				sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
 				
+				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/*.properties", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf"
+				
 				sshCommand remote: remote, command: "mv /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName} /etc/opt/it21_ui_dev-jhe/${newFolderName}"
+				
+				
 				
 				sshCommand remote: remote, command: "cd /etc/opt/it21_ui_dev-jhe/ && rm -rf `ls -t | awk 'NR>2'`"
 						
