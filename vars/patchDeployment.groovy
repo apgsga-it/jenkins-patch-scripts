@@ -4,9 +4,9 @@ library 'patch-global-functions'
 def installDeploymentArtifacts(patchConfig) {
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
 		// CM-225: old style needs to be part of the "installLock" (It can not run parallel to "db-deployment")
-		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Starting installOldStyle"
+		patchfunctions.log("Starting installOldStyle","installDeploymentArtifacts")
 		installOldStyle(patchConfig)
-		echo "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Done installOldStyle"
+		patchfunctions.log("Done installOldStyle","installDeploymentArtifacts")
 		parallel 'ui-client-deployment': {
 			if(patchConfig.installJadasAndGui) {
 				installerFactory('it21_ui', patchConfig).call()
@@ -45,7 +45,7 @@ def isLightInstallation(target) {
 			})
 		}
 	})
-	println "is ${target} a Light-Instance: ${isLight}"
+	patchfunctions.log("is ${target} a Light-Instance: ${isLight}","isLightInstallation")
 	isLight
 }
 
@@ -89,14 +89,14 @@ def getRemoteSSHConnection(host) {
 def linuxServiceInstaller(target, host) {
 	def installer = {
 		node {
-			echo "Installation of apg-jadas-service-${target} starting on host ${host}"
+			patchfunctions.log("Installation of apg-jadas-service-${target} starting on host ${host}","linuxServiceInstaller")
 			def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
 			def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${target}"
 			ssh(host, "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )")
 			ssh(host, yumCmd)
 		}
 		
-		echo "Installation of apg-jadas-service-${target} done!"
+		patchfunctions.log("Installation of apg-jadas-service-${target} done!","linuxServiceInstaller")
 	}
 	return installer
 }
@@ -104,7 +104,7 @@ def linuxServiceInstaller(target, host) {
 def it21UiInstaller(target,host,buildVersion) {
 	def installer = {
 		node {
-			echo "Installation of it21-ui starting for ${target} on host ${host}"
+			patchfunctions.log("Installation of it21-ui starting for ${target} on host ${host}","it21UiInstaller")
 			
 			def group = "com.affichage.it21"
 			def artifact = "it21gui-dist-zip"
@@ -125,7 +125,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			ssh(host, "mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}")
 			ssh(host, "cd /etc/opt/it21_ui_${target}/ && rm -rf `ls -t | awk 'NR>2'`")
 				
-			echo "Installation of it21-ui done for ${target}"
+			patchfunctions.log("Installation of it21-ui done for ${target}","it21UiInstaller")
 		}
 	}
 	return installer
@@ -133,23 +133,23 @@ def it21UiInstaller(target,host,buildVersion) {
 
 def nopInstaller(serviceName) {
 	def installer = {
-		echo "No installer define for service ${serviceName}"
+		patchfunctions.log("No installer define for service ${serviceName}","nopInstaller")
 	}
 	return installer
 }
 
 def ssh(host,cmd) {
-	echo "Running following command on ${host} via SSH: ${cmd}"
+	patchfunctions.log("Running following command on ${host} via SSH: ${cmd}","ssh")
 	def remote = getRemoteSSHConnection(host)
 	sshCommand remote: remote, command: cmd
-	echo "DONE - following command on ${host} via SSH: ${cmd}"
+	patchfunctions.log("DONE - following command on ${host} via SSH: ${cmd}","ssh")
 }
 
 def put(host,src,dest) {
-	echo "Putting ${src} on ${host} into ${dest}"
+	patchfunctions.log("Putting ${src} on ${host} into ${dest}","put")
 	def remote = getRemoteSSHConnection(host)
 	sshPut remote: remote, from: src, into: dest
-	echo "DONE - Putting ${src} on ${host} into ${dest}"
+	patchfunctions.log("DONE - Putting ${src} on ${host} into ${dest}","put")
 }
 
 def getHost(service,target) {
@@ -248,10 +248,10 @@ def installJadasGUI(patchConfig) {
 		def zipDist = "${artifact}-${buildVersion}.${artifactType}"
 		extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
-		println "Waiting 60 seconds before trying to rename the extracted ZIP."
+		patchfunctions.log("Waiting 60 seconds before trying to rename the extracted ZIP.","installJadasGUI")
 		sleep(time:60,unit:"SECONDS")
 		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
-		println "GUI Folder correctly renamed."
+		patchfunctions.log("GUI Folder correctly renamed.","installJadasGUI")
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		removeOldGuiFolder(extractedGuiPath)
 
@@ -277,9 +277,9 @@ def guiExtractedFolderName() {
 def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion) {
 	// TODO JHE: -s option with patch to jenkins home folder, really needed? If needed, really what we want?
 	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s /home/jenkins/.m2/settings.xml"
-	echo "Downloading GUI-ZIP with following command: ${mvnCommand}"
+	patchfunctions.log("Downloading GUI-ZIP with following command: ${mvnCommand}","downloadGuiZipToBeInstalled")
 	withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
-	echo "GUI-ZIP correctly downloaded."
+	patchfunctions.log("GUI-ZIP correctly downloaded.","downloadGuiZipToBeInstalled")
 }
 
 def initiateArtifactoryConnection() {

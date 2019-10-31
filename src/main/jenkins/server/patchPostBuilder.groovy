@@ -40,7 +40,8 @@ allJobs.each { job ->
 	
 
 	if(addjobToView) {
-		println "Job ${jobName} added to Patches view."
+		def dt = "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}"
+		println "${dt}: Job ${jobName} added to Patches view."
 		patchView.doAddJobToView(jobName)
 	}
 }
