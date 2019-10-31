@@ -169,6 +169,8 @@ def it21UiInstaller(target,host,patchConfig) {
 				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/AdGIS.properties", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/AdGIS.properties"
 				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/serviceurl.properties", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/serviceurl.properties"
 				
+				sshCommand remote: remote, command: "chmod 755 /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/*.*"
+				
 				sshCommand remote: remote, command: "mv /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName} /etc/opt/it21_ui_dev-jhe/${newFolderName}"
 				
 				
