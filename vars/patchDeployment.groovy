@@ -166,7 +166,7 @@ def it21UiInstaller(target,host,patchConfig) {
 				
 				sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
 				
-				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/", filterRegex: "/\\.properties$//", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf"
+				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/", filterRegex: "/\\.properties\$/", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf"
 				
 				sshCommand remote: remote, command: "mv /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName} /etc/opt/it21_ui_dev-jhe/${newFolderName}"
 				
