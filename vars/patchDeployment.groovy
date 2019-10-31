@@ -97,9 +97,6 @@ def installerFactory(serviceName,patchConfig) {
 		def buildVersion = patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
 		return it21UiInstaller(target,host,buildVersion)
 	}
-	else if(serviceType.equals("oracle-db")) {
-		return nopInstaller()
-	}
 	else {
 		return nopInstaller()
 	}
@@ -161,16 +158,15 @@ def it21UiInstaller(target,host,buildVersion) {
 				
 				def newFolderName = guiExtractedFolderName()
 				
-				// TODO JHE: Probably best to run all in one script ... but ok, for now easier to ensure everything works...
-				// TODO JHE: remove hardcoded values used for test !!!
-				sshCommand remote: remote, command: "mkdir /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
-				sshPut remote: remote, from: "./download/${zipDist}", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist}"
-				sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}"
-				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/AdGIS.properties", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/AdGIS.properties"
-				sshPut remote: remote, from: "/etc/opt/apgops/config/dev-jhe/it21-gui/serviceurl.properties", into: "/etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/serviceurl.properties"
-				sshCommand remote: remote, command: "chmod 755 /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName}/conf/*.*"
-				sshCommand remote: remote, command: "mv /etc/opt/it21_ui_dev-jhe/gettingExtracted_${newFolderName} /etc/opt/it21_ui_dev-jhe/${newFolderName}"
-				sshCommand remote: remote, command: "cd /etc/opt/it21_ui_dev-jhe/ && rm -rf `ls -t | awk 'NR>2'`"
+				// TODO JHE: Best to run all in one script ? ... not sure
+				sshCommand remote: remote, command: "mkdir /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}"
+				sshPut remote: remote, from: "./download/${zipDist}", into: "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist}"
+				sshCommand remote: remote, command: "unzip /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}"
+				sshPut remote: remote, from: "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", into: "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/AdGIS.properties"
+				sshPut remote: remote, from: "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", into: "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/serviceurl.properties"
+				sshCommand remote: remote, command: "chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*"
+				sshCommand remote: remote, command: "mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}"
+				sshCommand remote: remote, command: "cd /etc/opt/it21_ui_${target}/ && rm -rf `ls -t | awk 'NR>2'`"
 				
 				echo "Installation of it21-ui done for ${target}"
 			}
