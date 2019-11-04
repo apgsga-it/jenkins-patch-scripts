@@ -117,6 +117,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			
 			// TODO JHE: Best to run all in one script ? ... not sure
 			ssh(host, "sudo mkdir /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
+			ssh(host, "sudo chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
 			put(host, "./download/${zipDist}", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist}")
 			ssh(host, "sudo unzip /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
 			put(host, "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/AdGIS.properties")
