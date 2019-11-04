@@ -128,10 +128,12 @@ def it21UiInstaller(target,host,buildVersion) {
 			ssh(host, "sudo chmod 775 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
 			put(host, "./download/${zipDist}", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist}")
 			ssh(host, "sudo unzip /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
+			ssh(host, "sudo chgrp -R apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
 			ssh(host, "sudo chmod -R 775 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
 			put(host, "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/AdGIS.properties")
 			put(host, "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/serviceurl.properties")
 			ssh(host, "sudo chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
+			ssh(host, "sudo chgrp apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
 			ssh(host, "sudo mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}")
 			ssh(host, "sudo cd /etc/opt/it21_ui_${target}/ && rm -rf `ls -t | awk 'NR>2'`")
 				
