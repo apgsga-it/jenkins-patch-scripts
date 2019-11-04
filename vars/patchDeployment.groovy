@@ -18,15 +18,22 @@ def installDeploymentArtifacts(patchConfig) {
 				}
 			}
 		}, 'ui-server-deployment': {
+			// JHE: Ignoring this step while testing GUI Install...
+			/*
 			if(patchConfig.installJadasAndGui) {
 				installerFactory('jadas', patchConfig).call()
 			}
+			*/
 		}, 'db-deployment': {
 			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
 			// installerFactory('it21-db', patchConfig.currentTarget).call()
+			
+			// JHE: Ignoring this step while testing GUI Install...
+			/*
 			node {
 				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getHost("it21-db",patchConfig.currentTarget),getType("it21-db",patchConfig.currentTarget))
 			}
+			*/
 		}
 	}
 }
