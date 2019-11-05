@@ -134,9 +134,9 @@ def it21UiInstaller(target,host,buildVersion) {
 			put(host, "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/AdGIS.properties")
 			put(host, "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/serviceurl.properties")
 			ssh(host, "sudo chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
-			ssh(host, "sudo chgrp apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
+			ssh(host,  "sudo chgrp apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
 			ssh(host, "sudo mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}")
-			ssh(host, "cd /etc/opt/it21_ui_${target}/ && sudo rm -rf `ls -t | grep java_gui | awk 'NR>2'`")
+			ssh(host, false, "cd /etc/opt/it21_ui_${target}/ && sudo rm -rf `ls -t | grep java_gui | awk 'NR>2'`")
 				
 			patchfunctions.log("Installation of it21-ui done for ${target}","it21UiInstaller")
 		}
@@ -151,11 +151,15 @@ def nopInstaller(serviceName) {
 	return installer
 }
 
-def ssh(host,cmd) {
+def ssh(host,failOnError,cmd) {
 	patchfunctions.log("Running following command on ${host} via SSH: ${cmd}","ssh")
 	def remote = getRemoteSSHConnection(host)
-	sshCommand remote: remote, command: cmd
+	sshCommand remote: remote, command: cmd, failOnError: failOnError
 	patchfunctions.log("DONE - following command on ${host} via SSH: ${cmd}","ssh")
+}
+
+def ssh(host,cmd) {
+	ssh(host,true,cmd)
 }
 
 def put(host,src,dest) {
