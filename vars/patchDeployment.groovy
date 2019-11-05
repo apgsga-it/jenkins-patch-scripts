@@ -82,7 +82,7 @@ def getRemoteSSHConnection(host) {
 	remote.name = "SSH-${host}"
 	remote.host = host
 	remote.allowAnyHosts = true
-	remote.logLevel = "FINE"
+//	remote.logLevel = "FINE"
 	
 	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
 		usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
@@ -136,7 +136,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			ssh(host, "sudo chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
 			ssh(host, "sudo chgrp apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
 			ssh(host, "sudo mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}")
-			ssh(host, "cd /etc/opt/it21_ui_${target}/ && sudo rm -rf `ls -t | awk 'NR>2'` | grep java_gui")
+			ssh(host, "sudo cd /etc/opt/it21_ui_${target}/ && rm -rf `ls -t | awk 'NR>2'` | grep java_gui")
 				
 			patchfunctions.log("Installation of it21-ui done for ${target}","it21UiInstaller")
 		}
