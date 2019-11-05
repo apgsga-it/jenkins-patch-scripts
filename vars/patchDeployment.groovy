@@ -82,6 +82,7 @@ def getRemoteSSHConnection(host) {
 	remote.name = "SSH-${host}"
 	remote.host = host
 	remote.allowAnyHosts = true
+	remote.logLevel = "FINE"
 	
 	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
 		usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
