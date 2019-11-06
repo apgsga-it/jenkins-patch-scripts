@@ -130,7 +130,6 @@ def it21UiInstaller(target,host,buildVersion) {
 			ssh(host, "sudo chgrp apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
 			ssh(host, "sudo mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/start_it21_gui_run.bat /etc/opt/it21_ui_${target}")
 			ssh(host, "sudo mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}")
-			ssh(host, false, "cd /etc/opt/it21_ui_${target}/ && sudo rm -rf `ls -t | grep java_gui | awk 'NR>2'`")
 				
 			patchfunctions.log("Installation of it21-ui done for ${target}","it21UiInstaller")
 		}
