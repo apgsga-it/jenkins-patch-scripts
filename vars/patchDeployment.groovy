@@ -116,20 +116,23 @@ def it21UiInstaller(target,host,buildVersion) {
 			
 			def newFolderName = guiExtractedFolderName()
 			
+			def uiHomeFolder = "/opt/it21_ui"
+			def uiGettingExtractedFolder = "${uiHomeFolder}/${target}/gettingExtracted_${newFolderName}"
+			
 			// TODO JHE: Best to run all in one script ? ... not sure
-			ssh(host, "sudo mkdir /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
-			ssh(host, "sudo chgrp -R apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
-			ssh(host, "sudo chmod 775 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
-			put(host, "./download/${zipDist}", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist}")
-			ssh(host, "sudo unzip /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/${zipDist} -d /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
-			ssh(host, "sudo chgrp -R apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
-			ssh(host, "sudo chmod -R 775 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}")
-			put(host, "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/AdGIS.properties")
-			put(host, "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", "/etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/serviceurl.properties")
-			ssh(host, "sudo chmod 755 /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
-			ssh(host, "sudo chgrp apg_install /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/conf/*.*")
-			ssh(host, "sudo mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName}/start_it21_gui_run.bat /etc/opt/it21_ui_${target}")
-			ssh(host, "sudo mv /etc/opt/it21_ui_${target}/gettingExtracted_${newFolderName} /etc/opt/it21_ui_${target}/${newFolderName}")
+			ssh(host, "sudo mkdir ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chgrp -R apg_install ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chmod 775 ${uiGettingExtractedFolder}")
+			put(host, "./download/${zipDist}", "${uiGettingExtractedFolder}/${zipDist}")
+			ssh(host, "sudo unzip ${uiGettingExtractedFolder}/${zipDist} -d ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chgrp -R apg_install ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chmod -R 775 ${uiGettingExtractedFolder}")
+			put(host, "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", "${uiGettingExtractedFolder}/conf/AdGIS.properties")
+			put(host, "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", "${uiGettingExtractedFolder}/conf/serviceurl.properties")
+			ssh(host, "sudo chmod 755 ${uiGettingExtractedFolder}/conf/*.*")
+			ssh(host, "sudo chgrp apg_install ${uiGettingExtractedFolder}/conf/*.*")
+			ssh(host, "sudo mv ${uiGettingExtractedFolder}/start_it21_gui_run.bat /opt/it21_ui/${target}")
+			ssh(host, "sudo mv ${uiGettingExtractedFolder} /opt/it21_ui/${target}/${newFolderName}")
 				
 			patchfunctions.log("Installation of it21-ui done for ${target}","it21UiInstaller")
 		}
