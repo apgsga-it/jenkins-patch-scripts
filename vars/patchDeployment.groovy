@@ -120,7 +120,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			def uiGettingExtractedFolder = "${uiHomeFolder}/${target}/gettingExtracted_${newFolderName}"
 			
 			// TODO JHE: Best to run all in one script ? ... not sure
-			ssh(host, "sudo mkdir ${uiGettingExtractedFolder}")
+			ssh(host, "sudo mkdir -p ${uiGettingExtractedFolder}")
 			ssh(host, "sudo chgrp -R apg_install ${uiGettingExtractedFolder}")
 			ssh(host, "sudo chmod 775 ${uiGettingExtractedFolder}")
 			put(host, "./download/${zipDist}", "${uiGettingExtractedFolder}/${zipDist}")
