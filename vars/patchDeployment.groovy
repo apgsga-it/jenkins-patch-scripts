@@ -111,7 +111,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			def artifact = "it21gui-dist-zip"
 			def artifactType = "zip"
 	
-			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml")
+			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml", false)
 			def zipDist = "${artifact}-${buildVersion}.${artifactType}"
 			
 			def newFolderName = guiExtractedFolderName()
@@ -254,7 +254,7 @@ def installJadasGUI(patchConfig) {
 		def artifact = "it21gui-dist-zip"
 		def artifactType = "zip"
 
-		downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"C:/local/software/maven/settings.xml")
+		downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"C:/local/software/maven/settings.xml", true)
 
 		def extractedFolderName = guiExtractedFolderName()
 		
