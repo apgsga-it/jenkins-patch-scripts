@@ -294,10 +294,10 @@ def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, d
 	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s ${pathToMavenSettings}"
 	patchfunctions.log("Downloading GUI-ZIP with following command: ${mvnCommand}","downloadGuiZipToBeInstalled")
 	if(isWindows) {
-		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+		withMaven( maven: 'apache-maven-3.5.0') { bat "${mvnCommand}" }
 	}
 	else {
-		withMaven( maven: 'apache-maven-3.5.0') { bat "${mvnCommand}" }
+		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
 	patchfunctions.log("GUI-ZIP correctly downloaded.","downloadGuiZipToBeInstalled")
 }
