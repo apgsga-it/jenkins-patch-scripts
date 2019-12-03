@@ -287,11 +287,18 @@ def guiExtractedFolderName() {
 	return extractedFolderName
 }
 
-def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion, def pathToMavenSettings) {
+// JHE: This one is slowly but surely getting bad. Thing is we temporarily install GUI both via SSH and via Node.
+//      That means once via Windows, and once via Unix ...
+def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion, def pathToMavenSettings, boolean isWindows) {
 	// TODO JHE: -s option with patch to jenkins home folder, really needed? If needed, really what we want?
 	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s ${pathToMavenSettings}"
 	patchfunctions.log("Downloading GUI-ZIP with following command: ${mvnCommand}","downloadGuiZipToBeInstalled")
-	withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+	if(isWindows) {
+		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+	}
+	else {
+		withMaven( maven: 'apache-maven-3.5.0') { bat "${mvnCommand}" }
+	}
 	patchfunctions.log("GUI-ZIP correctly downloaded.","downloadGuiZipToBeInstalled")
 }
 
