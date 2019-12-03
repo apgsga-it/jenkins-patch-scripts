@@ -111,7 +111,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			def artifact = "it21gui-dist-zip"
 			def artifactType = "zip"
 	
-			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion)
+			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml")
 			def zipDist = "${artifact}-${buildVersion}.${artifactType}"
 			
 			def newFolderName = guiExtractedFolderName()
@@ -254,7 +254,7 @@ def installJadasGUI(patchConfig) {
 		def artifact = "it21gui-dist-zip"
 		def artifactType = "zip"
 
-		downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion)
+		downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"C:/local/software/maven/settings.xml")
 
 		def extractedFolderName = guiExtractedFolderName()
 		
@@ -287,9 +287,9 @@ def guiExtractedFolderName() {
 	return extractedFolderName
 }
 
-def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion) {
+def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion, def pathToMavenSettings) {
 	// TODO JHE: -s option with patch to jenkins home folder, really needed? If needed, really what we want?
-	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s /home/jenkins/.m2/settings.xml"
+	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s ${pathToMavenSettings}"
 	patchfunctions.log("Downloading GUI-ZIP with following command: ${mvnCommand}","downloadGuiZipToBeInstalled")
 	withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	patchfunctions.log("GUI-ZIP correctly downloaded.","downloadGuiZipToBeInstalled")
