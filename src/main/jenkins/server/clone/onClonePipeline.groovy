@@ -65,9 +65,9 @@ private def getStatusName(def env) {
 	// By default, if the target is not part of the "standard workflow" (Informatiktest,Anwendertest,Produktion), we assume the basis for patch installation is "Produktion"
 	def status = "Produktion"
 	
-	jsonSystemTargets.targetSystems.each{ targetSystem ->
-		if(targetSystem.target.equalsIgnoreCase(env)) {
-			status = targetSystem.name
+	jsonSystemTargets.stageMappings.each{ stageMapping ->
+		if(stageMapping.target.equalsIgnoreCase(env)) {
+			status = stageMapping.name
 		}
 	}
 	
