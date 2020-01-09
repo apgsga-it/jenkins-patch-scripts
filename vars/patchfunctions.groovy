@@ -7,15 +7,16 @@ def jheTest(patchConfig) {
 
 	println "Test to send a mail started..."
 
-
-	wrap([$class: 'BuildUser']) {
-		emailext (
-				subject: "Test mail from Jenkins",
-				body: """
+	node {
+		wrap([$class: 'BuildUser']) {
+			emailext(
+					subject: "Test mail from Jenkins",
+					body: """
       					 This is a test send from a Pipeline job...
 					  """,
-				to: "Julien.Helbling@apgsga.ch",
-				from: 'Julien.Helbling@apgsga.ch')
+					to: "Julien.Helbling@apgsga.ch",
+					from: 'Julien.Helbling@apgsga.ch')
+		}
 	}
 
 	println "Test to send a mail done..."
