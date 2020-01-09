@@ -17,7 +17,7 @@ def jheTest(patchConfig) {
 		try {
 			["/var/opt","/etc/opt"].each {
 				println("Listing ${it}")
-				sh("ls ${it}")
+				sh("la ${it}")
 			}
 
 
