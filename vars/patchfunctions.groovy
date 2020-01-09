@@ -15,11 +15,18 @@ def jheTest(patchConfig) {
 		println "TEST STARTING ....."
 
 		try {
-			sh "la /var/opt"
+			["/var/opt","/etc/opt"].each {
+				println("Listing ${it}")
+				sh("ls ${it}")
+			}
+
+
+
 		}
 		catch (err) {
 			println "An error has been encountered during SH command ..."
 			sendMail(err)
+			//return
 		}
 
 		println "TEST DONE ....."
