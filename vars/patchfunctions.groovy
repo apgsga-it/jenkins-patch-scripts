@@ -35,7 +35,7 @@ def jheTest(patchConfig) {
 }
 
 def sendMail(def err, def patchConfig) {
-	def eMailSendTo = "Julien.Helbling@apgsga.ch,Julien.Helbling@apgsga.ch,Julien.Helbling@apgsga.ch"
+	def eMailSendTo = "Julien.Helbling@apgsga.ch,Stefan.Brandenberger@apgsga.ch,Ulrich.Genner@apgsga.ch"
 	Properties properties = System.getProperties()
 	properties.setProperty("mail.smtp.host", "mailint.apgsga.ch")
 	properties.setProperty("mail.smtp.port", "25")
