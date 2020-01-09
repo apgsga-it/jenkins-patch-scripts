@@ -11,17 +11,19 @@ import javax.mail.internet.MimeMessage
 
 def jheTest(patchConfig) {
 
-	println "TEST STARTING ....."
+	node {
+		println "TEST STARTING ....."
 
-	try {
-		sh "ls /var/opt"
-	}
-	catch(err) {
-		println "An error has been encountered during SH command ..."
-		sendMail(err)
-	}
+		try {
+			sh "ls /var/opt"
+		}
+		catch (err) {
+			println "An error has been encountered during SH command ..."
+			sendMail(err)
+		}
 
-	println "TEST DONE ....."
+		println "TEST DONE ....."
+	}
 
 }
 
