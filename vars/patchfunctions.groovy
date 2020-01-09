@@ -3,23 +3,47 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
+import javax.mail.Message
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
+
 def jheTest(patchConfig) {
 
-	println "Test to send a mail started..."
+	println "TEST STARTING ....."
 
-	node {
-		wrap([$class: 'BuildUser']) {
-			emailext(
-					subject: "Test mail from Jenkins",
-					body: """
-      					 This is a test send from a Pipeline job...
-					  """,
-					to: "Julien.Helbling@apgsga.ch",
-					from: 'Julien.Helbling@apgsga.ch')
-		}
+	try {
+		sh "ls /var/opt"
+	}
+	catch(err) {
+		println "An error has been encountered during SH command ..."
+		sendMail(err)
 	}
 
-	println "Test to send a mail done..."
+	println "TEST DONE ....."
+
+}
+
+def sendMail(def err) {
+	def eMailSendTo = "Julien.Helbling@apgsga.ch"
+	Properties properties = System.getProperties()
+	properties.setProperty("mail.smtp.host", "mailint.apgsga.ch")
+	properties.setProperty("mail.smtp.port", "25")
+	Session session = Session.getDefaultInstance(properties)
+	try{
+		MimeMessage msg = new MimeMessage(session)
+		msg.setFrom(new InternetAddress("Julien.Helbling@apgsga.ch"))
+		eMailSendTo.split(',').each(){ item ->      msg.addRecipient(Message.RecipientType.TO,
+				new InternetAddress(item)    )
+		}
+		msg.setSubject("Test mail from Groovy")
+		msg.setText("This is the body, the error was: ${err}")
+		Transport.send(msg)
+	} catch(RuntimeException e) {
+		println "ERROR !!!!!!!!!!!!!!!!!!!!!!!"
+		println e.getMessage()
+	}
 }
 
 def benchmark() {
