@@ -25,7 +25,7 @@ def jheTest(patchConfig) {
 		}
 		catch (err) {
 			println "An error has been encountered during SH command ..."
-			sendMail(err)
+			sendMail(err,patchConfig)
 			//return
 		}
 
@@ -34,23 +34,22 @@ def jheTest(patchConfig) {
 
 }
 
-def sendMail(def err) {
-	def eMailSendTo = "Julien.Helbling@apgsga.ch"
+def sendMail(def err, def patchConfig) {
+	def eMailSendTo = "Julien.Helbling@apgsga.ch,Julien.Helbling@apgsga.ch,Julien.Helbling@apgsga.ch"
 	Properties properties = System.getProperties()
 	properties.setProperty("mail.smtp.host", "mailint.apgsga.ch")
 	properties.setProperty("mail.smtp.port", "25")
 	Session session = Session.getDefaultInstance(properties)
 	try{
 		MimeMessage msg = new MimeMessage(session)
-		msg.setFrom(new InternetAddress("Julien.Helbling@apgsga.ch"))
+		msg.setFrom(new InternetAddress("cm@lxpwi081.apgsga.ch"))
 		eMailSendTo.split(',').each(){ item ->      msg.addRecipient(Message.RecipientType.TO,
 				new InternetAddress(item)    )
 		}
-		msg.setSubject("Test mail from Groovy")
-		msg.setText("This is the body, the error was: ${err}")
+		msg.setSubject("Error during PostProcess Operation for Patch XXXX")
+		msg.setText("DON'T WORRY, THIS IS ONLY A TEST DONE BY JHE FOR CM-256 .....COULD YOU CONFIRM YOU RECEIVED THIS EMAIL ???  An error occured during PostProcess operations for Patch XXXXX , the error was: ${err}")
 		Transport.send(msg)
 	} catch(RuntimeException e) {
-		println "ERROR !!!!!!!!!!!!!!!!!!!!!!!"
 		println e.getMessage()
 	}
 }
