@@ -47,7 +47,7 @@ def sendMail(def err, def patchConfig) {
 				new InternetAddress(item)    )
 		}
 		msg.setSubject("Error during PostProcess Operation for Patch XXXX")
-		msg.setText("DON'T WORRY, THIS IS ONLY A TEST DONE BY JHE FOR CM-256 .....COULD YOU CONFIRM YOU RECEIVED THIS EMAIL ???  An error occured during PostProcess operations for Patch XXXXX , the error was: ${err}")
+		msg.setText("DON'T WORRY, THIS IS ONLY A TEST DONE BY JHE FOR CM-256 .....COULD YOU CONFIRM YOU RECEIVED THIS EMAIL ??? ${System.getProperty("line.separator")} An error occured during PostProcess operations for Patch XXXXX , the error was: ${err}")
 		Transport.send(msg)
 	} catch(RuntimeException e) {
 		println e.getMessage()
