@@ -3,7 +3,7 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
-def jheTest() {
+def jheTest(patchConfig) {
 
 	println "This is only a quick and dirty test !!!!!!!"
 
