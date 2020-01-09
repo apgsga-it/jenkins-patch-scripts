@@ -15,7 +15,7 @@ def jheTest(patchConfig) {
 		println "TEST STARTING ....."
 
 		try {
-			sh "ls /var/opt"
+			sh "la /var/opt"
 		}
 		catch (err) {
 			println "An error has been encountered during SH command ..."
