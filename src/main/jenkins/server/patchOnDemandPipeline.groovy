@@ -20,6 +20,10 @@ def defaultNodes = [[label:env.DEFAULT_JADAS_ONDEMAND_NODE,serviceName:"jadas"]]
 def target = [envName:"OnDemand",targetName:patchConfig.installationTarget,nodes:defaultNodes]
 patchConfig.currentTarget = patchConfig.installationTarget
 patchConfig.targetBean = target
-patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
-patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
-patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
+
+// JHE: TEST TO BE REMOVED !!!!
+patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.&jheTest)
+
+//patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
+//patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+//patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)

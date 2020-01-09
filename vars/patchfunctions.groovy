@@ -3,6 +3,24 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
+def jheTest() {
+
+	println "This is only a quick and dirty test !!!!!!!"
+
+	/*
+	wrap([$class: 'BuildUser']) {
+		emailext (
+				subject: "Test mail from Jenkins",
+				body: """
+      					 This is a test send from a Pipeline job...
+					  """,
+				to: "Julien.Helbling@apgsga.ch",
+				from: 'Julien.Helbling@apgsga.ch')
+	}
+
+	 */
+}
+
 def benchmark() {
 	def benchmarkCallback = { closure ->
 		start = System.currentTimeMillis()
