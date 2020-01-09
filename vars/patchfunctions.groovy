@@ -5,9 +5,9 @@ import hudson.model.*
 
 def jheTest(patchConfig) {
 
-	println "This is only a quick and dirty test !!!!!!!"
+	println "Test to send a mail started..."
 
-	/*
+
 	wrap([$class: 'BuildUser']) {
 		emailext (
 				subject: "Test mail from Jenkins",
@@ -18,7 +18,7 @@ def jheTest(patchConfig) {
 				from: 'Julien.Helbling@apgsga.ch')
 	}
 
-	 */
+	println "Test to send a mail done..."
 }
 
 def benchmark() {
