@@ -485,31 +485,32 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 
 	node {
 		def cvsRoot = patchConfig.cvsroot
-		
+
 		def patchNumber = patchConfig.patchNummer
 		def dbPatchTag = patchConfig.patchTag
 		def dbProdBranch = patchConfig.prodBranch
 		def dbPatchBranch = patchConfig.dbPatchBranch
-		
+
 		def dbTagBeforeMerge = "${dbProdBranch}_merge_${dbPatchBranch}_before"
 		def dbTagAfterMerge = "${dbProdBranch}_merge_${dbPatchBranch}_after"
 
-		log("Patch \"${patchNumber}\" being merged to production branch","mergeDbObjectOnHead")
-		patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
-			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+		log("Patch \"${patchNumber}\" being merged to production branch", "mergeDbObjectOnHead")
+		patchConfig.dbObjects.collect { it.moduleName }.unique().each { dbModule ->
+			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} co -r${dbProdBranch} ${dbModule}"
-			log("... ${dbModule} checked out from branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+			log("... ${dbModule} checked out from branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} tag -F ${dbTagBeforeMerge} ${dbModule}"
-			log("... ${dbModule} tagged ${dbTagBeforeMerge}","mergeDbObjectOnHead")
+			log("... ${dbModule} tagged ${dbTagBeforeMerge}", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} up -j ${dbPatchTag} ${dbModule}"
-			log("... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+			log("... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
-			log("... ${dbModule} commited","mergeDbObjectOnHead")
-		    sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
-			log("... ${dbModule} tagged ${dbTagAfterMerge}","mergeDbObjectOnHead")
-			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+			log("... ${dbModule} commited", "mergeDbObjectOnHead")
+			sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
+			log("... ${dbModule} tagged ${dbTagAfterMerge}", "mergeDbObjectOnHead")
+			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 		}
-		log("Patch \"${patchNumber}\" merged to production branch","mergeDbObjectOnHead")
+		log("Patch \"${patchNumber}\" merged to production branch", "mergeDbObjectOnHead")
+	}
 }
 
 def coDbModules(patchConfig) {
