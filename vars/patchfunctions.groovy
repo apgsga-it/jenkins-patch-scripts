@@ -144,14 +144,14 @@ def installationPostProcess(patchConfig) {
 		catch(err) {
 			log("Error while merging DB Object on head : ${err}","installationPostProcess")
 			def subject = "Error during post process Job for Patch ${patchConfig.patchNummer}"
-			def body = "DB Object(s) couldn't be merged on HEAD for Patch ${patchConfig.patchNummer}, please resolve the problem manually. "
+			def body = "DB Object(s) couldn't be merged on productive branch (branch name -> 'prod') for Patch ${patchConfig.patchNummer}, please resolve the problem manually. "
 			body += "Note that this problem didn't put the pipeline in error, that means Patch ${patchConfig.patchNummer} has been installed in production. "
 			body += System.getProperty("line.separator")
 			body += System.getProperty("line.separator")
 			body += "Error was: ${err}"
 			body += System.getProperty("line.separator")
 			body += System.getProperty("line.separator")
-			body += "For any question, please contact Stefan Brandenberger, Ulrich Genner or Julien Helbling."
+			body += "For any question, please contact Stefan Brandenberger, Ulrich Genner or Julien Helbling. "
 			body += "Patch Configuration was: "
 			body += System.getProperty("line.separator")
 			body += System.getProperty("line.separator")
