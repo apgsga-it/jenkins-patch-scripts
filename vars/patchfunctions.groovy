@@ -606,5 +606,5 @@ def log(msg,caller) {
 
 // Used in order to have Datetime info in our pipelines
 def log(msg) {
-	log(msg,null)
+	log(msg, null)
 }
