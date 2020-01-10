@@ -42,21 +42,18 @@ phases.each { envName ->
 	assert target != null
 	patchfunctions.saveTarget(patchConfig,target)
 
-	// JHE: TEST TO BE REMOVED !!!!
-	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.&jheTest)
-
 	// Approve to make Patch "Installationsbereit" for target
-//	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.&approveBuild)
-//	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
-//	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
-//	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification",  patchfunctions.&notify)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Approve", patchfunctions.&approveBuild)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Build", patchfunctions.&patchBuildsConcurrent)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Assembly", patchfunctions.&assembleDeploymentArtefacts)
+	patchfunctions.stage(target,"Installationsbereit",patchConfig,"Notification",  patchfunctions.&notify)
 	
 	// Approve to to install Patch
 	
-//	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.&approveInstallation)
-//	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
-//	patchfunctions.stage(target,"Installation",patchConfig,"Postprocess",  patchfunctions.&installationPostProcess)
-//	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.&notify)
+	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.&approveInstallation)
+	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
+	patchfunctions.stage(target,"Installation",patchConfig,"Postprocess",  patchfunctions.&installationPostProcess)
+	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.&notify)
 	
 }
 

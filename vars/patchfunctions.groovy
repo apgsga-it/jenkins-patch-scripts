@@ -9,45 +9,17 @@ import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
-def jheTest(patchConfig) {
-
-	node {
-		println "TEST STARTING ....."
-
-		try {
-			["/var/opt","/etc/opt"].each {
-				println("Listing ${it}")
-				sh("la ${it}")
-			}
-
-
-
-		}
-		catch (err) {
-			println "An error has been encountered during SH command ..."
-			sendMail(err,patchConfig)
-			//return
-		}
-
-		println "TEST DONE ....."
-	}
-
-}
-
-def sendMail(def err, def patchConfig) {
-	def eMailSendTo = "Julien.Helbling@apgsga.ch,Stefan.Brandenberger@apgsga.ch,Ulrich.Genner@apgsga.ch"
+def sendMail(def subject, def body, def to) {
 	Properties properties = System.getProperties()
-	properties.setProperty("mail.smtp.host", "mailint.apgsga.ch")
-	properties.setProperty("mail.smtp.port", "25")
+	properties.setProperty("mail.smtp.host", env.SMTP_HOST)
+	properties.setProperty("mail.smtp.port", env.SMTP_PORT)
 	Session session = Session.getDefaultInstance(properties)
 	try{
 		MimeMessage msg = new MimeMessage(session)
-		msg.setFrom(new InternetAddress("cm@lxpwi081.apgsga.ch"))
-		eMailSendTo.split(',').each(){ item ->      msg.addRecipient(Message.RecipientType.TO,
-				new InternetAddress(item)    )
-		}
-		msg.setSubject("Error during PostProcess Operation for Patch XXXX")
-		msg.setText("DON'T WORRY, THIS IS ONLY A TEST DONE BY JHE FOR CM-256 .....COULD YOU CONFIRM YOU RECEIVED THIS EMAIL ??? ${System.getProperty("line.separator")} An error occured during PostProcess operations for Patch XXXXX , the error was: ${err}")
+		msg.setFrom(new InternetAddress(env.PIPELINE_MAIL_FROM))
+		to.split(',').each(){ item -> msg.addRecipient(Message.RecipientType.TO,new InternetAddress(item))}
+		msg.setSubject("${env.PIPELINE_MAIL_ENV} - ${subject}")
+		msg.setText(body)
 		Transport.send(msg)
 	} catch(RuntimeException e) {
 		println e.getMessage()
@@ -166,7 +138,26 @@ private def logPatch(def patchConfig, def logText) {
 
 def installationPostProcess(patchConfig) {
 	if(patchConfig.envName.equals("Produktion")) {
-		mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+		try {
+			mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+		}
+		catch(err) {
+			log("Error while merging DB Object on head : ${err.}","installationPostProcess")
+			def subject = "Error during post process Job for Patch ${patchConfig.patchNummer}"
+			def body = "DB Object(s) couldn't be merged on HEAD for Patch ${patchConfig.patchNummer}, please resolve the problem manually. "
+			body += "Note that this problem didn't put the pipeline in error, that means Patch ${patchConfig.patchNummer} has been installed in production. "
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += "Error was: ${err}"
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += "For any question, please contact Stefan Brandenberger, Ulrich Genner or Julien Helbling."
+			body += "Patch Configuration was: "
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += patchConfig
+			sendMail(subject,body,env.PIPELINE_ERROR_MAIL_TO)
+		}
 	}
 }
 
@@ -519,7 +510,6 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
 		}
 		log("Patch \"${patchNumber}\" merged to production branch","mergeDbObjectOnHead")
-	}
 }
 
 def coDbModules(patchConfig) {
