@@ -142,7 +142,7 @@ def installationPostProcess(patchConfig) {
 			mergeDbObjectOnHead(patchConfig, patchConfig.envName)
 		}
 		catch(err) {
-			log("Error while merging DB Object on head : ${err.}","installationPostProcess")
+			log("Error while merging DB Object on head : ${err}","installationPostProcess")
 			def subject = "Error during post process Job for Patch ${patchConfig.patchNummer}"
 			def body = "DB Object(s) couldn't be merged on HEAD for Patch ${patchConfig.patchNummer}, please resolve the problem manually. "
 			body += "Note that this problem didn't put the pipeline in error, that means Patch ${patchConfig.patchNummer} has been installed in production. "
