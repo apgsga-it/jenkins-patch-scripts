@@ -3,6 +3,29 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
+import javax.mail.Message
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
+
+def sendMail(def subject, def body, def to) {
+	Properties properties = System.getProperties()
+	properties.setProperty("mail.smtp.host", env.SMTP_HOST)
+	properties.setProperty("mail.smtp.port", env.SMTP_PORT)
+	Session session = Session.getDefaultInstance(properties)
+	try{
+		MimeMessage msg = new MimeMessage(session)
+		msg.setFrom(new InternetAddress(env.PIPELINE_MAIL_FROM))
+		to.split(',').each(){ item -> msg.addRecipient(Message.RecipientType.TO,new InternetAddress(item))}
+		msg.setSubject("${env.PIPELINE_MAIL_ENV} - ${subject}")
+		msg.setText(body)
+		Transport.send(msg)
+	} catch(RuntimeException e) {
+		println e.getMessage()
+	}
+}
+
 def benchmark() {
 	def benchmarkCallback = { closure ->
 		start = System.currentTimeMillis()
@@ -115,7 +138,26 @@ private def logPatch(def patchConfig, def logText) {
 
 def installationPostProcess(patchConfig) {
 	if(patchConfig.envName.equals("Produktion")) {
-		mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+		try {
+			mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+		}
+		catch(err) {
+			log("Error while merging DB Object on head : ${err}","installationPostProcess")
+			def subject = "Error during post process Job for Patch ${patchConfig.patchNummer}"
+			def body = "DB Object(s) couldn't be merged on productive branch (branch name -> 'prod') for Patch ${patchConfig.patchNummer}, please resolve the problem manually. "
+			body += "Note that this problem didn't put the pipeline in error, that means Patch ${patchConfig.patchNummer} has been installed in production. "
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += "Error was: ${err}"
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += "For any question, please contact Stefan Brandenberger, Ulrich Genner or Julien Helbling. "
+			body += "Patch Configuration was: "
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += patchConfig
+			sendMail(subject,body,env.PIPELINE_ERROR_MAIL_TO)
+		}
 	}
 }
 
@@ -443,31 +485,31 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 
 	node {
 		def cvsRoot = patchConfig.cvsroot
-		
+
 		def patchNumber = patchConfig.patchNummer
 		def dbPatchTag = patchConfig.patchTag
 		def dbProdBranch = patchConfig.prodBranch
 		def dbPatchBranch = patchConfig.dbPatchBranch
-		
+
 		def dbTagBeforeMerge = "${dbProdBranch}_merge_${dbPatchBranch}_before"
 		def dbTagAfterMerge = "${dbProdBranch}_merge_${dbPatchBranch}_after"
 
-		log("Patch \"${patchNumber}\" being merged to production branch","mergeDbObjectOnHead")
-		patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
-			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+		log("Patch \"${patchNumber}\" being merged to production branch", "mergeDbObjectOnHead")
+		patchConfig.dbObjects.collect { it.moduleName }.unique().each { dbModule ->
+			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} co -r${dbProdBranch} ${dbModule}"
-			log("... ${dbModule} checked out from branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+			log("... ${dbModule} checked out from branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} tag -F ${dbTagBeforeMerge} ${dbModule}"
-			log("... ${dbModule} tagged ${dbTagBeforeMerge}","mergeDbObjectOnHead")
+			log("... ${dbModule} tagged ${dbTagBeforeMerge}", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} up -j ${dbPatchTag} ${dbModule}"
-			log("... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+			log("... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
-			log("... ${dbModule} commited","mergeDbObjectOnHead")
-		    sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
-			log("... ${dbModule} tagged ${dbTagAfterMerge}","mergeDbObjectOnHead")
-			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"","mergeDbObjectOnHead")
+			log("... ${dbModule} commited", "mergeDbObjectOnHead")
+			sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
+			log("... ${dbModule} tagged ${dbTagAfterMerge}", "mergeDbObjectOnHead")
+			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 		}
-		log("Patch \"${patchNumber}\" merged to production branch","mergeDbObjectOnHead")
+		log("Patch \"${patchNumber}\" merged to production branch", "mergeDbObjectOnHead")
 	}
 }
 
