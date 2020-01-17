@@ -92,7 +92,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 	log("patchConfig.redoToState: ${patchConfig.redoToState}","stage")
 	def skip = patchConfig.redo &&
 			(!(patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && patchConfig.lastPipelineTask.toString().equals(task.toString())))
-	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !["Approve","Notification"].contains(task)
+	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !patchConfig.installDockerServices && !["Approve","Notification"].contains(task)
 	log("skip = ${skip}","stage")
 	log("nop  = ${nop}","stage")
 	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : (nop ? "(Nop)" : "") )
