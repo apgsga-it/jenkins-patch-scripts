@@ -371,8 +371,14 @@ def generateVersionProperties(patchConfig) {
 	dir ("it21-ui-bundle") {
 		log("Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion,"generateVersionProperties")
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		def publishCmd = "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		executeCmdAndLogResult(publishCmd,"generateVersionProperties")
 	}
+}
+
+def private executeCmdAndLogResult(def cmd, def caller) {
+	def shResult = sh(returnStdout: true, script: cmd)
+	log("shResult : ${shResult}", "executeCmdAndLogResult:${caller}")
 }
 
 def releaseModule(patchConfig,module) {
@@ -404,7 +410,7 @@ def updateBom(patchConfig,module) {
 	lock ("BomUpdate${buildVersion}") {
 		dir ("it21-ui-bundle") {
 			sh "chmod +x ./gradlew"
-			sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+			executeCmdAndLogResult("./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}",updateBom)
 		}
 	}
 }
@@ -559,9 +565,9 @@ def assemble(patchConfig) {
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		// Assemble and publish GUI
-		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}"
+		executeCmdAndLogResult("./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}","assemble")
 		// Assemble and publish Jadas
-		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget}"
+		executeCmdAndLogResult("./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget}", "assemble")
 	}
 }
 
