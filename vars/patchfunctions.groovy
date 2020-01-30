@@ -410,7 +410,7 @@ def updateBom(patchConfig,module) {
 	lock ("BomUpdate${buildVersion}") {
 		dir ("it21-ui-bundle") {
 			sh "chmod +x ./gradlew"
-			executeCmdAndLogResult("./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}",updateBom)
+			executeCmdAndLogResult("./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}","updateBom")
 		}
 	}
 }
