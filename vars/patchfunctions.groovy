@@ -371,7 +371,7 @@ def generateVersionProperties(patchConfig) {
 	dir ("it21-ui-bundle") {
 		log("Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion,"generateVersionProperties")
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
 	}
 }
 
@@ -404,7 +404,7 @@ def updateBom(patchConfig,module) {
 	lock ("BomUpdate${buildVersion}") {
 		dir ("it21-ui-bundle") {
 			sh "chmod +x ./gradlew"
-			sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+			sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
 		}
 	}
 }
@@ -559,9 +559,9 @@ def assemble(patchConfig) {
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		// Assemble and publish GUI
-		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}"
+		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion} --stacktrace"
 		// Assemble and publish Jadas
-		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget}"
+		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget} --stacktrace"
 	}
 }
 
