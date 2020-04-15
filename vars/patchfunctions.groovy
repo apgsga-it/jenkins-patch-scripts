@@ -1,7 +1,6 @@
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
-import hudson.model.*
 
 import javax.mail.Message
 import javax.mail.Session

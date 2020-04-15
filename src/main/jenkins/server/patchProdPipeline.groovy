@@ -1,7 +1,7 @@
 #!groovy
 library 'patch-global-functions'
 library 'patch-deployment-functions'
-import groovy.json.JsonSlurperClassic
+
 properties([
 	parameters([
 		stringParam(
