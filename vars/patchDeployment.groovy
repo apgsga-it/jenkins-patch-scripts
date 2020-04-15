@@ -20,6 +20,7 @@ def installDeploymentArtifacts(patchConfig) {
 		}, 'ui-server-deployment': {
 			if(patchConfig.installJadasAndGui) {
 				installerFactory('jadas', patchConfig).call()
+
 			}
 		}, 'db-deployment': {
 			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
