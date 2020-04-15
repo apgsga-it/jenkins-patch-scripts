@@ -22,7 +22,7 @@ patchfunctions.initPatchConfig(patchConfig,params)
 
 // Load Target System Mappings
 def targetSystemsMap = patchfunctions.loadTargetsMap()
-println "TargetSystemsMap : ${targetSystemsMap} "
+patchfunctions.log("TargetSystemsMap : ${targetSystemsMap} ")
 // Create a local Maven Repo for Pipeline
 patchfunctions.mavenLocalRepo(patchConfig)
 // Retrieve event. State, which will re - done
@@ -51,7 +51,6 @@ phases.each { envName ->
 	// Approve to to install Patch
 	
 	patchfunctions.stage(target,"Installation",patchConfig,"Approve", patchfunctions.&approveInstallation)
-	patchfunctions.stage(target,"Installation",patchConfig,"InstallOldStyle", patchDeployment.&installOldStyle)
 	patchfunctions.stage(target,"Installation",patchConfig,"Install", patchDeployment.&installDeploymentArtifacts)
 	patchfunctions.stage(target,"Installation",patchConfig,"Postprocess",  patchfunctions.&installationPostProcess)
 	patchfunctions.stage(target,"Installation",patchConfig,"Notification",  patchfunctions.&notify)

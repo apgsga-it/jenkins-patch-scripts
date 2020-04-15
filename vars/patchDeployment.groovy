@@ -2,88 +2,188 @@
 library 'patch-global-functions'
 
 def installDeploymentArtifacts(patchConfig) {
-	
-	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
-	
 	lock("${patchConfig.serviceName}${patchConfig.currentTarget}Install") {
+		// CM-225: old style needs to be part of the "installLock" (It can not run parallel to "db-deployment")
+		patchfunctions.log("Starting installOldStyle","installDeploymentArtifacts")
+		installOldStyle(patchConfig)
+		patchfunctions.log("Done installOldStyle","installDeploymentArtifacts")
 		parallel 'ui-client-deployment': {
-			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
-				node {
-					installGUI(patchConfig,"it21gui-dist-zip","zip")
+			if(patchConfig.installJadasAndGui) {
+				installerFactory('it21_ui', patchConfig).call()
+				// JHE (29.10.2019): In a first step, we still do the installation following old method
+				if(!isLightInstallation(patchConfig.currentTarget)) {
+					node {
+						installJadasGUI(patchConfig)
+					}
 				}
 			}
 		}, 'ui-server-deployment': {
-			if(patchConfig.installJadasAndGui && !isLightInstallation(patchConfig.currentTarget,targetSystemMappingJson)) {
-				echo "patchConfig.targetBean = ${patchConfig.targetBean}"
-				def installationNodeLabel = patchfunctions.serviceInstallationNodeLabel(patchConfig.targetBean,"jadas")
-				echo "Installation of jadas Service will be done on Node : ${installationNodeLabel}"
-				node (installationNodeLabel){
-					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} starting ..."
-					def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
-					def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${patchConfig.currentTarget}"
-					sh "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )"
-					sh "${yumCmd}"
-					echo "Installation of apg-jadas-service-${patchConfig.currentTarget} done!"
-				}
+			if(patchConfig.installJadasAndGui) {
+				installerFactory('jadas', patchConfig).call()
 			}
 		}, 'db-deployment': {
+			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
+			// installerFactory('it21-db', patchConfig.currentTarget).call()
 			node {
-				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getTargetHost("it21-db",patchConfig.currentTarget,targetSystemMappingJson),getTargetType("it21-db",patchConfig.currentTarget,targetSystemMappingJson))
+				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getHost("it21-db",patchConfig.currentTarget),getType("it21-db",patchConfig.currentTarget))
 			}
 		}
 	}
 }
 
-def getTargetHost(service,target,targetSystemMappingJson) {
-	// JHE (06.09.2019): By default, for hosts not listed under targetInstances, we consider the host same as target
-	//					 This will be improved with ARCH-92, when all host will have additional services information
-	//					 For now, this is used only at the time we install DB-Module
-	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
-	def targetInstance = patchfunctions.getTargetInstance(target)
-	if(targetInstance != null) {
-		targetInstance.services.each ({ s ->
-			if(s.name == service) {
-				println "host value for ${target} was ${service.host}"
-				return service.host
-			}
-		})
-	}
-	println "no host configured for ${target} ... host=${target}"
-	return target
-}
-
-def getTargetType(service,target,targetSystemMappingJson) {
-	// JHE (06.09.2019): By default, for host not listed under targetInstances, we consider the target type as default with "oracle-db"
-	//					 This will be improved with ARCH-92, when all host will have additional services information
-	//					 For now, this is used only at the time we install DB-Module
-	//					 Consider moving the function to "patchfunctions" if the method gets called from other place(s) than installation steps
-	def targetInstance = patchfunctions.getTargetInstance(target)
-	if(targetInstance != null) {
-		targetInstance.services.each ({ s ->
-			if(s.name == service) {
-				println "service type value for ${target} was ${service.type}"
-				return service.type
-			}
-		})
-	}
-	println "no service type configured for ${target} ... serviceType=oracle-db"
-	return "oracle-db"
-}
-
-// JHE (06.09.2019): ARCH-90. For now, only DB Modules can be installed on Light-Instances. Therefore, we need to know if the target is a Light, in order to determine if we have to start the Jadas installation.
-//				   : The method assumes that the service type contains "light". This should be done only temporarily until Jadas will be installed on Light as well.
-//				   : If the need to determine if a target is a Light still remains, we might want to find a better than relying on a name which should contain a specific string...
-def isLightInstallation(target,targetSystemMappingJson) {
+// JHE (31.10.2019): For now we're still installing the it21-ui using old method, which doesn't work on Light.
+//					 It will be removed as soon as we're 100% sure the new method correctly works. 
+def isLightInstallation(target) {
+	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
 	def isLight = false
 	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
 		if(targetInstance.name == target) {
 			targetInstance.services.each ({ service ->
-				isLight = service.name == "it21-db" && service.type.contains("light")
+				if(service.name == "it21-db") {
+					isLight = service.host.contains("light")
+				}
 			})
 		}
 	})
-	println "is ${target} a Light-Instance: ${isLight}"
+	patchfunctions.log("is ${target} a Light-Instance: ${isLight}","isLightInstallation")
 	isLight
+}
+
+def installerFactory(serviceName,patchConfig) {
+	// JHE (28.10.2019): For now we only support 2 services to be installed over SSH. Anything else wouldn't be ready yet
+	assert ['jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
+	
+	def target = patchConfig.currentTarget
+	def serviceType = getType(serviceName,target)
+	def host = getHost(serviceName, target)
+	
+	if(serviceType.equals("linuxservice")) {
+		return linuxServiceInstaller(target,host)
+	}
+	else if(serviceType.equals("linuxbasedwindowsfilesystem")) {
+		def buildVersion = patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
+		return it21UiInstaller(target,host,buildVersion)
+	}
+	else {
+		return nopInstaller(serviceName)
+	}
+}
+
+def getRemoteSSHConnection(host) {
+	
+	def remote = [:]
+	remote.name = "SSH-${host}"
+	remote.host = host
+	remote.allowAnyHosts = true
+//	remote.logLevel = "FINE"
+	
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
+		usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
+
+			remote.user = SSHUsername
+			remote.password = SSHUserpassword
+	}
+	
+	return remote
+}
+
+def linuxServiceInstaller(target, host) {
+	def installer = {
+		node {
+			patchfunctions.log("Installation of apg-jadas-service-${target} starting on host ${host}","linuxServiceInstaller")
+			def yumCmdOptions = "--disablerepo=* --enablerepo=apg-artifactory*"
+			def yumCmd = "sudo yum clean all ${yumCmdOptions} && sudo yum -y install ${yumCmdOptions} apg-jadas-service-${target}"
+			ssh(host, "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )")
+			ssh(host, yumCmd)
+		}
+		
+		patchfunctions.log("Installation of apg-jadas-service-${target} done!","linuxServiceInstaller")
+	}
+	return installer
+}
+
+def it21UiInstaller(target,host,buildVersion) {
+	def installer = {
+		node {
+			patchfunctions.log("Installation of it21-ui starting for ${target} on host ${host}","it21UiInstaller")
+			
+			def group = "com.affichage.it21"
+			def artifact = "it21gui-dist-zip"
+			def artifactType = "zip"
+	
+			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml", false)
+			def zipDist = "${artifact}-${buildVersion}.${artifactType}"
+			
+			def newFolderName = guiExtractedFolderName()
+			
+			def uiHomeFolder = "/opt/it21_ui"
+			def uiGettingExtractedFolder = "${uiHomeFolder}/${target}/gettingExtracted_${newFolderName}"
+			
+			// TODO JHE: Best to run all in one script ? ... not sure
+			ssh(host, "sudo mkdir -p ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chgrp -R apg_install ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chmod 775 ${uiGettingExtractedFolder}")
+			put(host, "./download/${zipDist}", "${uiGettingExtractedFolder}/${zipDist}")
+			ssh(host, "sudo unzip ${uiGettingExtractedFolder}/${zipDist} -d ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chgrp -R apg_install ${uiGettingExtractedFolder}")
+			ssh(host, "sudo chmod -R 775 ${uiGettingExtractedFolder}")
+			put(host, "/etc/opt/apgops/config/${target}/it21-gui/AdGIS.properties", "${uiGettingExtractedFolder}/conf/AdGIS.properties")
+			put(host, "/etc/opt/apgops/config/${target}/it21-gui/serviceurl.properties", "${uiGettingExtractedFolder}/conf/serviceurl.properties")
+			ssh(host, "sudo chmod 755 ${uiGettingExtractedFolder}/conf/*.*")
+			ssh(host, "sudo chgrp apg_install ${uiGettingExtractedFolder}/conf/*.*")
+			ssh(host, "sudo mv ${uiGettingExtractedFolder}/start_it21_gui_run.bat /opt/it21_ui/${target}")
+			ssh(host, "sudo mv ${uiGettingExtractedFolder} /opt/it21_ui/${target}/${newFolderName}")
+				
+			patchfunctions.log("Installation of it21-ui done for ${target}","it21UiInstaller")
+		}
+	}
+	return installer
+}
+
+def nopInstaller(serviceName) {
+	def installer = {
+		patchfunctions.log("No installer define for service ${serviceName}","nopInstaller")
+	}
+	return installer
+}
+
+def ssh(host,failOnError,cmd) {
+	patchfunctions.log("Running following command on ${host} via SSH: ${cmd}","ssh")
+	def remote = getRemoteSSHConnection(host)
+	sshCommand remote: remote, command: cmd, failOnError: failOnError
+	patchfunctions.log("DONE - following command on ${host} via SSH: ${cmd}","ssh")
+}
+
+def ssh(host,cmd) {
+	ssh(host,true,cmd)
+}
+
+def put(host,src,dest) {
+	patchfunctions.log("Putting ${src} on ${host} into ${dest}","put")
+	def remote = getRemoteSSHConnection(host)
+	sshPut remote: remote, from: src, into: dest
+	patchfunctions.log("DONE - Putting ${src} on ${host} into ${dest}","put")
+}
+
+def getHost(service,target) {
+	def s = getTargetInstanceService(service, target)
+	assert s.host != null : "Host has not been configured for target ${target}"
+	return s.host
+}
+
+def getType(service,target) {
+	def s = getTargetInstanceService(service, target)
+	assert s.type != null : "Type of service has not been configured for target ${target}"
+	return s.type
+}
+
+def getTargetInstanceService(service,target) {
+	def targetSystemMappingJson = patchfunctions.getTargetSystemMappingJson()
+	def targetInstance = patchfunctions.getTargetInstance(target,targetSystemMappingJson)
+	assert targetInstance != null : "${target} should be configured as a targetInstance!"
+	def s = targetInstance.services.find{it.name == service}
+	assert s != null : "${target} is configured as a targetInstance, but service ${service} has not been configured."
+	return s
 }
 
 def installOldStyle(patchConfig) {
@@ -92,9 +192,8 @@ def installOldStyle(patchConfig) {
 
 def installOldStyleInt(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
-		
+	
 	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
-			
 		// jenkins_pipeline_patch_install_oldstyle starts also the installation of Docker Services
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install_oldstyle.bat ${patchConfig.patchNummer} ${patchConfig.currentTarget}")
 	}
@@ -133,7 +232,8 @@ def getCredentialId(def patchConfig) {
 	}
 }
 
-def installGUI(patchConfig,artifact,extension) {
+def installJadasGUI(patchConfig) {
+	
 	node(env.WINDOWS_INSTALLER_LABEL) {
 		
 		def extractedGuiPath = ""
@@ -149,19 +249,22 @@ def installGUI(patchConfig,artifact,extension) {
 				powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
 		}
 
-		def artifactoryServer = initiateArtifactoryConnection()
-
 		def buildVersion =  patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
-		def zip = "${artifact}-${buildVersion}.${extension}"
+		def group = "com.affichage.it21"
+		def artifact = "it21gui-dist-zip"
+		def artifactType = "zip"
 
-		//TODO (jhe) : here we should probably pass the repo type as well -> snapshot or relaease, althought it might always be relaease...
-		downloadGuiZipToBeInstalled(artifactoryServer,zip)
+		downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"C:/local/software/maven/settings.xml", true)
 
 		def extractedFolderName = guiExtractedFolderName()
 		
-		extractGuiZip(zip,extractedGuiPath,extractedFolderName)
-		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+		def zipDist = "${artifact}-${buildVersion}.${artifactType}"
+		extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
 		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
+		patchfunctions.log("Waiting 60 seconds before trying to rename the extracted ZIP.","installJadasGUI")
+		sleep(time:60,unit:"SECONDS")
+		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
+		patchfunctions.log("GUI Folder correctly renamed.","installJadasGUI")
 		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
 		removeOldGuiFolder(extractedGuiPath)
 
@@ -184,29 +287,19 @@ def guiExtractedFolderName() {
 	return extractedFolderName
 }
 
-def downloadGuiZipToBeInstalled(artifactoryServer,zip) {
-	/*
-	def downloadSpec = """{
-              "files": [
-                    {
-                      "pattern": "${env.RELEASES_PATCH_REPO}*${zip}",
-					   "target": "download/"
-					   }
-			 ]
-	}"""
-	*/
-	
-	// JHE, 21.08.2019: Because of CM-201, we temporarily have to fetch the ZIP in a generic Repository
-	def downloadSpec = """{
-              "files": [
-                    {
-                      "pattern": "${env.ZIP_DIST_REPO}*${zip}",
-					   "target": "download/"
-					   }
-			 ]
-	}"""
-	
-	artifactoryServer.download(downloadSpec)
+// JHE: This one is slowly but surely getting bad. Thing is we temporarily install GUI both via SSH and via Node.
+//      That means once via Windows, and once via Unix ...
+def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion, def pathToMavenSettings, boolean isWindows) {
+	// TODO JHE: -s option with patch to jenkins home folder, really needed? If needed, really what we want?
+	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s ${pathToMavenSettings}"
+	patchfunctions.log("Downloading GUI-ZIP with following command: ${mvnCommand}","downloadGuiZipToBeInstalled")
+	if(isWindows) {
+		withMaven( maven: 'apache-maven-3.5.0') { bat "${mvnCommand}" }
+	}
+	else {
+		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+	}
+	patchfunctions.log("GUI-ZIP correctly downloaded.","downloadGuiZipToBeInstalled")
 }
 
 def initiateArtifactoryConnection() {
@@ -243,6 +336,6 @@ def renameExtractedGuiZip(extractedGuiPath,extractedFolderName) {
 
 def copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName) {
 	dir("C:\\config\\${patchConfig.currentTarget}\\it21-gui") {
-		fileOperations ([fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\${extractedFolderName}\\conf")])
+		fileOperations ([fileCopyOperation(flattenFiles: true, excludes: '', includes: '*.properties', targetLocation: "${extractedGuiPath}\\getting_extracted_${extractedFolderName}\\conf")])
 	}
 }

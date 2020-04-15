@@ -11,7 +11,7 @@ def archiveLogsForPipelineJob(def builds, def jobName) {
 		def logContent = build.logFile.text
 		def logName = "${jobName}-archive-${buildNr}.log"
 		new File("/var/opt/apg-jenkins/archive/log/${logName}").write(logContent)
-		println "New archive logged created for job ${jobName} for build ${buildNr} : /var/opt/apg-jenkins/archive/log/${logName}"
+		println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: New archive logged created for job ${jobName} for build ${buildNr} : /var/opt/apg-jenkins/archive/log/${logName}"
 		buildNr++
 	}
 }
@@ -26,11 +26,11 @@ def deleteJenkinsWorkspaces(def jobName) {
 		def folderToDelete = "${jenkinsWorkspaceFolder}/" + line.substring(line.lastIndexOf(" "), line.length()).trim()
 		def rmCmd = "rm -rf ${folderToDelete}"
 		['bash', '-c', rmCmd].execute().in.text
-		println "${folderToDelete} has been deleted!"
+		println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: ${folderToDelete} has been deleted!"
 	}
 }
 
-println "Patch archiver starting ..."
+println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Patch archiver starting ..."
 
 def nbProdJobDeleted = 0
 def nbOnDemandJobDeleted = 0
@@ -60,10 +60,10 @@ patchJobs.each { job ->
 						archiveLogsForPipelineJob(downloadBuilds,onDemandJobName)
 
 						job.delete()
-						println "${jobName} has been deleted."
+						println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: ${jobName} has been deleted."
 						nbProdJobDeleted++
 						onDemandJob.delete()
-						println "${onDemandJob} has been deleted"
+						println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: ${onDemandJob} has been deleted"
 						nbOnDemandJobDeleted++
 					}
 				}
@@ -75,6 +75,6 @@ patchJobs.each { job ->
 	
 }
 
-println "Patch archiver done."
-println "${nbProdJobDeleted} Prod pipeline Job(s) have been deleted."
-println "${nbOnDemandJobDeleted} OnDemand pipeline Job(s) have been deleted."
+println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: Patch archiver done."
+println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: ${nbProdJobDeleted} Prod pipeline Job(s) have been deleted."
+println "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}: ${nbOnDemandJobDeleted} OnDemand pipeline Job(s) have been deleted."

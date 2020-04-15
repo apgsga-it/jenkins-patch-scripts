@@ -3,6 +3,29 @@ import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
+import javax.mail.Message
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
+
+def sendMail(def subject, def body, def to) {
+	Properties properties = System.getProperties()
+	properties.setProperty("mail.smtp.host", env.SMTP_HOST)
+	properties.setProperty("mail.smtp.port", env.SMTP_PORT)
+	Session session = Session.getDefaultInstance(properties)
+	try{
+		MimeMessage msg = new MimeMessage(session)
+		msg.setFrom(new InternetAddress(env.PIPELINE_MAIL_FROM))
+		to.split(',').each(){ item -> msg.addRecipient(Message.RecipientType.TO,new InternetAddress(item))}
+		msg.setSubject("${env.PIPELINE_MAIL_ENV} - ${subject}")
+		msg.setText(body)
+		Transport.send(msg)
+	} catch(RuntimeException e) {
+		println e.getMessage()
+	}
+}
+
 def benchmark() {
 	def benchmarkCallback = { closure ->
 		start = System.currentTimeMillis()
@@ -38,26 +61,20 @@ def initPatchConfig(patchConfig, params) {
 
 def savePatchConfigState(patchConfig) {
 	node {
-		echo "Saving Patchconfig State ${patchConfig.patchNummer}"
+		log("Saving Patchconfig State ${patchConfig.patchNummer}","savePatchConfigState")
 		def patchFileName = "Patch${patchConfig.patchNummer}.json"
 		writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
 		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -s ${patchFileName}"
-		echo "Executeing ${cmd}"
+		log("Executeing ${cmd}","savePatchConfigState")
 		sh "${cmd}"
-		echo "Executeing ${cmd} done."
+		log("Executeing ${cmd} done.","savePatchConfigState")
 	}
 }
 
 def serviceInstallationNodeLabel(target,serviceName) {
-	def label = ""
-	// temporary workaround because LIGHT is quite urgent, proper solution planned with JAVA8MIG-753
-	if (target.targetName.endsWith(".light")) {
-		label = "jadas-${target.targetName}"
-	} else {
-		target.nodes.each{node -> 
-			if(node.serviceName.equalsIgnoreCase(serviceName)) {
-				label = node.label
-			}
+	target.nodes.each{node -> 
+		if(node.serviceName.equalsIgnoreCase(serviceName)) {
+			label = node.label
 		}
 	}
 	assert label?.trim() : "No label found for ${serviceName}"
@@ -65,24 +82,24 @@ def serviceInstallationNodeLabel(target,serviceName) {
 }
 
 def stage(target,toState,patchConfig,task, Closure callBack) {
-	echo "target: ${target}, toState: ${toState}, task: ${task} "
+	log("target: ${target}, toState: ${toState}, task: ${task} ","stage")
 	patchConfig.currentPipelineTask = "${task}"
 	logPatch(patchConfig,"started")
 	def targetSystemsMap = loadTargetsMap()
 	def targetName= targetSystemsMap.get(target.envName)
 	patchConfig.targetToState = mapToState(target,toState)
-	echo "patchConfig.targetToState: ${patchConfig.targetToState}"
-	echo "patchConfig.redoToState: ${patchConfig.redoToState}"
+	log("patchConfig.targetToState: ${patchConfig.targetToState}","stage")
+	log("patchConfig.redoToState: ${patchConfig.redoToState}","stage")
 	def skip = patchConfig.redo &&
 			(!(patchConfig.redoToState.toString().equals(patchConfig.targetToState.toString()) && patchConfig.lastPipelineTask.toString().equals(task.toString())))
-	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !["Approve","Notification","InstallOldStyle"].contains(task)
-	echo "skip = ${skip}"
-	echo "nop  = ${nop}"
+	def nop = !skip && patchConfig.mavenArtifacts.empty && patchConfig.dbObjects.empty && !patchConfig.installJadasAndGui && !patchConfig.installDockerServices && !["Approve","Notification"].contains(task)
+	log("skip = ${skip}","stage")
+	log("nop  = ${nop}","stage")
 	def stageText = "${target.envName} (${target.targetName}) ${toState} ${task} "  + (skip ? "(Skipped)" : (nop ? "(Nop)" : "") )
 	def logText
 	stage(stageText) {
 		if (!skip) {
-			echo "Not skipping"
+			log("Not skipping","stage")
 			// Save before Stage 
 			if (targetName != null) {
 				savePatchConfigState(patchConfig)
@@ -100,7 +117,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 			// JHE: instead of "nop", what could we better write for the developer?
 			logText =  nop ? "nop" : "done"
 		} else {
-			"Echo skipping"
+			log("skipping","stage")
 			logText = "skipped"
 		}
 	}
@@ -113,15 +130,34 @@ private def logPatch(def patchConfig, def logText) {
 		def patchFileName = "PatchLog${patchConfig.patchNummer}.json" 
 		writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
 		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -log ${patchFileName}"
-		echo "Executeing ${cmd}"
+		log("Executeing ${cmd}","logPatch")
 		sh "${cmd}"
-		echo "Executeing ${cmd} done."
+		log("Executeing ${cmd} done.","logPatch")
 	}
 }
 
 def installationPostProcess(patchConfig) {
 	if(patchConfig.envName.equals("Produktion")) {
-		mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+		try {
+			mergeDbObjectOnHead(patchConfig, patchConfig.envName)
+		}
+		catch(err) {
+			log("Error while merging DB Object on head : ${err}","installationPostProcess")
+			def subject = "Error during post process Job for Patch ${patchConfig.patchNummer}"
+			def body = "DB Object(s) couldn't be merged on productive branch (branch name -> 'prod') for Patch ${patchConfig.patchNummer}, please resolve the problem manually. "
+			body += "Note that this problem didn't put the pipeline in error, that means Patch ${patchConfig.patchNummer} has been installed in production. "
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += "Error was: ${err}"
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += "For any question, please contact Stefan Brandenberger, Ulrich Genner or Julien Helbling. "
+			body += "Patch Configuration was: "
+			body += System.getProperty("line.separator")
+			body += System.getProperty("line.separator")
+			body += patchConfig
+			sendMail(subject,body,env.PIPELINE_ERROR_MAIL_TO)
+		}
 	}
 }
 
@@ -142,10 +178,10 @@ def mavenLocalRepo(patchConfig) {
 
 def loadTargetsMap() {
 	def targetSystemMap = [:]
-	getTargetSystemMappingJson().targetSystems.each( { target ->
-		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target, nodes:target.nodes])
+	getTargetSystemMappingJson().stageMappings.each( { target ->
+		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target])
 	})
-	println targetSystemMap
+	log(targetSystemMap,"loadTargetsMap")
 	targetSystemMap
 }
 
@@ -157,13 +193,9 @@ def getTargetSystemMappingJson() {
 }
 
 def getTargetInstance(targetInstanceName,targetSystemMappingJson) {
-	targetSystemMappingJson.targetInstances.each ({ targetInstance ->
-		if(targetInstance.name == targetInstanceName) {
-			return targetInstance
-		}
-	})
-	println "${targetInstanceName} not define as targetInstance"
-	return null
+	log("Fetching targetInstance called ${targetInstanceName} from following JSON: ${targetSystemMappingJson}","getTargetInstance")
+	def res = targetSystemMappingJson.targetInstances.find{it.name == targetInstanceName}
+	return res
 }
 
 def tagName(patchConfig) {
@@ -218,22 +250,22 @@ def setPatchLastRevision(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -lr ${patchConfig.currentTarget}"
 	def lastTargetRevision = sh ( returnStdout : true, script: cmd).trim()
 	patchConfig.lastRevision = "${fullRevPrefix}${lastTargetRevision}"
-	echo "patchConfig.lastRevision has been set with last Revision for target ${patchConfig.currentTarget}: ${lastTargetRevision}"
+	log("patchConfig.lastRevision has been set with last Revision for target ${patchConfig.currentTarget}: ${lastTargetRevision}","setPatchLastRevision")
 }
 
 def setPatchRevision(patchConfig) {
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -nr"
 	def revision = sh ( returnStdout : true, script: cmd).trim()
 	patchConfig.revision = revision
-	echo "patchConfig.revision has been set with ${revision}"
+	log("patchConfig.revision has been set with ${revision}","setPatchRevision")
 }
 
 def saveRevisions(patchConfig) {
 	def fullRevPrefix = getFullRevisionPrefix(patchConfig)
 	def cmd = "/opt/apg-patch-cli/bin/apsrevcli.sh -ar ${patchConfig.currentTarget},${patchConfig.revision},${fullRevPrefix}"
 	def result = sh returnStatus: true, script: "${cmd}"
-	assert result == 0 : println("Error while adding revision ${patchConfig.revision} to target ${patchConfig.currentTarget}")
-	echo "New Revision has been added for ${patchConfig.currentTarget}: ${fullRevPrefix}"
+	assert result == 0 : log("Error while adding revision ${patchConfig.revision} to target ${patchConfig.currentTarget}","saveRevisions")
+	log("New Revision has been added for ${patchConfig.currentTarget}: ${fullRevPrefix}","saveRevisions")
 }
 
 def getFullRevisionPrefix(def patchConfig) {
@@ -246,10 +278,10 @@ def buildAndReleaseModulesConcurrent(patchConfig) {
 	def depLevels = listsByDepLevel.keySet() as List
 	depLevels.sort()
 	depLevels.reverse(true)
-	println depLevels
+	log(depLevels,"buildAndReleaseModulesConcurrent")
 	depLevels.each { depLevel ->
 		def artifactsToBuildParallel = listsByDepLevel[depLevel]
-		println artifactsToBuildParallel
+		log(artifactsToBuildParallel,"buildAndReleaseModulesConcurrent")
 		def parallelBuilds = artifactsToBuildParallel.collectEntries {
 			[ "Building Level: ${it.dependencyLevel} and Module: ${it.name}" : buildAndReleaseModulesConcurrent(patchConfig,it)]
 		}
@@ -283,11 +315,11 @@ def coIt21BundleFromBranchCvs(patchConfig) {
 }
 
 def buildAndReleaseModule(patchConfig,module) {
-	echo "buildAndReleaseModule : " + module.name
+	log("buildAndReleaseModule : " + module.name,"buildAndReleaseModule")
 	releaseModule(patchConfig,module)
 	buildModule(patchConfig,module)
 	updateBom(patchConfig,module)
-	echo "buildAndReleaseModule : " + module.name
+	log("buildAndReleaseModule : " + module.name,"buildAndReleaseModule")
 
 }
 
@@ -315,7 +347,7 @@ def coFromBranchCvs(patchConfig, moduleName, type) {
 					]]
 			], skipChangeLog: false])
 	}
-	echo "Checkoout of ${moduleName} took ${duration} ms"
+	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
 def coFromTagcvs(patchConfig,tag, moduleName) {
 	def callBack = benchmark()
@@ -328,27 +360,27 @@ def coFromTagcvs(patchConfig,tag, moduleName) {
 					]]
 			], skipChangeLog: false])
 	}
-	echo "Checkoout of ${moduleName} took ${duration} ms"
+	log("Checkout of ${moduleName} took ${duration} ms","coFromTagcvs")
 }
 
 def generateVersionProperties(patchConfig) {
 
 	def previousVersion = patchConfig.lastRevision.equals("SNAPSHOT") ? "${patchConfig.baseVersionNumber}.${patchConfig.revisionMnemoPart}-${patchConfig.lastRevision}" : patchConfig.lastRevision
 	def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
-	echo "$buildVersion"
+	log("$buildVersion","generateVersionProperties")
 	dir ("it21-ui-bundle") {
-		echo "Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion
+		log("Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion,"generateVersionProperties")
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath}"
+		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
 	}
 }
 
 def releaseModule(patchConfig,module) {
 	dir ("${module.name}") {
-		echo "Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart
+		log("Releasing Module : " + module.name + " for Revision: " + patchConfig.revision + " and: " +  patchConfig.revisionMnemoPart,"releaseModule")
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 		def mvnCommand = "mvn -DbomVersion=${buildVersion}" + ' clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
-		echo "${mvnCommand}"
+		log("${mvnCommand}","releaseModule")
 		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 	}
 }
@@ -356,9 +388,9 @@ def releaseModule(patchConfig,module) {
 def buildModule(patchConfig,module) {
 	dir ("${module.name}") {
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
-		echo "Building Module : " + module.name + " for Version: " + buildVersion
+		log("Building Module : " + module.name + " for Version: " + buildVersion,"buildModule")
 		def mvnCommand = "mvn -DbomVersion=${buildVersion} clean deploy"
-		echo "${mvnCommand}"
+		log("${mvnCommand}","buildModule")
 		lock ("BomUpdate${buildVersion}") {
 			withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
 		}		
@@ -366,13 +398,13 @@ def buildModule(patchConfig,module) {
 }
 
 def updateBom(patchConfig,module) {
-	echo "Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision
+	log("Update Bom for artifact " + module.artifactId + " for Revision: " + patchConfig.revision,"updateBom")
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
-	echo "Bom source version which will be update: ${buildVersion}"
+	log("Bom source version which will be update: ${buildVersion}","updateBom")
 	lock ("BomUpdate${buildVersion}") {
 		dir ("it21-ui-bundle") {
 			sh "chmod +x ./gradlew"
-			sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath}"
+			sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
 		}
 	}
 }
@@ -453,37 +485,37 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 
 	node {
 		def cvsRoot = patchConfig.cvsroot
-		
+
 		def patchNumber = patchConfig.patchNummer
 		def dbPatchTag = patchConfig.patchTag
 		def dbProdBranch = patchConfig.prodBranch
 		def dbPatchBranch = patchConfig.dbPatchBranch
-		
+
 		def dbTagBeforeMerge = "${dbProdBranch}_merge_${dbPatchBranch}_before"
 		def dbTagAfterMerge = "${dbProdBranch}_merge_${dbPatchBranch}_after"
 
-		echo "Patch \"${patchNumber}\" being merged to production branch"
-		patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
-			echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\""
+		log("Patch \"${patchNumber}\" being merged to production branch", "mergeDbObjectOnHead")
+		patchConfig.dbObjects.collect { it.moduleName }.unique().each { dbModule ->
+			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" being merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} co -r${dbProdBranch} ${dbModule}"
-			echo "... ${dbModule} checked out from branch \"${dbProdBranch}\""
+			log("... ${dbModule} checked out from branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} tag -F ${dbTagBeforeMerge} ${dbModule}"
-			echo "... ${dbModule} tagged ${dbTagBeforeMerge}"
+			log("... ${dbModule} tagged ${dbTagBeforeMerge}", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} up -j ${dbPatchTag} ${dbModule}"
-			echo "... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\""
+			log("... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
-			echo "... ${dbModule} commited"
-		    sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
-			echo "... ${dbModule} tagged ${dbTagAfterMerge}"
-			echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\""
+			log("... ${dbModule} commited", "mergeDbObjectOnHead")
+			sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
+			log("... ${dbModule} tagged ${dbTagAfterMerge}", "mergeDbObjectOnHead")
+			log("- module \"${dbModule}\" tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 		}
-		echo "Patch \"${patchNumber}\" merged to production branch"
+		log("Patch \"${patchNumber}\" merged to production branch", "mergeDbObjectOnHead")
 	}
 }
 
 def coDbModules(patchConfig) {
 	def dbObjects = patchConfig.dbObjectsAsVcsPath
-	echo "Following DB Objects should get checked out : ${dbObjects}"
+	log("Following DB Objects should get checked out : ${dbObjects}","coDbModules")
 	
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	fileOperations ([
@@ -492,20 +524,27 @@ def coDbModules(patchConfig) {
 	fileOperations ([
 		folderCreateOperation(folderPath: "${patchDbFolderName}")
 	])
+	/*
+	** work-around for not yet existing packaging of db scripts, see ticket CM-216
+	*/
+	fileOperations ([
+		folderCreateOperation(folderPath: "${patchDbFolderName}/oracle")
+	])
 
 	def cvsRoot = patchConfig.cvsroot
 	
 	def patchNumber = patchConfig.patchNummer
 	def dbPatchTag = patchConfig.patchTag
 	
-	echo "Patch \"${patchNumber}\" being checked out to \"${patchDbFolderName}\""
+	log("Patch \"${patchNumber}\" being checked out to \"${patchDbFolderName}/oracle\"","coDbModule")
 	patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
-		echo "- module \"${dbModule}\" tag \"${dbPatchTag}\" being checked out"
-		dir(patchDbFolderName) {
-			sh "cvs -d${cvsRoot} co -r${dbPatchTag} ${dbModule}"
+		log("- module \"${dbModule}\" tag \"${dbPatchTag}\" being checked out","coDbModule")
+		dir("${patchDbFolderName}/oracle") {
+			def moduleDirectory = dbModule.replace(".","_")
+			sh "cvs -d${cvsRoot} co -r${dbPatchTag} -d${moduleDirectory} ${dbModule}"
 		}
 	}
-	echo "Patch \"${patchNumber}\" checked out"
+	log("Patch \"${patchNumber}\" checked out","coDbModule")
 
 }
 
@@ -516,13 +555,13 @@ def jadasVersionNumber(patchConfig) {
 def assemble(patchConfig) {
 	def buildVersion = mavenVersionNumber(patchConfig,patchConfig.revision)
 	def jadasPublishVersion = jadasVersionNumber(patchConfig)
-	echo "Building Assembly with version: ${buildVersion} "
+	log("Building Assembly with version: ${buildVersion} ","assemble")
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		// Assemble and publish GUI
-		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion}"
+		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion} --stacktrace"
 		// Assemble and publish Jadas
-		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget}"
+		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget} --stacktrace"
 	}
 }
 
@@ -538,13 +577,13 @@ def redoToState(patchConfig) {
 def notify(patchConfig) {
 	failIf("fail=${patchConfig.targetToState}")
 	node {
-		echo "Notifying ${patchConfig.targetToState}"
+		log("Notifying ${patchConfig.targetToState}","notify")
 		def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -sta ${patchConfig.patchNummer},${patchConfig.targetToState}"
-		echo "Executeing ${cmd}"
+		log("Executeing ${cmd}","notify")
 		def resultOk = sh ( returnStdout : true, script: cmd).trim()
-		echo resultOk
+		log(resultOk,"notify")
 		assert resultOk
-		echo "Executeing ${cmd} done"
+		log("Executeing ${cmd} done","notify")
 	}
 
 }
@@ -557,4 +596,16 @@ def mapToState(target,toState) {
 		return "${target.envName}"
 	}
 	// TODO (che, uge, 04.04.2018 ) Errorhandling
+}
+
+// Used in order to have Datetime info in our pipelines
+def log(msg,caller) {
+	def dt = "${new Date().format('yyyy-MM-dd HH:mm:ss.S')}"
+	def logMsg = caller != null ? "(${caller}) ${dt}: ${msg}" : "${dt}: ${msg}"
+	echo logMsg
+}
+
+// Used in order to have Datetime info in our pipelines
+def log(msg) {
+	log(msg,null)
 }
