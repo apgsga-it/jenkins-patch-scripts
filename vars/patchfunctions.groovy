@@ -624,6 +624,7 @@ def runShCommandWithRetry(cmd,maxRetry, delayBetweenExecutionInSec) {
 	def attempt = 1
 	def res = sh returnStatus:true, script: cmd
 	while(res != 0 && attempt <= maxRetry) {
+		sendMail("WARNING, Sh-Command has been retried","Command was: ${cmd}",env.PIPELINE_ERROR_MAIL_TO)
 		log("Retry number ${attempt} (max retry: ${maxRetry})","runShCommandWithRetry")
 		sleep(delayBetweenExecutionInSec)
 		res = sh returnStatus:true, script: cmd
