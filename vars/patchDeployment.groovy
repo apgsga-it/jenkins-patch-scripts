@@ -105,7 +105,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			def artifact = "it21gui-dist-zip"
 			def artifactType = "zip"
 
-			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml", false)
+			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml")
 			def zipDist = "${artifact}-${buildVersion}.${artifactType}"
 
 			def newFolderName = guiExtractedFolderName()
