@@ -372,7 +372,7 @@ def generateVersionProperties(patchConfig) {
 		log("Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion,"generateVersionProperties")
 		sh "chmod +x ./gradlew"
 		def cmd = "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
-		runShCommandWithRetry(cmd,5,60000)
+		runShCommandWithRetry(cmd,5,60)
 	}
 }
 
@@ -383,7 +383,7 @@ def releaseModule(patchConfig,module) {
 		def mvnCommand = "mvn -DbomVersion=${buildVersion}" + ' clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
 		log("${mvnCommand}","releaseModule")
 		withMaven( maven: 'apache-maven-3.5.0') {
-			runShCommandWithRetry(mvnCommand,5,60000)
+			runShCommandWithRetry(mvnCommand,5,60)
 		}
 	}
 }
@@ -396,7 +396,7 @@ def buildModule(patchConfig,module) {
 		log("${mvnCommand}","buildModule")
 		lock ("BomUpdate${buildVersion}") {
 			withMaven( maven: 'apache-maven-3.5.0') {
-				runShCommandWithRetry(mvnCommand,5,60000)
+				runShCommandWithRetry(mvnCommand,5,60)
 			}
 		}
 	}
@@ -410,7 +410,7 @@ def updateBom(patchConfig,module) {
 		dir ("it21-ui-bundle") {
 			sh "chmod +x ./gradlew"
 			def cmd = "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
-			runShCommandWithRetry(cmd,5,60000)
+			runShCommandWithRetry(cmd,5,60)
 		}
 	}
 }
@@ -566,10 +566,10 @@ def assemble(patchConfig) {
 		sh "chmod +x ./gradlew"
 		// Assemble and publish GUI
 		def guiCmd = "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion} --stacktrace"
-		runShCommandWithRetry(guiCmd,5,60000)
+		runShCommandWithRetry(guiCmd,5,60)
 		// Assemble and publish Jadas
 		def jadasCmd = "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget} --stacktrace"
-		runShCommandWithRetry(jadasCmd,5,60000)
+		runShCommandWithRetry(jadasCmd,5,60)
 	}
 }
 
@@ -620,12 +620,12 @@ def log(msg) {
 
 // JHE (08.06.2020): Function introduced for CM-297. Artifactory is sometime unresponsive. We don't know the root cause, and couldn't identify where it comes from.
 //					 What we know is that if we try again, it generally works, reason why we introduced this workaround.
-def runShCommandWithRetry(cmd,maxRetry, delayBetweenExecutionInMs) {
+def runShCommandWithRetry(cmd,maxRetry, delayBetweenExecutionInSec) {
 	def attempt = 1
 	def res = sh returnStatus:true, script: cmd
 	while(res != 0 && attempt <= maxRetry) {
-		log("Retry number ${attempt} (max retry: ${maxRetry}","runShCommandWithRetry")
-		sleep(delayBetweenExecutionInMs)
+		log("Retry number ${attempt} (max retry: ${maxRetry})","runShCommandWithRetry")
+		sleep(delayBetweenExecutionInSec)
 		res = sh returnStatus:true, script: cmd
 		attempt++
 	}

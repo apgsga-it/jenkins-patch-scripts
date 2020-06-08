@@ -245,7 +245,7 @@ def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, d
 	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s ${pathToMavenSettings}"
 	patchfunctions.log("Downloading GUI-ZIP with following command: ${mvnCommand}","downloadGuiZipToBeInstalled")
 	withMaven( maven: 'apache-maven-3.5.0') {
-		patchfunctions.runShCommandWithRetry(mvnCommand,5,60000)
+		patchfunctions.runShCommandWithRetry(mvnCommand,5,60)
 	}
 	patchfunctions.log("GUI-ZIP correctly downloaded.","downloadGuiZipToBeInstalled")
 }
