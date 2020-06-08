@@ -43,7 +43,7 @@ def nodeLabelFor(serviceName, nodes) {
 	} else {
 		found
 	}
-	
+
 }
 
 def readPatchFile(patchFilePath) {
@@ -72,7 +72,7 @@ def savePatchConfigState(patchConfig) {
 }
 
 def serviceInstallationNodeLabel(target,serviceName) {
-	target.nodes.each{node -> 
+	target.nodes.each{node ->
 		if(node.serviceName.equalsIgnoreCase(serviceName)) {
 			label = node.label
 		}
@@ -127,7 +127,7 @@ def stage(target,toState,patchConfig,task, Closure callBack) {
 private def logPatch(def patchConfig, def logText) {
 	node {
 		patchConfig.logText = logText
-		def patchFileName = "PatchLog${patchConfig.patchNummer}.json" 
+		def patchFileName = "PatchLog${patchConfig.patchNummer}.json"
 		writeFile file: patchFileName , text: new JsonBuilder(patchConfig).toPrettyString()
 		def cmd = "/opt/apg-patch-cli/bin/apscli.sh -log ${patchFileName}"
 		log("Executeing ${cmd}","logPatch")
@@ -204,7 +204,7 @@ def tagName(patchConfig) {
 	} else {
 		patchConfig.developerBranch
 	}
-		
+
 }
 
 def saveTarget(patchConfig, target) {
@@ -294,7 +294,7 @@ def buildAndReleaseModulesConcurrent(patchConfig,module) {
 		node {
 			def tag = tagName(patchConfig)
 			coFromTagCvsConcurrent(patchConfig,tag,module.name)
-			coIt21BundleFromBranchCvs(patchConfig) 
+			coIt21BundleFromBranchCvs(patchConfig)
 			buildAndReleaseModule(patchConfig,module)
 		}
 	}
@@ -343,9 +343,9 @@ def coFromBranchCvs(patchConfig, moduleName, type) {
 				[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
 						[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [
 								[localName: moduleName, remoteName: moduleName]
-							]]
-					]]
-			], skipChangeLog: false])
+						]]
+				]]
+		], skipChangeLog: false])
 	}
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
@@ -356,9 +356,9 @@ def coFromTagcvs(patchConfig,tag, moduleName) {
 				[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
 						[location: [$class: 'TagRepositoryLocation', tagName: tag, useHeadIfNotFound: false],  modules: [
 								[localName: moduleName, remoteName: moduleName]
-							]]
-					]]
-			], skipChangeLog: false])
+						]]
+				]]
+		], skipChangeLog: false])
 	}
 	log("Checkout of ${moduleName} took ${duration} ms","coFromTagcvs")
 }
@@ -371,7 +371,8 @@ def generateVersionProperties(patchConfig) {
 	dir ("it21-ui-bundle") {
 		log("Publishing new Bom from previous Version: " + previousVersion  + " to current Revision: " + buildVersion,"generateVersionProperties")
 		sh "chmod +x ./gradlew"
-		sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
+		def cmd = "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${previousVersion} -PpublishVersion=${buildVersion} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
+		runShCommandWithRetry(cmd,5,60000)
 	}
 }
 
@@ -381,7 +382,9 @@ def releaseModule(patchConfig,module) {
 		def buildVersion =  mavenVersionNumber(patchConfig,patchConfig.revision)
 		def mvnCommand = "mvn -DbomVersion=${buildVersion}" + ' clean build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.incrementalVersion}.' + patchConfig.revisionMnemoPart + '-' + patchConfig.revision
 		log("${mvnCommand}","releaseModule")
-		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+		withMaven( maven: 'apache-maven-3.5.0') {
+			runShCommandWithRetry(mvnCommand,5,60000)
+		}
 	}
 }
 
@@ -392,8 +395,10 @@ def buildModule(patchConfig,module) {
 		def mvnCommand = "mvn -DbomVersion=${buildVersion} clean deploy"
 		log("${mvnCommand}","buildModule")
 		lock ("BomUpdate${buildVersion}") {
-			withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
-		}		
+			withMaven( maven: 'apache-maven-3.5.0') {
+				runShCommandWithRetry(mvnCommand,5,60000)
+			}
+		}
 	}
 }
 
@@ -404,7 +409,8 @@ def updateBom(patchConfig,module) {
 	lock ("BomUpdate${buildVersion}") {
 		dir ("it21-ui-bundle") {
 			sh "chmod +x ./gradlew"
-			sh "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
+			def cmd = "./gradlew clean it21-ui-dm-version-manager:publish it21-ui-dm-version-manager:publishToMavenLocal -PsourceVersion=${buildVersion} -Partifact=${module.groupId}:${module.artifactId} -PpatchFile=file:/${patchConfig.patchFilePath} --stacktrace"
+			runShCommandWithRetry(cmd,5,60000)
 		}
 	}
 }
@@ -421,19 +427,19 @@ def assembleDeploymentArtefacts(patchConfig) {
 def dbAssemble(patchConfig) {
 	def PatchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	fileOperations ([
-		folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")
+			folderCreateOperation(folderPath: "${PatchDbFolderName}\\config")
 	])
 	// Done in order for the config folder to be taken into account when we create the ZIP...
 	fileOperations ([
-		fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")
+			fileCreateOperation(fileName: "${PatchDbFolderName}\\config\\dummy.txt", fileContent: "")
 	])
 	def cmPropertiesContent = "config_name:${PatchDbFolderName}\r\npatch_name:${PatchDbFolderName}\r\ntag_name:${PatchDbFolderName}"
 	fileOperations ([
-		fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)
+			fileCreateOperation(fileName: "${PatchDbFolderName}\\cm_properties.txt", fileContent: cmPropertiesContent)
 	])
 	def configInfoContent = "config_name:${PatchDbFolderName}"
 	fileOperations ([
-		fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)
+			fileCreateOperation(fileName: "${PatchDbFolderName}\\config_info.txt", fileContent: configInfoContent)
 	])
 
 	def installPatchContent = "@echo off\r\n"
@@ -444,7 +450,7 @@ def dbAssemble(patchConfig) {
 	installPatchContent += "cmd /c \\\\cm-linux.apgsga.ch\\cm_ui\\it21_patch.bat %v_params%\r\n"
 	installPatchContent += "popd"
 	fileOperations ([
-		fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)
+			fileCreateOperation(fileName: "${PatchDbFolderName}\\install_patch.bat", fileContent: installPatchContent)
 	])
 
 	publishDbAssemble(patchConfig)
@@ -455,7 +461,7 @@ def publishDbAssemble(patchConfig) {
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	def zipName = "${patchDbFolderName}.zip"
 	fileOperations ([
-		fileDeleteOperation(includes: zipName)
+			fileDeleteOperation(includes: zipName)
 	])
 	zip zipFile: zipName, glob: "${patchDbFolderName}/**"
 
@@ -480,7 +486,7 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 	/*
 	 * JHE (22.05.2018): Within this function, we're calling a "cvs" command from shell. This is not ideal, and at best we should use a similar SCM Command as within
 	 * 					 coFromTagcvs method. So far I didn't find an equivalent build-in function allowing to do a merge.
-	 * 
+	 *
 	 */
 
 	node {
@@ -516,26 +522,26 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 def coDbModules(patchConfig) {
 	def dbObjects = patchConfig.dbObjectsAsVcsPath
 	log("Following DB Objects should get checked out : ${dbObjects}","coDbModules")
-	
+
 	def patchDbFolderName = getCoPatchDbFolderName(patchConfig)
 	fileOperations ([
-		folderDeleteOperation(folderPath: "${patchDbFolderName}")
+			folderDeleteOperation(folderPath: "${patchDbFolderName}")
 	])
 	fileOperations ([
-		folderCreateOperation(folderPath: "${patchDbFolderName}")
+			folderCreateOperation(folderPath: "${patchDbFolderName}")
 	])
 	/*
 	** work-around for not yet existing packaging of db scripts, see ticket CM-216
 	*/
 	fileOperations ([
-		folderCreateOperation(folderPath: "${patchDbFolderName}/oracle")
+			folderCreateOperation(folderPath: "${patchDbFolderName}/oracle")
 	])
 
 	def cvsRoot = patchConfig.cvsroot
-	
+
 	def patchNumber = patchConfig.patchNummer
 	def dbPatchTag = patchConfig.patchTag
-	
+
 	log("Patch \"${patchNumber}\" being checked out to \"${patchDbFolderName}/oracle\"","coDbModule")
 	patchConfig.dbObjects.collect{it.moduleName}.unique().each { dbModule ->
 		log("- module \"${dbModule}\" tag \"${dbPatchTag}\" being checked out","coDbModule")
@@ -559,9 +565,11 @@ def assemble(patchConfig) {
 	dir ("it21-ui-bundle") {
 		sh "chmod +x ./gradlew"
 		// Assemble and publish GUI
-		sh "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion} --stacktrace"
+		def guiCmd = "./gradlew it21-ui-pkg-client:assemble it21-ui-pkg-client:publish -PsourceVersion=${buildVersion} --stacktrace"
+		runShCommandWithRetry(guiCmd,5,60000)
 		// Assemble and publish Jadas
-		sh "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget} --stacktrace"
+		def jadasCmd = "./gradlew it21-ui-pkg-server:assemble it21-ui-pkg-server:publish -PsourceVersion=${buildVersion} -PpublishVersion=${jadasPublishVersion} -PbuildTarget=${patchConfig.currentTarget} --stacktrace"
+		runShCommandWithRetry(jadasCmd,5,60000)
 	}
 }
 
@@ -608,4 +616,20 @@ def log(msg,caller) {
 // Used in order to have Datetime info in our pipelines
 def log(msg) {
 	log(msg,null)
+}
+
+// JHE (08.06.2020): Function introduced for CM-297. Artifactory is sometime unresponsive. We don't know the root cause, and couldn't identify where it comes from.
+//					 What we know is that if we try again, it generally works, reason why we introduced this workaround.
+def runShCommandWithRetry(cmd,maxRetry, delayBetweenExecutionInMs) {
+	def attempt = 1
+	def res = sh returnStatus:true, script: cmd
+	while(res != 0 && attempt <= maxRetry) {
+		log("Retry number ${attempt} (max retry: ${maxRetry}","runShCommandWithRetry")
+		sleep(delayBetweenExecutionInMs)
+		res = sh returnStatus:true, script: cmd
+		attempt++
+	}
+	if(attempt > maxRetry) {
+		throw new RuntimeException("Following cmd reached max number of retry: ${cmd}")
+	}
 }
