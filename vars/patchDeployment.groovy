@@ -10,12 +10,6 @@ def installDeploymentArtifacts(patchConfig) {
 		parallel 'ui-client-deployment': {
 			if(patchConfig.installJadasAndGui) {
 				installerFactory('it21_ui', patchConfig).call()
-				// JHE (29.10.2019): In a first step, we still do the installation following old method
-				if(!isLightInstallation(patchConfig.currentTarget)) {
-					node {
-						installJadasGUI(patchConfig)
-					}
-				}
 			}
 		}, 'ui-server-deployment': {
 			if(patchConfig.installJadasAndGui) {
@@ -52,11 +46,11 @@ def isLightInstallation(target) {
 def installerFactory(serviceName,patchConfig) {
 	// JHE (28.10.2019): For now we only support 2 services to be installed over SSH. Anything else wouldn't be ready yet
 	assert ['jadas','it21_ui'].contains(serviceName) : "Installation of ${serviceName} not yet supported!"
-	
+
 	def target = patchConfig.currentTarget
 	def serviceType = getType(serviceName,target)
 	def host = getHost(serviceName, target)
-	
+
 	if(serviceType.equals("linuxservice")) {
 		return linuxServiceInstaller(target,host)
 	}
@@ -70,20 +64,20 @@ def installerFactory(serviceName,patchConfig) {
 }
 
 def getRemoteSSHConnection(host) {
-	
+
 	def remote = [:]
 	remote.name = "SSH-${host}"
 	remote.host = host
 	remote.allowAnyHosts = true
 //	remote.logLevel = "FINE"
-	
-	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
-		usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
 
-			remote.user = SSHUsername
-			remote.password = SSHUserpassword
+	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sshCredentials',
+					  usernameVariable: 'SSHUsername', passwordVariable: 'SSHUserpassword']]) {
+
+		remote.user = SSHUsername
+		remote.password = SSHUserpassword
 	}
-	
+
 	return remote
 }
 
@@ -96,7 +90,7 @@ def linuxServiceInstaller(target, host) {
 			ssh(host, "echo \$( date +%Y/%m/%d-%H:%M:%S ) - executing with \$( whoami )@\$( hostname )")
 			ssh(host, yumCmd)
 		}
-		
+
 		patchfunctions.log("Installation of apg-jadas-service-${target} done!","linuxServiceInstaller")
 	}
 	return installer
@@ -106,19 +100,19 @@ def it21UiInstaller(target,host,buildVersion) {
 	def installer = {
 		node {
 			patchfunctions.log("Installation of it21-ui starting for ${target} on host ${host}","it21UiInstaller")
-			
+
 			def group = "com.affichage.it21"
 			def artifact = "it21gui-dist-zip"
 			def artifactType = "zip"
-	
-			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml", false)
+
+			downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"/home/jenkins/.m2/settings.xml")
 			def zipDist = "${artifact}-${buildVersion}.${artifactType}"
-			
+
 			def newFolderName = guiExtractedFolderName()
-			
+
 			def uiHomeFolder = "/opt/it21_ui"
 			def uiGettingExtractedFolder = "${uiHomeFolder}/${target}/gettingExtracted_${newFolderName}"
-			
+
 			// TODO JHE: Best to run all in one script ? ... not sure
 			ssh(host, "sudo mkdir -p ${uiGettingExtractedFolder}")
 			ssh(host, "sudo chgrp -R apg_install ${uiGettingExtractedFolder}")
@@ -133,7 +127,7 @@ def it21UiInstaller(target,host,buildVersion) {
 			ssh(host, "sudo chgrp apg_install ${uiGettingExtractedFolder}/conf/*.*")
 			ssh(host, "sudo mv ${uiGettingExtractedFolder}/start_it21_gui_run.bat /opt/it21_ui/${target}")
 			ssh(host, "sudo mv ${uiGettingExtractedFolder} /opt/it21_ui/${target}/${newFolderName}")
-				
+
 			patchfunctions.log("Installation of it21-ui done for ${target}","it21UiInstaller")
 		}
 	}
@@ -192,7 +186,7 @@ def installOldStyle(patchConfig) {
 
 def installOldStyleInt(patchConfig,artifact,extension) {
 	def server = initiateArtifactoryConnection()
-	
+
 	node (env.WINDOWS_INSTALLER_OLDSTYLE_LABEL){
 		// jenkins_pipeline_patch_install_oldstyle starts also the installation of Docker Services
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install_oldstyle.bat ${patchConfig.patchNummer} ${patchConfig.currentTarget}")
@@ -202,9 +196,9 @@ def installOldStyleInt(patchConfig,artifact,extension) {
 def installDbPatch(patchConfig,artifact,extension,host,type) {
 	def server = initiateArtifactoryConnection()
 	def patchDbFolderName = patchfunctions.getCoPatchDbFolderName(patchConfig)
-	
+
 	node (env.WINDOWS_INSTALLER_LABEL){
-		
+
 		def downloadSpec = """{
               "files": [
                     {
@@ -214,10 +208,10 @@ def installDbPatch(patchConfig,artifact,extension,host,type) {
 				   ]
 			}"""
 		server.download(downloadSpec)
-		
-		
+
+
 		unzip zipFile: "download/${artifact}.${extension}"
-		
+
 		// Here will only the "CVS DB" module installed.
 		bat("cmd /c c:\\local\\software\\cm_winproc_root\\it21_extensions\\jenkins_pipeline_patch_install.bat ${patchDbFolderName} ${patchConfig.currentTarget} ${host} ${type}")
 	}
@@ -232,53 +226,12 @@ def getCredentialId(def patchConfig) {
 	}
 }
 
-def installJadasGUI(patchConfig) {
-	
-	node(env.WINDOWS_INSTALLER_LABEL) {
-		
-		def extractedGuiPath = ""
-
-		extractedGuiPath = "\\\\service-${patchConfig.currentTarget}.apgsga.ch\\it21_${patchConfig.currentTarget}_gui"
-
-		def credentialId = getCredentialId(patchConfig)
-		
-		withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: credentialId,
-					usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-	
-				// Mount the share drive
-				powershell("net use ${extractedGuiPath} ${PASSWORD} /USER:${USERNAME}")
-		}
-
-		def buildVersion =  patchfunctions.mavenVersionNumber(patchConfig,patchConfig.revision)
-		def group = "com.affichage.it21"
-		def artifact = "it21gui-dist-zip"
-		def artifactType = "zip"
-
-		downloadGuiZipToBeInstalled(group,artifact,artifactType,buildVersion,"C:/local/software/maven/settings.xml", true)
-
-		def extractedFolderName = guiExtractedFolderName()
-		
-		def zipDist = "${artifact}-${buildVersion}.${artifactType}"
-		extractGuiZip(zipDist,extractedGuiPath,extractedFolderName)
-		copyGuiOpsResources(patchConfig,extractedGuiPath,extractedFolderName)
-		patchfunctions.log("Waiting 60 seconds before trying to rename the extracted ZIP.","installJadasGUI")
-		sleep(time:60,unit:"SECONDS")
-		renameExtractedGuiZip(extractedGuiPath,extractedFolderName)
-		patchfunctions.log("GUI Folder correctly renamed.","installJadasGUI")
-		copyCitrixBatchFile(extractedGuiPath,extractedFolderName)
-		removeOldGuiFolder(extractedGuiPath)
-
-		// Unmount the share drive
-		powershell("net use ${extractedGuiPath} /delete")
-	}
-}
-
 def removeOldGuiFolder(extractedGuiPath) {
 	// Keep last 2 folders starting with java_gui.
 	def guiFolderNamePrefix = "java_gui"
 	def nbFolderToKeep = "10"
 	powershell "Get-ChildItem ${extractedGuiPath} -Directory -Recurse -Include ${guiFolderNamePrefix}* | Sort-Object CreationTime -Descending | Select-Object -Skip ${nbFolderToKeep} | Remove-Item -Recurse -Force"
-	
+
 }
 
 def guiExtractedFolderName() {
@@ -287,17 +240,12 @@ def guiExtractedFolderName() {
 	return extractedFolderName
 }
 
-// JHE: This one is slowly but surely getting bad. Thing is we temporarily install GUI both via SSH and via Node.
-//      That means once via Windows, and once via Unix ...
-def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion, def pathToMavenSettings, boolean isWindows) {
+def downloadGuiZipToBeInstalled(def groupId, def artifactId, def artifactType, def buildVersion, def pathToMavenSettings) {
 	// TODO JHE: -s option with patch to jenkins home folder, really needed? If needed, really what we want?
 	def mvnCommand = "mvn dependency:copy -Dartifact=${groupId}:${artifactId}:${buildVersion}:${artifactType} -DoutputDirectory=./download -s ${pathToMavenSettings}"
 	patchfunctions.log("Downloading GUI-ZIP with following command: ${mvnCommand}","downloadGuiZipToBeInstalled")
-	if(isWindows) {
-		withMaven( maven: 'apache-maven-3.5.0') { bat "${mvnCommand}" }
-	}
-	else {
-		withMaven( maven: 'apache-maven-3.5.0') { sh "${mvnCommand}" }
+	withMaven( maven: 'apache-maven-3.5.0') {
+		patchfunctions.runShCommandWithRetry(mvnCommand,5,60)
 	}
 	patchfunctions.log("GUI-ZIP correctly downloaded.","downloadGuiZipToBeInstalled")
 }
@@ -307,7 +255,7 @@ def initiateArtifactoryConnection() {
 	def server = Artifactory.server env.ARTIFACTORY_SERVER_ID
 
 	withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'artifactoryDev',
-			usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+					  usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
 
 		server.username = "${USERNAME}"
 		server.password = "${PASSWORD}"
