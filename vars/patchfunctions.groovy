@@ -512,7 +512,7 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 			try {
 				sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
 			} catch (Exception mergeEx) {
-				log("... ${dbModule} tag \"${dbPatchTag}\" had merge conflicts for branch \"${dbProdBranch}\" - forcing contents of tag \"${dbPatchTag}\"","mergeDbObjectOnHead")
+				log("... ${dbModule} tag \"${dbPatchTag}\" had merge conflicts for branch \"${dbProdBranch}\" -> forcing contents of tag \"${dbPatchTag}\"","mergeDbObjectOnHead")
 				def tmpFolderDir = "cvsExportTemp_${patchNumber}"
 				sh "mkdir -p ${tmpFolderDir}"
 				sh "cd ${tmpFolderDir}"
