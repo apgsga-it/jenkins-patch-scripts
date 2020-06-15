@@ -515,11 +515,9 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 				log("... ${dbModule} tag \"${dbPatchTag}\" had merge conflicts for branch \"${dbProdBranch}\" -> forcing contents of tag \"${dbPatchTag}\"","mergeDbObjectOnHead")
 				def tmpFolderDir = "cvsExportTemp_${patchNumber}"
 				sh "mkdir -p ${tmpFolderDir}"
-				sh "cd ${tmpFolderDir}"
-				sh "cvs -d${cvsRoot} export -r ${dbPatchTag} ${dbModule}"
+				sh "cd ${tmpFolderDir} && cvs -d${cvsRoot} export -r ${dbPatchTag} ${dbModule}"
 				sh "find * -type f -exec cp -f -p {} ../../{} \\;"
-				sh "cd .."
-				sh "rm -Rf ${tmpFolderDir}"
+				sh "cd .. && rm -Rf ${tmpFolderDir}"
 				sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch'"
 			}
 			log("... ${dbModule} commited", "mergeDbObjectOnHead")
