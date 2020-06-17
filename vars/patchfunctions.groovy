@@ -516,6 +516,8 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 				def tmpFolderDir = "cvsExportTemp_${patchNumber}"
 				sh "mkdir -p ${tmpFolderDir}"
 				sh "cd ${tmpFolderDir} && cvs -d${cvsRoot} export -r ${dbPatchTag} ${dbModule}"
+				// JHE: Needs to be removed, but need to know in which folder exactly we are a this point
+				sh "pwd"
 				sh "find * -type f -exec cp -f -p {} ../{} \\;"
 				sh "cd .. && rm -Rf ${tmpFolderDir}"
 				sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch'"
