@@ -509,7 +509,17 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 			log("... ${dbModule} tagged ${dbTagBeforeMerge}", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} up -j ${dbPatchTag} ${dbModule}"
 			log("... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
-			sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
+			try {
+				sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
+			} catch (Exception mergeEx) {
+				log("... ${dbModule} tag \"${dbPatchTag}\" had merge conflicts for branch \"${dbProdBranch}\" -> forcing contents of tag \"${dbPatchTag}\"","mergeDbObjectOnHead")
+				def tmpFolderDir = "cvsExportTemp_${patchNumber}"
+				sh "mkdir -p ${tmpFolderDir}"
+				sh "cd ${tmpFolderDir} && cvs -d${cvsRoot} export -r ${dbPatchTag} ${dbModule}"
+				sh "cd ${tmpFolderDir} && find * -type f -exec cp -f -p {} ../{} \\;"
+				sh "rm -Rf ${tmpFolderDir}"
+				sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch'"
+			}
 			log("... ${dbModule} commited", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} tag -F ${dbTagAfterMerge} ${dbModule}"
 			log("... ${dbModule} tagged ${dbTagAfterMerge}", "mergeDbObjectOnHead")
