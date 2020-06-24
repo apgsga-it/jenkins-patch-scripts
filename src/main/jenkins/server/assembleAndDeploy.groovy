@@ -10,11 +10,15 @@ pipeline {
             }
         }
         stage("Getting JSON Patch files") {
+
+            script {
+                dirName = "20200624_12345"
+            }
+
             steps {
                 echo "JSON Patch files will be taken from here"
-                dirName = "20200624_12345"
-                sh("mkdir ${20200624_12345}")
-                sh("apsdbcli.sh -cpf Informatiktest,${20200624_12345}")
+                sh("mkdir ${env.dirName}")
+                sh("apsdbcli.sh -cpf Informatiktest,${env.dirName}")
             }
         }
     }
