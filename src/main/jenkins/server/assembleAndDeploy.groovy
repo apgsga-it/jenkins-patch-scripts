@@ -1,15 +1,12 @@
 pipeline {
     agent any
     environment {
-        dirName = ""
+        dirName = "20200624_12345"
     }
     stages {
         stage("Initializing") {
             steps {
                 echo "Pipeline is running for target ${TARGET}"
-                script {
-                    env.dirName = "20200624_12345"
-                }
                 echo "Name of directory containing JSON Patch file: ${env.dirName}"
             }
         }
