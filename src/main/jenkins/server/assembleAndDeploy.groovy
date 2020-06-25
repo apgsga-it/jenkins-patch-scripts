@@ -15,7 +15,8 @@ pipeline {
             steps {
                 echo "JSON Patch files will be taken from here"
                 sh("mkdir ${env.dirName}")
-                sh("apsdbcli.sh -cpf Informatiktest,${env.dirName}")
+                // JHE: Seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
+                sh("/opt/apg-patch-cli/bin/apsdbcli.sh -cpf Informatiktest,${env.dirName}")
             }
         }
     }
