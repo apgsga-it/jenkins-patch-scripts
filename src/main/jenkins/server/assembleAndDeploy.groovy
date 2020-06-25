@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        dirName = "20200624_12345"
+        dirName = new Date().format("yyyyMMdd_HHmmssSSS")
     }
     stages {
         stage("Initializing") {
