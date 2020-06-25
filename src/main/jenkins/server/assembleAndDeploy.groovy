@@ -8,7 +8,7 @@ pipeline {
             steps {
                 echo "Pipeline is running for target ${TARGET}"
                 script {
-                    dirName = "20200624_12345"
+                    env.dirName = "20200624_12345"
                 }
                 echo "Name of directory containing JSON Patch file: ${env.dirName}"
             }
