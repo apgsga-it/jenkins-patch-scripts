@@ -12,10 +12,11 @@ def coFromBranchCvs(moduleName, type) {
 	if(type.equals("db")) {
 		cvsBranch = "toBeDetermine"
 	}
+	def cvsroot = env.CVS_ROOT
 	def callBack = benchmark()
 	def duration = callBack {
 		checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
-				[compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
+				[compressionLevel: -1, cvsRoot: cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
 						[location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [
 								[localName: moduleName, remoteName: moduleName]
 							]]
