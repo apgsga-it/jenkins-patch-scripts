@@ -19,5 +19,20 @@ pipeline {
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf Informatiktest,${env.dirName}")
             }
         }
+
+        stage("Stashing JSON Patch files within ${env.dirName} folder") {
+            // JHE: Mmmhh, are stashed files really kept for an eventuel next run: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
+            stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
+        }
+
+        input id: "test", message: "Here you should restart jenkins and see what happens with stashed files"
+
+        stage("TEST STAGE TO BE DELETED") {
+            echo "Unstashing files within ${env.dirName}"
+            sh("mkdir ${env.dirName}_testUnstashed")
+            dir("${env.dirName}_testUnstashed") {
+                unstash name: "${env.dirName}_stashed"
+            }
+        }
     }
 }
