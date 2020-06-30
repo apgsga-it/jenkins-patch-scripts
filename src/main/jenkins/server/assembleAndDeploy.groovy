@@ -33,7 +33,7 @@ pipeline {
             steps {
 
                 echo "Trying to call a function from a library ..."
-                testjhefunc()
+                _.testjhefunc()
 
                 /*
                 def cvsBranch = patchConfig.microServiceBranch
