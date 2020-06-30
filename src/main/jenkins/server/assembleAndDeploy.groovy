@@ -1,4 +1,5 @@
-@Library("patch-functions-library")_
+library("patch-functions-library")
+
 pipeline {
     agent any
     environment {
@@ -33,7 +34,7 @@ pipeline {
             steps {
 
                 echo "Trying to call a function from a library ..."
-                _.testjhefunc()
+                testjhefunc()
 
                 /*
                 def cvsBranch = patchConfig.microServiceBranch
