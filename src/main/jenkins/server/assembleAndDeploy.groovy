@@ -34,7 +34,7 @@ pipeline {
             steps {
 
                 echo "Trying to call a function from a library ..."
-                testjhefunc()
+                patchfunctions.testjhefunc()
 
                 /*
                 def cvsBranch = patchConfig.microServiceBranch
