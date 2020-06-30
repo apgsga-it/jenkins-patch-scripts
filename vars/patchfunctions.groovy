@@ -9,6 +9,10 @@ import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
+def testjhefunc() {
+	println "This is a test echoing from library !!"
+}
+
 def sendMail(def subject, def body, def to) {
 	Properties properties = System.getProperties()
 	properties.setProperty("mail.smtp.host", env.SMTP_HOST)

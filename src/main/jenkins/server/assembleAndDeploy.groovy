@@ -1,3 +1,4 @@
+@Library("patch-functions-library")_
 pipeline {
     agent any
     environment {
@@ -28,20 +29,32 @@ pipeline {
             }
         }
 
-        stage("test input") {
+        stage("Getting Pkg projects from CVS") {
             steps {
-                input id: "test", message: "Here you should restart jenkins and see what happens with stashed files"
+
+                echo "Trying to call a function from a library ..."
+                testjhefunc()
+
+                /*
+                def cvsBranch = patchConfig.microServiceBranch
+                if(type.equals("db")) {
+                    cvsBranch = patchConfig.dbPatchBranch
+                }
+                def callBack = benchmark()
+                def duration = callBack {
+                    checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
+                            [compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
+                                    [location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [
+                                            [localName: moduleName, remoteName: moduleName]
+                                    ]]
+                            ]]
+                    ], skipChangeLog: false])
+                }
+
+                 */
             }
         }
 
-        stage("TEST STAGE TO BE DELETED") {
-            steps {
-                echo "Unstashing files within ${env.dirName}"
-                sh("mkdir ${env.dirName}_testUnstashed")
-                dir("${env.dirName}_testUnstashed") {
-                    unstash name: "${env.dirName}_stashed"
-                }
-            }
-        }
+
     }
 }
