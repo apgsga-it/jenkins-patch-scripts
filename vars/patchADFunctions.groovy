@@ -10,7 +10,7 @@ def coJadasPkgProject() {
 def coFromBranchCvs(moduleName, type) {
 	def cvsBranch = "apg_vaadin_1_0_x_digiflex"
 	if(type.equals("db")) {
-		cvsBranch = patchConfig.dbPatchBranch
+		cvsBranch = "toBeDetermine"
 	}
 	def callBack = benchmark()
 	def duration = callBack {
@@ -23,6 +23,16 @@ def coFromBranchCvs(moduleName, type) {
 			], skipChangeLog: false])
 	}
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
+}
+
+def benchmark() {
+	def benchmarkCallback = { closure ->
+		start = System.currentTimeMillis()
+		closure.call()
+		now = System.currentTimeMillis()
+		now - start
+	}
+	benchmarkCallback
 }
 
 // Used in order to have Datetime info in our pipelines
