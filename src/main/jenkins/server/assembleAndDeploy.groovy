@@ -20,8 +20,9 @@ pipeline {
             }
         }
 
-        stage("Stashing JSON Patch files within folder " + env.dirName) {
+        stage("Stashing JSON Patch files") {
             steps {
+                echo "Stashing files within ${env.dirName}"
                 // JHE: Mmmhh, are stashed files really kept for an eventuel next run: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
             }
