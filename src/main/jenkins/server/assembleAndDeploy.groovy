@@ -1,4 +1,4 @@
-library("patch-functions-library")
+library("patch-ad-functions-library")
 
 pipeline {
     agent any
@@ -35,26 +35,9 @@ pipeline {
 
                 echo "Trying to call a function from a library ..."
                 script {
-                    patchfunctions.testjhefunc()
+                    patchADfunctions.coJadasPkgProject()
                 }
 
-                /*
-                def cvsBranch = patchConfig.microServiceBranch
-                if(type.equals("db")) {
-                    cvsBranch = patchConfig.dbPatchBranch
-                }
-                def callBack = benchmark()
-                def duration = callBack {
-                    checkout scm: ([$class: 'CVSSCM', canUseUpdate: true, checkoutCurrentTimestamp: false, cleanOnFailedUpdate: false, disableCvsQuiet: false, forceCleanCopy: true, legacy: false, pruneEmptyDirectories: false, repositories: [
-                            [compressionLevel: -1, cvsRoot: patchConfig.cvsroot, excludedRegions: [[pattern: '']], passwordRequired: false, repositoryItems: [
-                                    [location: [$class: 'BranchRepositoryLocation', branchName: cvsBranch, useHeadIfNotFound: false],  modules: [
-                                            [localName: moduleName, remoteName: moduleName]
-                                    ]]
-                            ]]
-                    ], skipChangeLog: false])
-                }
-
-                 */
             }
         }
 
