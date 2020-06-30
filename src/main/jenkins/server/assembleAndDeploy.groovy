@@ -35,7 +35,7 @@ pipeline {
 
                 echo "Trying to call a function from a library ..."
                 script {
-                    patchADfunctions.coJadasPkgProject()
+                    patchADFunctions.coJadasPkgProject()
                 }
 
             }
