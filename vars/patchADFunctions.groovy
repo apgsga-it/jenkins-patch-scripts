@@ -68,16 +68,14 @@ def assemble(def servicesToBeAssembled) {
 	}
 }
 
-def deploy() {
-	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
-	dir("digiflex-jadas-pkg") {
-		sh "./gradlew deployRpm -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+def deploy(def servicesToBeDeployed) {
+	log("Following services will be deployed using corresponding pkg project: ${servicesToBeDeployed}")
+	// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
+	servicesToBeDeployed.each{s ->
+		def taskName = s.contains("-ui-") ? "deployZip" : "deployRpm"
 	}
-	dir("digiflex-it21-ui-pkg") {
-		sh "./gradlew deployZip -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
-	}
-	dir("digiflex-web-it21-pkg") {
-		sh "./gradlew deployRpm -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+	dir("${s}-pkg") {
+		sh "./gradlew ${taskName} -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 	}
 }
 

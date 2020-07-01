@@ -51,7 +51,8 @@ pipeline {
         stage("Deploying Artefacts") {
             steps {
                 script {
-                    patchADFunctions.deploy()
+                    def serviceNames = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
+                    patchADFunctions.deploy(serviceNames)
                 }
             }
         }
