@@ -44,7 +44,6 @@ pipeline {
         stage("Assembling projects") {
             steps {
                 script {
-                    dir("digiflex-jadas-pkg") {
                         patchADFunctions.assembleJadasPkg()
                     }
                 }
