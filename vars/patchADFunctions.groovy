@@ -1,6 +1,32 @@
+import groovy.io.FileType
+import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
-def coPackageProjects() {
+def readPatchFile(patchFilePath) {
+	def patchFile = new File(patchFilePath)
+	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
+	patchConfig.patchFilePath = patchFilePath
+	patchConfig
+}
+
+def servicesInPatches(def currentPatchFolderPath) {
+	log("Patches from following folder will be parsed: ${currentPatchFolderPath}","servicesInPatches")
+	Set<String> serviceSames = []
+	def workFolder = new File(currentPatchFolderPath)
+	workFolder.eachFileRecurse(FileType.FILES) {jsonPatchFile ->
+		def p = readPatchFile(jsonPatchFile.path)
+		if(!p.services.isEmpty()) {
+			p.services.each {s ->
+				log("${s.serviceName} found within Patch ${p.patchNummer}", "servicesInPatches")
+				serviceSames.add(s.serviceName)
+			}
+		}
+	}
+	serviceSames
+}
+
+def coPackageProjects(def servicesToBeCheckoutOut) {
+	log("Packaged project will be checked out for following service: ${servicesToBeCheckoutOut}")
 	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
 	lock ("ConcurrentCvsCheckout") {
 		coFromBranchCvs('digiflex-jadas-pkg', 'microservice')
