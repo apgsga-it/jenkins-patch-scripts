@@ -14,7 +14,6 @@ def readPatchFile(patchFilePath) {
 def servicesInPatches(def currentPatchFolderPath) {
 	log("Patches from following folder will be parsed: ${currentPatchFolderPath}","servicesInPatches")
 	Set<String> serviceSames = []
-	log("TO BE DELETED, current locaation = " + new File(".").getAbsolutePath())
 	def workFolder = new File(currentPatchFolderPath)
 	workFolder.eachFileRecurse(FileType.FILES) {jsonPatchFile ->
 		def p = readPatchFile(jsonPatchFile.path)
@@ -30,11 +29,11 @@ def servicesInPatches(def currentPatchFolderPath) {
 
 def coPackageProjects(def servicesToBeCheckoutOut) {
 	log("Packaged project will be checked out for following service: ${servicesToBeCheckoutOut}")
-	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
 	lock ("ConcurrentCvsCheckout") {
-		coFromBranchCvs('digiflex-jadas-pkg', 'microservice')
-		coFromBranchCvs('digiflex-it21-ui-pkg', 'microservice')
-		coFromBranchCvs('digiflex-web-it21-pkg', 'microservice')
+		servicesToBeCheckoutOut.each{s ->
+			// TODO JHE: To be verified, we assume a convention to determine pkg project name based on service name
+			coFromBranchCvs("${s}-pkg", 'microservice')
+		}
 	}
 }
 
