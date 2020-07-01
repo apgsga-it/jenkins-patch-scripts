@@ -2,6 +2,8 @@ import groovy.io.FileType
 import groovy.json.JsonSlurperClassic
 import hudson.model.*
 
+import javax.swing.JColorChooser
+
 def readPatchFile(patchFilePath) {
 	def patchFile = new File(patchFilePath)
 	def patchConfig = new JsonSlurperClassic().parseText(patchFile.text)
@@ -12,6 +14,7 @@ def readPatchFile(patchFilePath) {
 def servicesInPatches(def currentPatchFolderPath) {
 	log("Patches from following folder will be parsed: ${currentPatchFolderPath}","servicesInPatches")
 	Set<String> serviceSames = []
+	log("TO BE DELETED, current locaation = " + new File(".").getAbsolutePath())
 	def workFolder = new File(currentPatchFolderPath)
 	workFolder.eachFileRecurse(FileType.FILES) {jsonPatchFile ->
 		def p = readPatchFile(jsonPatchFile.path)
