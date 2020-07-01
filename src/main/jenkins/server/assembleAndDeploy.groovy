@@ -42,7 +42,8 @@ pipeline {
         stage("Assembling projects") {
             steps {
                 script {
-                        patchADFunctions.assemble()
+                        def serviceNames = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
+                        patchADFunctions.assemble(serviceNames)
                     }
             }
         }
