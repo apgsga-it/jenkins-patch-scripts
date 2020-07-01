@@ -33,7 +33,7 @@ pipeline {
         stage("Getting Pkg projects from CVS") {
             steps {
                 script {
-                    def serviceNames = patchADFunctions.servicesInPatches(env.dirName)
+                    def serviceNames = patchADFunctions.servicesInPatches("${env.getWORKSPACE()}/${env.dirName}")
                     patchADFunctions.coPackageProjects(serviceNames)
                 }
             }
