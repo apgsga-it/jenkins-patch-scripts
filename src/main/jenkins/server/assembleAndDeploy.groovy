@@ -10,15 +10,15 @@ pipeline {
             steps {
                 echo "Pipeline is running for target ${TARGET}"
                 echo "Name of directory containing JSON Patch file: ${env.dirName}"
+                sh("mkdir ${env.dirName}")
             }
         }
 
         stage("Getting JSON Patch files") {
             steps {
-                echo "JSON Patch files will be taken from here"
-                sh("mkdir ${env.dirName}")
                 // JHE: Seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
-                sh("/opt/apg-patch-cli/bin/apscli.sh -cpf Informatiktest,${env.dirName}")
+                // TODO JHE: 113 = Informatiktestlieferung Bearbeitung , will probably be retrieved from TargetSystemMapping. Or could also be a Pipeline Job parameter
+                sh("/opt/apg-patch-cli/bin/apscli.sh -cpf 113,${env.dirName}")
             }
         }
 

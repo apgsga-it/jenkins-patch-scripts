@@ -1,6 +1,5 @@
 import hudson.model.*
 
-// TODO (che, 29.10) not very efficient
 def coPackageProjects() {
 	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
 	lock ("ConcurrentCvsCheckout") {
