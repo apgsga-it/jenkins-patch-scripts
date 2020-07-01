@@ -71,11 +71,11 @@ def assemble(def servicesToBeAssembled) {
 def deploy(def servicesToBeDeployed) {
 	log("Following services will be deployed using corresponding pkg project: ${servicesToBeDeployed}")
 	// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
-	servicesToBeDeployed.each{s ->
+	servicesToBeDeployed.each { s ->
 		def taskName = s.contains("-ui-") ? "deployZip" : "deployRpm"
-	}
-	dir("${s}-pkg") {
-		sh "./gradlew ${taskName} -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+		dir("${s}-pkg") {
+			sh "./gradlew ${taskName} -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+		}
 	}
 }
 
