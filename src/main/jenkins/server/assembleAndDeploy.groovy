@@ -46,7 +46,6 @@ pipeline {
                 script {
                         patchADFunctions.assembleJadasPkg()
                     }
-                }
             }
         }
 
