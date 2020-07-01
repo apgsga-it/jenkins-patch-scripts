@@ -30,7 +30,7 @@ def coFromBranchCvs(moduleName, type) {
 
 def assembleJadasPkg() {
 	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
-	sh "./gradlew clean buildRpm -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl"
+	sh "./gradlew clean buildRpm -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 }
 
 def benchmark() {
