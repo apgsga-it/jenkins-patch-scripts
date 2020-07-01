@@ -32,19 +32,16 @@ pipeline {
 
         stage("Getting Pkg projects from CVS") {
             steps {
-
-                echo "Trying to call a function from a library ..."
                 script {
-                    patchADFunctions.coJadasPkgProject()
+                    patchADFunctions.coPackageProjects()
                 }
-
             }
         }
 
         stage("Assembling projects") {
             steps {
                 script {
-                        patchADFunctions.assembleJadasPkg()
+                        patchADFunctions.assemble()
                     }
             }
         }

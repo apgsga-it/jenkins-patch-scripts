@@ -1,10 +1,12 @@
 import hudson.model.*
 
 // TODO (che, 29.10) not very efficient
-def coJadasPkgProject() {
+def coPackageProjects() {
 	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
 	lock ("ConcurrentCvsCheckout") {
 		coFromBranchCvs('digiflex-jadas-pkg', 'microservice')
+		coFromBranchCvs('digiflex-it21-ui-pkg', 'microservice')
+		coFromBranchCvs('digiflex-web-it21-pkg', 'microservice')
 	}
 }
 
@@ -28,9 +30,15 @@ def coFromBranchCvs(moduleName, type) {
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
 
-def assembleJadasPkg() {
+def assemble() {
 	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
 	dir("digiflex-jadas-pkg") {
+		sh "./gradlew clean buildRpm -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+	}
+	dir("digiflex-it21-ui-pkg") {
+		sh "./gradlew clean buildZip -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+	}
+	dir("digiflex-web-it21-pkg") {
 		sh "./gradlew clean buildRpm -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 	}
 }
