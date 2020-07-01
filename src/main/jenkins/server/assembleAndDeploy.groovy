@@ -46,6 +46,14 @@ pipeline {
             }
         }
 
+        stage("Deploying Artefacts") {
+            steps {
+                script {
+                    patchADFunctions.deploy()
+                }
+            }
+        }
+
 
     }
 }

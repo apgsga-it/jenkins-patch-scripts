@@ -43,6 +43,19 @@ def assemble() {
 	}
 }
 
+def deploy() {
+	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
+	dir("digiflex-jadas-pkg") {
+		sh "./gradlew clean deployRpm -PtargetHost=dev-jhedocker.light.apgsga.ch -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+	}
+	dir("digiflex-it21-ui-pkg") {
+		sh "./gradlew clean deployZip -PtargetHost=dev-jhedocker.light.apgsga.ch -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+	}
+	dir("digiflex-web-it21-pkg") {
+		sh "./gradlew clean deployRpm -PtargetHost=dev-jhedocker.light.apgsga.ch -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+	}
+}
+
 def benchmark() {
 	def benchmarkCallback = { closure ->
 		start = System.currentTimeMillis()
