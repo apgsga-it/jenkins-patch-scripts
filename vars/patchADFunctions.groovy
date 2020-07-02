@@ -64,7 +64,8 @@ def assemble(def servicesToBeAssembled, def target) {
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
-			sh "./gradlew clean ${taskName} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
+			sh "./gradlew clean ${taskName} -PpatchParentDir=/var/opt/apg-patch-service-server/db -PpatchFileNames=Patch7000.json -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 		}
 	}
 }
