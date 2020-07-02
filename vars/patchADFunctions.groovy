@@ -60,23 +60,24 @@ def coFromBranchCvs(moduleName, type) {
 def assemble(def servicesToBeAssembled) {
 	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled}")
 	servicesToBeAssembled.each{s ->
-		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
-		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
-			sh "./gradlew clean ${taskName} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			sh "./gradlew clean ${getTaskName(s)} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 		}
 	}
 }
 
 def deploy(def servicesToBeDeployed) {
 	log("Following services will be deployed using corresponding pkg project: ${servicesToBeDeployed}")
-	// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 	servicesToBeDeployed.each { s ->
-		def taskName = s.contains("-ui-") ? "deployZip" : "deployRpm"
 		dir("${s}-pkg") {
-			sh "./gradlew ${taskName} -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			sh "./gradlew ${getTaskName(s)} -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -PrpmReleaseNr=222 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 		}
 	}
+}
+
+def getTaskName(def serviceName) {
+	// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
+	def taskName = serviceName.contains("-ui-") ? "deployZip" : "deployRpm"
 }
 
 def benchmark() {
