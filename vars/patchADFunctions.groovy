@@ -78,6 +78,7 @@ def deploy(def servicesToBeDeployed) {
 def getTaskName(def serviceName) {
 	// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 	def taskName = serviceName.contains("-ui-") ? "deployZip" : "deployRpm"
+	taskName
 }
 
 def benchmark() {
