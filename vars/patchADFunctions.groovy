@@ -57,13 +57,13 @@ def coFromBranchCvs(moduleName, type) {
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
 
-def assemble(def servicesToBeAssembled) {
+def assemble(def servicesToBeAssembled, def target) {
 	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled}")
 	servicesToBeAssembled.each{s ->
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
-			sh "./gradlew clean ${taskName} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=CHEI212 -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			sh "./gradlew clean ${taskName} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=${target} -PrpmReleaseNr=222 -PbuildTyp=SNAPSHOT -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 		}
 	}
 }
