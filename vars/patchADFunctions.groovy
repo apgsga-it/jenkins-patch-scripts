@@ -58,7 +58,7 @@ def coFromBranchCvs(moduleName, type) {
 }
 
 def assemble(def servicesToBeAssembled, def target) {
-	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled}")
+	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled} for target ${target}")
 	servicesToBeAssembled.each{s ->
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
