@@ -43,7 +43,7 @@ pipeline {
             steps {
                 script {
                         def serviceNames = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
-                        patchADFunctions.assemble(serviceNames,TARGET,env.dirName)
+                        patchADFunctions.assemble(serviceNames,TARGET,"${env.WORKSPACE}/${env.dirName}")
                     }
             }
         }
