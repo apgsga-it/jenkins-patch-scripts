@@ -32,7 +32,7 @@ def getPatchFileNamesFrom(def folderPath) {
 	log("Searching patch file Names from following folder: ${folderPath}","getPatchFileNamesFrom")
 	def folder = new File(folderPath)
 	def fileNames = ""
-	folder.eachFileMatch(FileType.FILES,~/^Patch\.json$/) {jsonPatchFile ->
+	folder.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
 		log("Found ${jsonPatchFile.name} -> will be added to the list","getPatchFileNamesFrom")
 		fileNames += "${jsonPatchFile.name}:"
 	}
