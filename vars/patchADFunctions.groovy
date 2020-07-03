@@ -1,5 +1,6 @@
 import groovy.io.FileType
 import groovy.json.JsonSlurperClassic
+import groovyjarjarantlr.StringUtils
 import hudson.model.*
 
 import javax.swing.JColorChooser
@@ -25,6 +26,17 @@ def servicesInPatches(def currentPatchFolderPath) {
 		}
 	}
 	serviceNames
+}
+
+def getPatchFileNamesFrom(def folderPath) {
+	log("Searching patch file Names from following folder: ${folderPath}")
+	def folder = new File(folderPath)
+	def fileNames = ""
+	folder.eachFileMatch(FileType.FILES,"Patch*.json") {jsonPatchFile ->
+		fileNames += "${jsonPatchFile.name}:"
+	}
+	// Remove last ":"
+	return fileNames.substring(0,fileNames.length()-1)
 }
 
 def coPackageProjects(def servicesToBeCheckoutOut) {
@@ -60,12 +72,13 @@ def coFromBranchCvs(moduleName, type) {
 // TODO JHE: Not sure if the target should be taken from patchConfig. But, when assembling, we know for which target we assemble ... not the patch, isn't it?
 def assemble(def servicesToBeAssembled, def target, def patchParentDir) {
 	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled} for target ${target}")
+	def patchFiles = getPatchFileNamesFrom(patchParentDir)
 	servicesToBeAssembled.each{s ->
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
 			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			sh "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=Patch7000.json -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			sh "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${getPatchFileNamesFrom(patchParentDir)} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 		}
 	}
 }
