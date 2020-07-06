@@ -79,7 +79,7 @@ def assemble(def servicesToBeAssembled, def target, def patchParentDir) {
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
 			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			sh "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			sh "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 		}
 	}
 }
