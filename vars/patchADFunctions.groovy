@@ -75,9 +75,10 @@ def assemble(def servicesToBeAssembled, def target, def patchParentDir) {
 	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled} for target ${target}")
 	def patchFiles = getPatchFileNamesFrom(patchParentDir)
 	servicesToBeAssembled.each{s ->
+		/*
 		log("Fetching last Revision number for service ${s} on target ${TARGET}")
 		def revBuilder = RevisionManagerBuilder.create()
-
+		*/
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
