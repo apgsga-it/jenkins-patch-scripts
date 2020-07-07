@@ -71,38 +71,19 @@ def coFromBranchCvs(moduleName, type) {
 }
 
 // TODO JHE: Not sure if the target should be taken from patchConfig. But, when assembling, we know for which target we assemble ... not the patch, isn't it?
-def assemble(def servicesToBeAssembled, def target, def patchParentDir) {
-	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled} for target ${target}")
+def assemble(def target, def patchParentDir) {
+	log("Patch from ${patchParentDir } for target ${target} will be assembled.")
+	def servicesToBeAssembled = servicesInPatches(patchParentDir)
 	def patchFiles = getPatchFileNamesFrom(patchParentDir)
 	servicesToBeAssembled.each{s ->
-		def biggestLastRevision = fetchBiggestLastRevisionFor(s,patchParentDir)
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
-			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			def cmd = "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbomLastRevision=${biggestLastRevision} -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			def cmd = "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 			log("Assemble cmd: ${cmd}","assemble")
 			sh cmd
 		}
 	}
-}
-
-def fetchBiggestLastRevisionFor(def serviceName, def patchParentDirPath) {
-	def lastRev = 0
-	def patchParentDir = new File(patchParentDirPath)
-	patchParentDir.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
-		def p = readPatchFile(jsonPatchFile.path)
-		if(!p.services.isEmpty()) {
-			p.services.each{s ->
-				if(s.serviceName.equalsIgnoreCase(serviceName) && lastRev < Integer.valueOf(s.lastRevision)) {
-					lastRev = Integer.valueOf(s.lastRevision)
-					log("New biggest lastRevision = ${lastRev} -> came from Patch ${p.patchNummer}","fetchBiggestLastRevisionFor")
-				}
-			}
-		}
-	}
-	log("Biggest lastRevision was : ${lastRev}","fetchBiggestLastRevisionFor")
-	String.valueOf(lastRev)
 }
 
 def deploy(def servicesToBeDeployed) {

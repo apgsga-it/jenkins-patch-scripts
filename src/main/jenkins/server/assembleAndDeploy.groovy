@@ -9,8 +9,8 @@ pipeline {
         stage("Initializing") {
             steps {
                 echo "Pipeline is running for target ${TARGET}"
-                echo "Name of directory containing JSON Patch file: ${env.dirName}"
                 sh("mkdir ${env.dirName}")
+                echo "Path of directory containing JSON Patch file for current pipeline execution: ${env.WORKSPACE}/${env.dirName}"
             }
         }
 
@@ -42,8 +42,7 @@ pipeline {
         stage("Assembling projects") {
             steps {
                 script {
-                        def serviceNames = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
-                        patchADFunctions.assemble(serviceNames,TARGET,"${env.WORKSPACE}/${env.dirName}")
+                        patchADFunctions.assemble(TARGET,"${env.WORKSPACE}/${env.dirName}")
                     }
             }
         }
