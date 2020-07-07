@@ -75,17 +75,32 @@ def assemble(def servicesToBeAssembled, def target, def patchParentDir) {
 	log("Following service will be assembled using corresponding pkg project: ${servicesToBeAssembled} for target ${target}")
 	def patchFiles = getPatchFileNamesFrom(patchParentDir)
 	servicesToBeAssembled.each{s ->
-		/*
-		log("Fetching last Revision number for service ${s} on target ${TARGET}")
-		def revBuilder = RevisionManagerBuilder.create()
-		*/
+		def biggestLastRevision = fetchBiggestLastRevisionFor(s,patchParentDir)
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
 			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			sh "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbomLastRevision=SNAPSHOT -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			def cmd = "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbomLastRevision=${biggestLastRevision} -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PbuildTyp=PATCH -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			log("Assemble cmd: ${cmd}","assemble")
+			sh cmd
 		}
 	}
+}
+
+def fetchBiggestLastRevisionFor(def serviceName, def patchParentDirPath) {
+	def lastRev = 0
+	def patchParentDir = new File(patchParentDirPath)
+	patchParentDir.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
+		if(jsonPatchFile.services.size() > 0) {
+			jsonPatchFile.services.each{s ->
+				if(s.serviceName.equalsIgnoreCase(serviceName) && lastRev < Integer.valueOf(s.lastRevision)) {
+					lastRev = Integer.valueOf(s.lastRevision)
+					log("New biggest lastRevision = ${lastRev} -> came from Patch ${jsonPatchFile.patchNummer}","fetchBiggestLastRevisionFor")
+				}
+			}
+		}
+	}
+	String.valueOf(lastRev)
 }
 
 def deploy(def servicesToBeDeployed) {
