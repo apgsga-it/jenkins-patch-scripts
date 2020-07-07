@@ -91,7 +91,7 @@ def fetchBiggestLastRevisionFor(def serviceName, def patchParentDirPath) {
 	def lastRev = 0
 	def patchParentDir = new File(patchParentDirPath)
 	patchParentDir.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
-		def p = readPatchFile(jsonPatchFile)
+		def p = readPatchFile(jsonPatchFile.path)
 		if(!p.services.isEmpty()) {
 			p.services.each{s ->
 				if(s.serviceName.equalsIgnoreCase(serviceName) && lastRev < Integer.valueOf(s.lastRevision)) {
