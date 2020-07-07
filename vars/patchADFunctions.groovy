@@ -96,11 +96,12 @@ def fetchBiggestLastRevisionFor(def serviceName, def patchParentDirPath) {
 			p.services.each{s ->
 				if(s.serviceName.equalsIgnoreCase(serviceName) && lastRev < Integer.valueOf(s.lastRevision)) {
 					lastRev = Integer.valueOf(s.lastRevision)
-					log("New biggest lastRevision = ${lastRev} -> came from Patch ${jsonPatchFile.patchNummer}","fetchBiggestLastRevisionFor")
+					log("New biggest lastRevision = ${lastRev} -> came from Patch ${p.patchNummer}","fetchBiggestLastRevisionFor")
 				}
 			}
 		}
 	}
+	log("Biggest lastRevision was : ${lastRev}","fetchBiggestLastRevisionFor")
 	String.valueOf(lastRev)
 }
 
