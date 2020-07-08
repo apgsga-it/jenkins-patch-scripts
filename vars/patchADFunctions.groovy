@@ -21,7 +21,7 @@ File[] getPatchFilesFrom(File folder) {
 	}
 	*/
 	File[] files = folder.listFiles();
-	File[] patchFiles = []
+	List<File> patchFiles = new ArrayList<>()
 	if (files != null) {
 		for (File patchFile : files) {
 			if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
@@ -33,13 +33,13 @@ File[] getPatchFilesFrom(File folder) {
 }
 
 def servicesInPatches(def currentPatchFolderPath) {
-	log("Looking for services in patch files, patches from following folder will be parsed: ${currentPatchFolderPath}","servicesInPatches")
+	log("Looking for services in patch files, patches from following folder will be parsed: ${currentPatchFolderPath}", "servicesInPatches")
 	Set<String> serviceNames = []
-	File[] patchFiles = getPatchFilesFrom(new File(currentPatchFolderPath))
-	for(File patchFile : patchFiles) {
+	List<File> patchFiles = getPatchFilesFrom(new File(currentPatchFolderPath))
+	patchFiles.each { patchFile ->
 		def patch = readPatchFile(patchFile.path)
-		if(!patch.services.isEmpty()) {
-			patch.services.each {s ->
+		if (!patch.services.isEmpty()) {
+			patch.services.each { s ->
 				log("${s.serviceName} found within Patch ${patch.patchNummer}", "servicesInPatches")
 				serviceNames.add(s.serviceName)
 			}
@@ -51,8 +51,8 @@ def servicesInPatches(def currentPatchFolderPath) {
 def getPatchFileNamesFrom(def folderPath) {
 	log("Searching patch file Names from following folder: ${folderPath}","getPatchFileNamesFrom")
 	def fileNames = ""
-	File[] patchFiles = getPatchFilesFrom(new File(folderPath))
-	for (File patchFile : patchFiles) {
+	List<File> patchFiles = getPatchFilesFrom(new File(folderPath))
+	patchFiles.each { patchFile ->
 		fileNames += "${patchFile.name}:"
 	}
 	// Remove last ":"
@@ -109,8 +109,8 @@ def assemble(def target, def patchParentDir) {
 
 def fetchBiggestLastRevisionFor(def serviceName, def patchParentDirPath) {
 	def lastRev = 0
-	File[] patchFiles = getPatchFilesFrom(new File(patchParentDirPath))
-	for(File patchFile : patchFiles) {
+	List<File> patchFiles = getPatchFilesFrom(new File(patchParentDirPath))
+	patchFiles.each { patchFile ->
 		def patch = readPatchFile(patchFile.path)
 		if(!patch.services.isEmpty()) {
 			patch.services.each{s ->
