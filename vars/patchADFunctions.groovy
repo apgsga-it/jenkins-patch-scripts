@@ -25,7 +25,7 @@ File[] getPatchFilesFrom(File folder) {
 	if (files != null) {
 		for (File patchFile : files) {
 			if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
-				patchFiles << patchFile
+				patchFiles.add(patchFile)
 			}
 		}
 	}
