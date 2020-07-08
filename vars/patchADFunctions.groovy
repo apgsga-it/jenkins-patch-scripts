@@ -12,15 +12,35 @@ def readPatchFile(patchFilePath) {
 	patchConfig
 }
 
+File[] getPatchFilesFrom(File folder) {
+	/*
+	JHE: Ideally I would use a syntax like the below commented, but I'm only getting one file back. This seems to be a known issue, not clear if really solved or not: https://issues.jenkins-ci.org/browse/JENKINS-46703
+	folder.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
+		log("Found ${jsonPatchFile.name} -> will be added to the list","getPatchFileNamesFrom")
+		fileNames += "${jsonPatchFile.name}:"
+	}
+	*/
+	File[] files = folder.listFiles();
+	File[] patchFiles = []
+	if (files != null) {
+		for (File patchFile : files) {
+			if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
+				patchFiles << patchFile
+			}
+		}
+	}
+	return patchFiles
+}
+
 def servicesInPatches(def currentPatchFolderPath) {
 	log("Looking for services in patch files, patches from following folder will be parsed: ${currentPatchFolderPath}","servicesInPatches")
 	Set<String> serviceNames = []
-	def workFolder = new File(currentPatchFolderPath)
-	workFolder.eachFileRecurse(FileType.FILES) {jsonPatchFile ->
-		def p = readPatchFile(jsonPatchFile.path)
-		if(!p.services.isEmpty()) {
-			p.services.each {s ->
-				log("${s.serviceName} found within Patch ${p.patchNummer}", "servicesInPatches")
+	File[] patchFiles = getPatchFilesFrom(new File(currentPatchFolderPath))
+	for(File patchFile : patchFiles) {
+		def patch = readPatchFile(patchFile.path)
+		if(!patch.services.isEmpty()) {
+			patch.services.each {s ->
+				log("${s.serviceName} found within Patch ${patch.patchNummer}", "servicesInPatches")
 				serviceNames.add(s.serviceName)
 			}
 		}
@@ -30,26 +50,11 @@ def servicesInPatches(def currentPatchFolderPath) {
 
 def getPatchFileNamesFrom(def folderPath) {
 	log("Searching patch file Names from following folder: ${folderPath}","getPatchFileNamesFrom")
-	def folder = new File(folderPath)
 	def fileNames = ""
-
-	/*
-	JHE: Ideally I would use a syntax like the below commented, but I'm only getting one file back. This seems to be a known issue, not clear if really solved or not: https://issues.jenkins-ci.org/browse/JENKINS-46703
-	folder.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
-		log("Found ${jsonPatchFile.name} -> will be added to the list","getPatchFileNamesFrom")
-		fileNames += "${jsonPatchFile.name}:"
+	File[] patchFiles = getPatchFilesFrom(new File(folderPath))
+	for (File patchFile : patchFiles) {
+		fileNames += "${patchFile.name}:"
 	}
-	*/
-
-	File[] patchFiles = folder.listFiles();
-	if (patchFiles != null) {
-		for (File patchFile : patchFiles) {
-			if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
-				fileNames += "${patchFile.name}:"
-			}
-		}
-	}
-
 	// Remove last ":"
 	return fileNames.substring(0,fileNames.length()-1)
 }
@@ -104,14 +109,14 @@ def assemble(def target, def patchParentDir) {
 
 def fetchBiggestLastRevisionFor(def serviceName, def patchParentDirPath) {
 	def lastRev = 0
-	def patchParentDir = new File(patchParentDirPath)
-	patchParentDir.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
-		def p = readPatchFile(jsonPatchFile.path)
-		if(!p.services.isEmpty()) {
-			p.services.each{s ->
+	File[] patchFiles = getPatchFilesFrom(new File(patchParentDirPath))
+	for(File patchFile : patchFiles) {
+		def patch = readPatchFile(patchFile.path)
+		if(!patch.services.isEmpty()) {
+			patch.services.each{s ->
 				if(s.serviceName.equalsIgnoreCase(serviceName) && lastRev < Integer.valueOf(s.lastRevision)) {
 					lastRev = Integer.valueOf(s.lastRevision)
-					log("New biggest lastRevision = ${lastRev} -> came from Patch ${p.patchNummer}","fetchBiggestLastRevisionFor")
+					log("New biggest lastRevision = ${lastRev} -> came from Patch ${patch.patchNummer}","fetchBiggestLastRevisionFor")
 				}
 			}
 		}
