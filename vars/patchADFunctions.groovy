@@ -95,34 +95,15 @@ def assemble(def target, def patchParentDir) {
 	def servicesToBeAssembled = servicesInPatches(patchParentDir)
 	def patchFiles = getPatchFileNamesFrom(patchParentDir)
 	servicesToBeAssembled.each{s ->
-		def biggestLastRevision = fetchBiggestLastRevisionFor(s,patchParentDir)
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
 			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			def cmd = "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbomLastRevision=${biggestLastRevision} -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PcloneTargetPath=${patchParentDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			def cmd = "./gradlew clean ${taskName} -PpatchParentDir=${patchParentDir} -PpatchFileNames=${patchFiles} -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PrpmReleaseNr=222 -PcloneTargetPath=${patchParentDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}
 	}
-}
-
-def fetchBiggestLastRevisionFor(def serviceName, def patchParentDirPath) {
-	def lastRev = 0
-	List<File> patchFiles = getPatchFilesFrom(new File(patchParentDirPath))
-	patchFiles.each { patchFile ->
-		def patch = readPatchFile(patchFile.path)
-		if(!patch.services.isEmpty()) {
-			patch.services.each{s ->
-				if(s.serviceName.equalsIgnoreCase(serviceName) && lastRev < Integer.valueOf(s.lastRevision)) {
-					lastRev = Integer.valueOf(s.lastRevision)
-					log("New biggest lastRevision = ${lastRev} -> came from Patch ${patch.patchNummer}","fetchBiggestLastRevisionFor")
-				}
-			}
-		}
-	}
-	log("Biggest lastRevision was : ${lastRev}","fetchBiggestLastRevisionFor")
-	String.valueOf(lastRev)
 }
 
 def deploy(def servicesToBeDeployed) {
