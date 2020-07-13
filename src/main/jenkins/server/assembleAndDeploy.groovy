@@ -30,9 +30,10 @@ pipeline {
         }
 
         stage("Stashing JSON Patch files") {
+            when {equals expected: true, actual: env.needAssemble} {
             steps {
                 echo "TO BE REMOVED, env.needAssemble = ${env.needAssemble}"
-                when {equals expected: true, actual: env.needAssemble} {
+
                     script {
                         echo "Stashing files within ${env.dirName}"
                         // JHE: Mmmhh, are stashed files really kept for an eventuel next run: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
