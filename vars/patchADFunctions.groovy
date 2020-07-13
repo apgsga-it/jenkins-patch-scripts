@@ -90,7 +90,7 @@ def coFromBranchCvs(moduleName, type) {
 }
 
 // TODO JHE: Not sure if the target should be taken from patchConfig. But, when assembling, we know for which target we assemble ... not the patch, isn't it?
-def assemble(def target, def workDir) {
+def assembleAndDeploy(def target, def workDir) {
 	log("Patch from ${workDir } for target ${target} will be assembled.")
 	def servicesToBeAssembled = servicesInPatches(workDir)
 	servicesToBeAssembled.each{s ->
@@ -98,7 +98,7 @@ def assemble(def target, def workDir) {
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
 			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			def cmd = "./gradlew clean ${taskName} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			def cmd = "./gradlew clean ${taskName} deployRpm -PtargetHost=dev-jhedocker.light.apgsga.ch -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}
@@ -106,6 +106,10 @@ def assemble(def target, def workDir) {
 }
 
 def deploy(def servicesToBeDeployed) {
+
+	log("Here was the deploy task","deploy")
+
+	/*
 	log("Following services will be deployed using corresponding pkg project: ${servicesToBeDeployed}")
 	// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 	servicesToBeDeployed.each { s ->
@@ -114,6 +118,7 @@ def deploy(def servicesToBeDeployed) {
 			sh "./gradlew ${taskName} -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 		}
 	}
+	 */
 }
 
 def benchmark() {

@@ -42,7 +42,7 @@ pipeline {
         stage("Assembling projects") {
             steps {
                 script {
-                        patchADFunctions.assemble(TARGET,"${env.WORKSPACE}/${env.dirName}")
+                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}")
                     }
             }
         }
