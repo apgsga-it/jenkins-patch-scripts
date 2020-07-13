@@ -24,9 +24,16 @@ pipeline {
 
         stage("Stashing JSON Patch files") {
             steps {
-                echo "Stashing files within ${env.dirName}"
-                // JHE: Mmmhh, are stashed files really kept for an eventuel next run: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
-                stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
+                if(new File(env.dirName).list().any()) {
+                    echo "Stashing files within ${env.dirName}"
+                    // JHE: Mmmhh, are stashed files really kept for an eventuel next run: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
+                    stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
+                }
+                else {
+                    echo "No Patch files to be stashed, meaning no Patch ready to be assemble."
+                    currentBuild.result = "SUCCESS"
+                    return
+                }
             }
         }
 
