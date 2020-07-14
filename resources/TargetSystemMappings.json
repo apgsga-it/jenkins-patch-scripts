@@ -81,12 +81,12 @@
             "name": "chei212",
             "services": [
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "it21-db",
                     "type": "oracle-db"
                 },
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "ds-db",
                     "type": "oracle-db"
                 },
@@ -96,12 +96,12 @@
                     "type": "linuxservice"
                 },
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "jadas",
                     "type": "linuxservice"
                 },
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "it21_ui",
                     "type": "linuxbasedwindowsfilesystem"
                 }
@@ -111,12 +111,12 @@
             "name": "dev-jhe",
             "services": [
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "it21-db",
                     "type": "oracle-db"
                 },
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "ds-db",
                     "type": "oracle-db"
                 },
@@ -126,12 +126,12 @@
                     "type": "linuxservice"
                 },
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "jadas",
                     "type": "linuxservice"
                 },
                 {
-                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "host": "dummy",
                     "name": "it21_ui",
                     "type": "linuxbasedwindowsfilesystem"
                 }

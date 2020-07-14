@@ -1,10 +1,5 @@
 library("patch-ad-functions-library")
 def targetSystemMappingFile = libraryResource("TargetSystemMappings.json")
-println(targetSystemMappingFile)
-def targetInstances = patchADFunctions.loadTargetInstances(targetSystemMappingFile)
-println " ============================================== "
-println(targetInstances)
-println " ============================================== "
 pipeline {
     agent any
     environment {
@@ -48,7 +43,7 @@ pipeline {
             steps {
                 script {
                         // TODO JHE: last parameter has to be read from TargetSystemMapping
-                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}","dev-jhedocker.light.apgsga.ch")
+                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}",targetSystemMappingFile)
                     }
             }
         }

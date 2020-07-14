@@ -91,19 +91,29 @@ def coFromBranchCvs(moduleName, type) {
 }
 
 // TODO JHE: Not sure if the target should be taken from patchConfig. But, when assembling, we know for which target we assemble ... not the patch, isn't it?
-def assembleAndDeploy(def target, def workDir, def targetHost) {
+def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile) {
 	log("Patch from ${workDir } for target ${target} will be assembled.")
 	def servicesToBeAssembled = servicesInPatches(workDir)
 	servicesToBeAssembled.each{s ->
 		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
+		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
 		dir("${s}-pkg") {
-			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			def cmd = "./gradlew clean ${taskName} deployRpm -PtargetHost=${targetHost} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			def cmd = "./gradlew clean ${taskName} deployRpm -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}
 	}
+}
+
+def deployTargetFor(serviceName, target, targetSystemMappingFile) {
+	def targetInstances = loadTargetInstances(targetSystemMappingFile)
+	targetInstances."${target}".each({ service ->
+		if(service.name.equalsIgnoreCase(serviceName)) {
+			return service.host
+		}
+	})
+	return null
 }
 
 def loadTargetInstances(targetSystemMappingAsText) {
@@ -113,16 +123,6 @@ def loadTargetInstances(targetSystemMappingAsText) {
 		targetInstances.put(targetInstance.name,targetInstance.services)
 	})
 	targetInstances
-
-	/*
-	def targetSystemMap = [:]
-	def targetSystemJson = new JsonSlurper().parseText(targetSystemMappingAsText)
-	targetSystemJson.stageMappings.each( { target ->
-		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target])
-	})
-	targetSystemMap
-
-	 */
 }
 
 def benchmark() {
