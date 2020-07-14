@@ -2,6 +2,7 @@ library("patch-ad-functions-library")
 def targetSystemMappingFile = libraryResource("TargetSystemMappings.json")
 println(targetSystemMappingFile)
 def targetInstances = patchADFunctions.loadTargetInstances(targetSystemMappingFile)
+println targetInstances
 pipeline {
     agent any
     environment {
