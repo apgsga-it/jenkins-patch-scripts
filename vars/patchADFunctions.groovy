@@ -105,22 +105,6 @@ def assembleAndDeploy(def target, def workDir) {
 	}
 }
 
-def deploy(def servicesToBeDeployed) {
-
-	log("Here was the deploy task","deploy")
-
-	/*
-	log("Following services will be deployed using corresponding pkg project: ${servicesToBeDeployed}")
-	// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
-	servicesToBeDeployed.each { s ->
-		def taskName = s.contains("-ui-") ? "deployZip" : "deployRpm"
-		dir("${s}-pkg") {
-			sh "./gradlew ${taskName} -PtargetHost=dev-jhedocker.light.apgsga.ch -PbaseVersion=1.0 -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
-		}
-	}
-	 */
-}
-
 def benchmark() {
 	def benchmarkCallback = { closure ->
 		start = System.currentTimeMillis()
