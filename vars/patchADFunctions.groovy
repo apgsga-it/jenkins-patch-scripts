@@ -1,4 +1,5 @@
 import groovy.io.FileType
+import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
 import groovyjarjarantlr.StringUtils
 import hudson.model.*
@@ -103,6 +104,15 @@ def assembleAndDeploy(def target, def workDir, def targetHost) {
 			sh cmd
 		}
 	}
+}
+
+def loadTargetInstances(targetSystemMappingAsText) {
+	def targetInstances = [:]
+	def targetSystemMappingAsJson = new JsonSlurper().parseText(targetSystemMappingAsText)
+	targetSystemMappingAsJson.targetInstances.each( {targetInstance ->
+		targetInstances.put(targetInstance.name,targetInstance.services)
+	})
+	targetInstances
 }
 
 def benchmark() {
