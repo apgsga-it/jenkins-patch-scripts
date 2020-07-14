@@ -107,20 +107,22 @@ def assembleAndDeploy(def target, def workDir, def targetHost) {
 }
 
 def loadTargetInstances(targetSystemMappingAsText) {
-	/*
 	def targetInstances = [:]
 	def targetSystemMappingAsJson = new JsonSlurper().parseText(targetSystemMappingAsText)
 	targetSystemMappingAsJson.targetInstances.each( {targetInstance ->
 		targetInstances.put(targetInstance.name,targetInstance.services)
 	})
 	targetInstances
-	*/
+
+	/*
 	def targetSystemMap = [:]
 	def targetSystemJson = new JsonSlurper().parseText(targetSystemMappingAsText)
 	targetSystemJson.stageMappings.each( { target ->
 		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target])
 	})
 	targetSystemMap
+
+	 */
 }
 
 def benchmark() {
