@@ -1,5 +1,6 @@
 library("patch-ad-functions-library")
-
+def targetSystemMappingFile = libraryResource("TargetSystemMappings.json")
+println(targetSystemMappingFile)
 pipeline {
     agent any
     environment {

@@ -1,0 +1,141 @@
+{
+    "onDemandTarget": [
+        "dev-jhe"
+    ],
+    "stageMappings": [
+        {
+            "name": "Entwicklung",
+            "target": "dev-jhe",
+	        "stages": [
+                {
+                    "name": "startPipelineAndTag",
+                    "toState": "Installationsbereit",
+                    "code": 2,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.EntwicklungInstallationsbereitAction"
+                },
+                {
+                    "name": "cancel",
+                    "toState": "",
+                    "code": 0,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.PipelineInputAction"
+                }
+            ]
+        },
+        {
+            "name": "Informatiktest",
+            "target": "dev-jhe",
+            "stages": [
+                {
+                    "name": "BuildFor",
+                    "toState": "Installationsbereit",
+                    "code": 15,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.PipelineInputAction"
+                },
+                {
+                    "name": "InstallFor",
+                    "toState": "",
+                    "code": 20,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.PipelineInputAction"
+                }
+            ]
+        },
+        {
+            "name": "Anwendertest",
+            "target": "dev-jhe",
+            "stages": [
+                {
+                    "name": "BuildFor",
+                    "toState": "Installationsbereit",
+                    "code": 25,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.PipelineInputAction"
+                },
+                {
+                    "name": "InstallFor",
+                    "toState": "",
+                    "code": 30,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.PipelineInputAction"
+                }
+            ]
+        },
+        {
+            "name": "Produktion",
+            "target": "dev-jhe",
+            "stages": [
+                {
+                    "name": "BuildFor",
+                    "toState": "Installationsbereit",
+                    "code": 65,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.PipelineInputAction"
+                },
+                {
+                    "name": "InstallFor",
+                    "toState": "",
+                    "code": 80,
+                    "implcls": "com.apgsga.microservice.patch.server.impl.PipelineInputAction"
+                }
+            ]
+        }
+    ],
+    "targetInstances": [
+        {
+            "name": "chei212",
+            "services": [
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "it21-db",
+                    "type": "oracle-db"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "ds-db",
+                    "type": "oracle-db"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "digiflex-jadas",
+                    "type": "linuxservice"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "jadas",
+                    "type": "linuxservice"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "it21_ui",
+                    "type": "linuxbasedwindowsfilesystem"
+                }
+            ]
+        },
+        {
+            "name": "dev-jhe",
+            "services": [
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "it21-db",
+                    "type": "oracle-db"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "ds-db",
+                    "type": "oracle-db"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "digiflex",
+                    "type": "linuxservice"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "jadas",
+                    "type": "linuxservice"
+                },
+                {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "it21_ui",
+                    "type": "linuxbasedwindowsfilesystem"
+                }
+            ]
+        }
+    ]
+}
