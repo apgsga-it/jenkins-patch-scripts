@@ -116,7 +116,7 @@ def loadTargetInstances(targetSystemMappingAsText) {
 	targetInstances
 	*/
 	def targetSystemMap = [:]
-	def targetSystemJson = new JsonSlurper().parseText(jsonText)
+	def targetSystemJson = new JsonSlurper().parseText(targetSystemMappingAsText)
 	targetSystemJson.stageMappings.each( { target ->
 		targetSystemMap.put(target.name, [envName:target.name,targetName:target.target])
 	})
