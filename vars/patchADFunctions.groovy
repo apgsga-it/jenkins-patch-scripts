@@ -107,18 +107,19 @@ def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile) {
 }
 
 def deployTargetFor(serviceName, target, targetSystemMappingFile) {
-	def deployTarget = null
-	log("Searching target for serviceName=${serviceName}, target=${target}","deployTargetFor")
+	//def deployTarget = null
 	def targetInstances = loadTargetInstances(targetSystemMappingFile)
-	log("targetInstances=${targetInstances}","deployTargetFor")
+
+	return targetInstances."${target}".find{service -> service.name.equalsIgnoreCase(serviceName) }
+/*
 	targetInstances."${target}".each({ service ->
-		log("within loop, service.name=${service.name}","deployTargetFor")
 		if(service.name.equalsIgnoreCase(serviceName)) {
-			log("Returning service.host=${service.host}","deployTargetFor")
 			deployTarget = service.host
 		}
 	})
 	return deployTarget
+
+ */
 }
 
 def loadTargetInstances(targetSystemMappingAsText) {
