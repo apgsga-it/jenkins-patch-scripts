@@ -95,15 +95,19 @@ def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile) {
 	log("Patch from ${workDir } for target ${target} will be assembled.")
 	def servicesToBeAssembled = servicesInPatches(workDir)
 	servicesToBeAssembled.each{s ->
-		// TODO JHE: Probably we want to get the service type from TargetSystemMapping.json (or future new file after splitting it up)
-		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
+		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
 		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
 		dir("${s}-pkg") {
-			def cmd = "./gradlew clean ${taskName} deployRpm -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}
 	}
+}
+
+def serviceTypeFor(serviceName,target, targetSystemMappingFile) {
+	def targetInstances = loadTargetInstances(targetSystemMappingFile)
+	return targetInstances."${target}".find{service -> service.name.equalsIgnoreCase(serviceName)}.type
 }
 
 def deployTargetFor(serviceName, target, targetSystemMappingFile) {
