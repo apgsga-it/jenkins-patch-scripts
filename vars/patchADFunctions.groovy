@@ -90,7 +90,7 @@ def coFromBranchCvs(moduleName, type) {
 }
 
 // TODO JHE: Not sure if the target should be taken from patchConfig. But, when assembling, we know for which target we assemble ... not the patch, isn't it?
-def assembleAndDeploy(def target, def workDir) {
+def assembleAndDeploy(def target, def workDir, def targetHost) {
 	log("Patch from ${workDir } for target ${target} will be assembled.")
 	def servicesToBeAssembled = servicesInPatches(workDir)
 	servicesToBeAssembled.each{s ->
@@ -98,7 +98,7 @@ def assembleAndDeploy(def target, def workDir) {
 		def taskName = s.contains("-ui-") ? "buildZip" : "buildRpm"
 		dir("${s}-pkg") {
 			// TODO JHE: patchParentDir and patchFileNames harccoded for a test
-			def cmd = "./gradlew clean ${taskName} deployRpm -PtargetHost=dev-jhedocker.light.apgsga.ch -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			def cmd = "./gradlew clean ${taskName} deployRpm -PtargetHost=${targetHost} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}

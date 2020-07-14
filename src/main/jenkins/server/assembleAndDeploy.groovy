@@ -42,7 +42,8 @@ pipeline {
         stage("Assembling projects") {
             steps {
                 script {
-                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}")
+                        // TODO JHE: last parameter has to be read from TargetSystemMapping
+                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}","dev-jhedocker.light.apgsga.ch")
                     }
             }
         }
