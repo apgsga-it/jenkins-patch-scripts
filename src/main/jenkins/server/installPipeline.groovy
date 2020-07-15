@@ -9,6 +9,8 @@ pipeline {
         stage("Initializing") {
             steps {
                 echo "Pipeline is running for target ${TARGET}"
+                sh("mkdir ${env.dirName}")
+                echo "Path of directory containing JSON Patch file for current pipeline execution: ${env.WORKSPACE}/${env.dirName}"
             }
         }
 
