@@ -90,9 +90,8 @@ def coFromBranchCvs(moduleName, type) {
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
 
-// TODO JHE: Not sure if the target should be taken from patchConfig. But, when assembling, we know for which target we assemble ... not the patch, isn't it?
 def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile) {
-	log("Patch from ${workDir } for target ${target} will be assembled.")
+	log("Patch from ${workDir } for target ${target} will be assembled.","assembleAndDeploy")
 	def servicesToBeAssembled = servicesInPatches(workDir)
 	servicesToBeAssembled.each{s ->
 		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
@@ -105,11 +104,27 @@ def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile) {
 	}
 }
 
+// TODO JHE: verify if list of parameters makes sense
+def install(def target, def workDir, def targetSystemMappingFile) {
+	log("Installation will be done for Patches located in ${workDir} for target ${target}","install")
+	def serviceToBeInstalled = servicesInPatches(workDir)
+	serviceToBeInstalled.each{ s ->
+		def taskName = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "installZip" : "installRpm"
+		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
+		dir("${s}-pkg") {
+			def cmd = "./gradlew clean ${taskName} -PtargetHost=${deployTarget} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			log("Assemble cmd: ${cmd}")
+			sh cmd
+		}
+	}
+}
+
 def serviceTypeFor(serviceName,target, targetSystemMappingFile) {
 	def targetInstances = loadTargetInstances(targetSystemMappingFile)
 	return targetInstances."${target}".find{service -> service.name.equalsIgnoreCase(serviceName)}.type
 }
 
+// TODO JHE: eventually rename this function as it might be used by install pipeline as well.
 def deployTargetFor(serviceName, target, targetSystemMappingFile) {
 	def targetInstances = loadTargetInstances(targetSystemMappingFile)
 	return targetInstances."${target}".find{service -> service.name.equalsIgnoreCase(serviceName)}.host

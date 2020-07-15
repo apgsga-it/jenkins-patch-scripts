@@ -42,7 +42,6 @@ pipeline {
         stage("Assembling projects") {
             steps {
                 script {
-                        // TODO JHE: last parameter has to be read from TargetSystemMapping
                         patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}",targetSystemMappingFile)
                     }
             }

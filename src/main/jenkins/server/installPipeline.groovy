@@ -40,5 +40,13 @@ pipeline {
             }
         }
 
+        stage("Installing") {
+            steps {
+                script {
+                    patchADFunctions.install(TARGET,"${env.WORKSPACE}/${env.dirName}",targetSystemMappingFile)
+                }
+            }
+        }
+
     }
 }
