@@ -96,6 +96,11 @@
                     "type": "linuxservice"
                 },
                 {
+                    "host": "dev-jhedocker.light.apgsga.ch",
+                    "name": "digiflex-web-it21",
+                    "type": "linuxservice"
+                },
+                {
                     "host": "dummy",
                     "name": "jadas",
                     "type": "linuxservice"
