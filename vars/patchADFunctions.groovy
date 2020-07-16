@@ -113,7 +113,7 @@ def install(def target, def workDir, def targetSystemMappingFile) {
 		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
 		dir("${s}-pkg") {
 			def cmd = "./gradlew clean ${taskName} -PtargetHost=${deployTarget} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
-			log("Assemble cmd: ${cmd}")
+			log("install cmd: ${cmd}")
 			sh cmd
 		}
 	}
