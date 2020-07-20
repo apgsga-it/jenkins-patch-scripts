@@ -18,6 +18,7 @@ pipeline {
             steps {
                 // JHE: Seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
                 // TODO JHE: 113 = Informatiktestlieferung Bearbeitung , will probably be retrieved from TargetSystemMapping. Or could also be a Pipeline Job parameter
+                // TODO JHE: To be verified with UGE
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf 113,${env.dirName}")
             }
         }
