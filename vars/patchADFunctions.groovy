@@ -97,7 +97,8 @@ def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile) {
 		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
 		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
 		dir("${s}-pkg") {
-			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			// TODO JHE: Configure gradle.user.home from external place
+			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/home --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}
@@ -112,7 +113,8 @@ def install(def target, def workDir, def targetSystemMappingFile) {
 		def taskName = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "installZip" : "installRpm"
 		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
 		dir("${s}-pkg") {
-			def cmd = "./gradlew clean ${taskName} -PtargetHost=${deployTarget} -Dgradle.user.home=/var/jenkins/gradle/plugindevl --info --stacktrace"
+			// TODO JHE: Configure gradle.user.home from external place
+			def cmd = "./gradlew clean ${taskName} -PtargetHost=${deployTarget} -Dgradle.user.home=/var/jenkins/gradle/home --info --stacktrace"
 			log("install cmd: ${cmd}")
 			sh cmd
 		}
