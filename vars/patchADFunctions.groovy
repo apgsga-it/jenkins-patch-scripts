@@ -16,6 +16,9 @@ def readPatchFile(patchFilePath) {
 def unstashFile(stashName) {
 	log("Unstash will be done for following name: ${stashName}","unstashFile")
 	unstash stashName
+	unstash stashName
+	unstash stashName
+	unstash stashName
 	log("Unstash DONE for following name: ${stashName}","unstashFile")
 }
 
