@@ -22,8 +22,10 @@ pipeline {
                 // TODO JHE: That should work without specifying the full path, but seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf ${targetCodeStatus.get(TARGET)},${env.dirName}")
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
-                serviceInPatches = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
-                echo "!!!!!!!!!!!!!!!!!!!!!!! -> ${serviceInPatches}"
+                script {
+                    serviceInPatches = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
+                    echo "!!!!!!!!!!!!!!!!!!!!!!! -> ${serviceInPatches}"
+                }
             }
         }
 
