@@ -13,15 +13,6 @@ def readPatchFile(patchFilePath) {
 	patchConfig
 }
 
-def unstashFile(stashName) {
-	log("Unstash will be done for following name: ${stashName}","unstashFile")
-	unstash stashName
-	unstash stashName
-	unstash stashName
-	unstash stashName
-	log("Unstash DONE for following name: ${stashName}","unstashFile")
-}
-
 File[] getPatchFilesFrom(File folder) {
 	/*
 	JHE: Ideally I would use a syntax like the below commented, but I'm only getting one file back. This seems to be a known issue, not clear if really solved or not: https://issues.jenkins-ci.org/browse/JENKINS-46703
