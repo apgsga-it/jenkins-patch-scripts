@@ -21,6 +21,7 @@ pipeline {
                 // TODO JHE: To be verified with UGE
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf 113,${env.dirName}")
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
+                sh("rm -rf ${env.dirName}")
             }
         }
 
