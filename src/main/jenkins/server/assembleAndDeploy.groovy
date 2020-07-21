@@ -39,7 +39,7 @@ pipeline {
         stage("Assembling and deploying projects") {
             steps {
                 script {
-                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}",targetSystemMappingFile)
+                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}",targetSystemMappingFile,serviceInPatches)
                     }
             }
         }
