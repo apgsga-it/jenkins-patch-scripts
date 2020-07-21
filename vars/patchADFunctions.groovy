@@ -1,10 +1,6 @@
-import groovy.io.FileType
 import groovy.json.JsonSlurper
 import groovy.json.JsonSlurperClassic
-import groovyjarjarantlr.StringUtils
 import hudson.model.*
-
-import javax.swing.JColorChooser
 
 def readPatchFile(patchFilePath) {
 	def patchFile = new File(patchFilePath)
@@ -47,17 +43,6 @@ def servicesInPatches(def currentPatchFolderPath) {
 		}
 	}
 	serviceNames
-}
-
-def getPatchFileNamesFrom(def folderPath) {
-	log("Searching patch file Names from following folder: ${folderPath}","getPatchFileNamesFrom")
-	def fileNames = ""
-	List<File> patchFiles = getPatchFilesFrom(new File(folderPath))
-	patchFiles.each { patchFile ->
-		fileNames += "${patchFile.name}:"
-	}
-	// Remove last ":"
-	return fileNames.substring(0,fileNames.length()-1)
 }
 
 def coPackageProjects(def servicesToBeCheckoutOut) {
