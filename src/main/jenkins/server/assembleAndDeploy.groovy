@@ -6,14 +6,14 @@ pipeline {
     agent any
     environment {
         dirName = new Date().format("yyyyMMdd_HHmmssSSS")
-        def serviceInPatches = ""
+        serviceInPatches = ""
     }
     stages {
         stage("Initializing") {
             steps {
                 echo "Pipeline is running for target ${TARGET}"
                 sh("mkdir ${env.dirName}")
-                echo "Path of directory containing JSON Patch file for current pipeline execution: ${env.WORKSPACE}/${env.dirName}"
+                echo "Path of directory containing JSON Patch file for current pipeline execution: ${env.WORKSPACE}/${dirName}"
             }
         }
 
@@ -23,7 +23,7 @@ pipeline {
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf ${targetCodeStatus.get(TARGET)},${env.dirName}")
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
                 script {
-                    serviceInPatches = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
+                    serviceInPatches = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${dirName}")
                 }
             }
         }
@@ -39,14 +39,14 @@ pipeline {
         stage("Assembling and deploying projects") {
             steps {
                 script {
-                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${env.dirName}",targetSystemMappingFile,serviceInPatches)
+                        patchADFunctions.assembleAndDeploy(TARGET,"${env.WORKSPACE}/${dirName}",targetSystemMappingFile,serviceInPatches)
                     }
             }
         }
 
         stage("Cleaning workspace"){
             steps {
-                sh("rm -rf ${env.dirName}")
+                sh("rm -rf ${dirName}")
             }
         }
     }
