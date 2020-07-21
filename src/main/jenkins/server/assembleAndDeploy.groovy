@@ -6,6 +6,7 @@ pipeline {
     agent any
     environment {
         dirName = new Date().format("yyyyMMdd_HHmmssSSS")
+        def serviceInPatches = ""
     }
     stages {
         stage("Initializing") {
@@ -16,11 +17,13 @@ pipeline {
             }
         }
 
-        stage("Gettiong JSON Patch files and stashing them") {
+        stage("Getting list of services within Patche(s)") {
             steps {
                 // TODO JHE: That should work without specifying the full path, but seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf ${targetCodeStatus.get(TARGET)},${env.dirName}")
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
+                serviceInPatches = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
+                echo "!!!!!!!!!!!!!!!!!!!!!!! -> ${serviceInPatches}"
             }
         }
 
