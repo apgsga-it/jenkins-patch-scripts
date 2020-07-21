@@ -14,25 +14,15 @@ pipeline {
             }
         }
 
-        stage("Getting JSON Patch files and stashing them") {
+        stage("Stashing JSON Patch files") {
             steps {
                 // JHE: Seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
                 // TODO JHE: 113 = Informatiktestlieferung Bearbeitung , will probably be retrieved from TargetSystemMapping. Or could also be a Pipeline Job parameter
                 // TODO JHE: To be verified with UGE
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf 113,${env.dirName}")
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
-                sh("rm -rf ${env.dirName}")
             }
         }
-
-        stage("trying to unstash from library") {
-            steps {
-                echo "Unstashing files from library -> stash name = ${env.dirName}_stashed"
-                patchADFunctions.unstashFile("${env.dirName}_stashed")
-            }
-        }
-
-        /*
 
         stage("Getting Pkg projects from CVS") {
             steps {
@@ -50,6 +40,5 @@ pipeline {
                     }
             }
         }
-         */
     }
 }
