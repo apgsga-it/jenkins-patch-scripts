@@ -40,5 +40,11 @@ pipeline {
                     }
             }
         }
+
+        stage("Cleaning workspace"){
+            steps {
+                sh("rm -rf ${env.dirName}")
+            }
+        }
     }
 }
