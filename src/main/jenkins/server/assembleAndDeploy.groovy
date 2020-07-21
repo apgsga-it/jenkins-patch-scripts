@@ -1,5 +1,7 @@
 library("patch-ad-functions-library")
 def targetSystemMappingFile = libraryResource("TargetSystemMappings.json")
+// TODO JHE: To be verified with UGE, which code should we use, new ones? 113 is definitely wrong, just as an example. Also, CHEI212 probably won't be in the list here
+def targetCodeStatus = ["chei212":"113","chei211":"xxx","chti211":"yyy","chpi211":"zzz"]
 pipeline {
     agent any
     environment {
@@ -14,12 +16,10 @@ pipeline {
             }
         }
 
-        stage("Stashing JSON Patch files") {
+        stage("Gettiong JSON Patch files and stashing them") {
             steps {
-                // JHE: Seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
-                // TODO JHE: 113 = Informatiktestlieferung Bearbeitung , will probably be retrieved from TargetSystemMapping. Or could also be a Pipeline Job parameter
-                // TODO JHE: To be verified with UGE
-                sh("/opt/apg-patch-cli/bin/apscli.sh -cpf 113,${env.dirName}")
+                // TODO JHE: That should work without specifying the full path, but seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
+                sh("/opt/apg-patch-cli/bin/apscli.sh -cpf ${targetCodeStatus.get(TARGET)},${env.dirName}")
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
             }
         }
