@@ -27,10 +27,8 @@ pipeline {
 
         stage("trying to unstash from library") {
             steps {
-                script {
-                    echo "Unstashing files from library -> stash name = ${env.dirName}_stashed"
-                    patchADFunctions.unstashFile("${env.dirName}_stashed")
-                }
+                echo "Unstashing files from library -> stash name = ${env.dirName}_stashed"
+                patchADFunctions.unstashFile("${env.dirName}_stashed")
             }
         }
 
