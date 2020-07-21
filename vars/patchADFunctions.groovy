@@ -90,10 +90,9 @@ def coFromBranchCvs(moduleName, type) {
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
 
-def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile) {
-	log("Patch from ${workDir } for target ${target} will be assembled.","assembleAndDeploy")
-	def servicesToBeAssembled = servicesInPatches(workDir)
-	servicesToBeAssembled.each{s ->
+def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile, def serviceInPatches) {
+	log("Following services will be assemble for target ${target} : ${serviceInPatches}","assembleAndDeploy")
+	serviceInPatches.each{s ->
 		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
 		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
 		dir("${s}-pkg") {

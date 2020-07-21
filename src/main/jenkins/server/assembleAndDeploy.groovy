@@ -24,7 +24,6 @@ pipeline {
                 stash name: "${env.dirName}_stashed", includes: "${env.dirName}/*"
                 script {
                     serviceInPatches = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
-                    echo "!!!!!!!!!!!!!!!!!!!!!!! -> ${serviceInPatches}"
                 }
             }
         }
@@ -32,8 +31,7 @@ pipeline {
         stage("Getting Pkg projects from CVS") {
             steps {
                 script {
-                    def serviceNames = patchADFunctions.servicesInPatches("${env.WORKSPACE}/${env.dirName}")
-                    patchADFunctions.coPackageProjects(serviceNames)
+                    patchADFunctions.coPackageProjects(serviceInPatches)
                 }
             }
         }
