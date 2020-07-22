@@ -9,7 +9,7 @@ def readPatchFile(patchFilePath) {
 	patchConfig
 }
 
-File[] getPatchFilesFrom(File folder) {
+File[] getPatchFilesFrom(String stashName) {
 	/*
 	JHE: Ideally I would use a syntax like the below commented, but I'm only getting one file back. This seems to be a known issue, not clear if really solved or not: https://issues.jenkins-ci.org/browse/JENKINS-46703
 	folder.eachFileMatch(~/Patch[0-9]*.json/) {jsonPatchFile ->
@@ -17,7 +17,8 @@ File[] getPatchFilesFrom(File folder) {
 		fileNames += "${jsonPatchFile.name}:"
 	}
 	*/
-	File[] files = folder.listFiles();
+	unstash stashName
+	File[] files = new File(stashName).listFiles();
 	List<File> patchFiles = new ArrayList<>()
 	if (files != null) {
 		for (File patchFile : files) {
@@ -29,10 +30,10 @@ File[] getPatchFilesFrom(File folder) {
 	return patchFiles
 }
 
-def servicesInPatches(def currentPatchFolderPath) {
-	log("Looking for services in patch files, patches from following folder will be parsed: ${currentPatchFolderPath}", "servicesInPatches")
+def servicesInPatches(def stashName) {
+	log("Getting services names from stashed patch Files. Stash name = ${stashName}")
 	Set<String> serviceNames = []
-	List<File> patchFiles = getPatchFilesFrom(new File(currentPatchFolderPath))
+	List<File> patchFiles = getPatchFilesFrom(stashName)
 	patchFiles.each { patchFile ->
 		def patch = readPatchFile(patchFile.path)
 		if (!patch.services.isEmpty()) {
@@ -75,14 +76,16 @@ def coFromBranchCvs(moduleName, type) {
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
 
-def assembleAndDeploy(def target, def workDir, def targetSystemMappingFile, def serviceInPatches) {
+def assembleAndDeploy(def target, def stashName, def targetSystemMappingFile, def serviceInPatches) {
+	unstash stashName
 	log("Following services will be assemble for target ${target} : ${serviceInPatches}","assembleAndDeploy")
 	serviceInPatches.each{s ->
 		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
 		def deployTarget = deployTargetFor(s,target,targetSystemMappingFile)
+		// TODO JHE: Either serviceName in JSON will be the packager name, or we have to apply such a convention
 		dir("${s}-pkg") {
 			// TODO JHE: Configure gradle.user.home from external place
-			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${workDir} -Dgradle.user.home=/var/jenkins/gradle/home --info --stacktrace"
+			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${stashName} -Dgradle.user.home=/var/jenkins/gradle/home --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}
