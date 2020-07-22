@@ -32,6 +32,7 @@ File[] getPatchFilesFrom(String stashName) {
 
 def servicesInPatches(def stashName) {
 	log("Getting services names from stashed patch Files. Stash name = ${stashName}")
+	unstash stashName
 	Set<String> serviceNames = []
 	List<File> patchFiles = getPatchFilesFrom(stashName)
 	patchFiles.each { patchFile ->
