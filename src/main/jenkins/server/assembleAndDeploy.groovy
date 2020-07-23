@@ -1,6 +1,6 @@
 library("patch-ad-functions-library")
 def targetSystemMappingFile = libraryResource("TargetSystemMappings.json")
-// TODO JHE: To be verified with UGE, which code should we use, new ones? 113 is definitely wrong, just as an example. Also, CHEI212 probably won't be in the list here
+// TODO JHE: To be verified with UGE, which code should we use, new ones? 113 is definitely wrong, just as an example for 2 of my patches on CHEI212. Also, CHEI212 probably won't be in the list here
 def targetCodeStatus = ["chei212":"113","chei211":"xxx","chti211":"yyy","chpi211":"zzz"]
 def serviceInPatches = ""
 def stashName = new Date().format("yyyyMMdd_HHmmssSSS")
@@ -11,7 +11,7 @@ echo "Stash name : ${stashName}"
 pipeline {
     agent any
     stages {
-        stage("Get Patch JSON and stash") {
+        stage("Get Patch JSON files and stash") {
             steps {
                 // TODO JHE: That should work without specifying the full path, but seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf ${targetCodeStatus.get(TARGET)},${env.WORKSPACE}")
