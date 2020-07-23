@@ -17,25 +17,22 @@ File[] getPatchFilesFrom(String stashName) {
 		fileNames += "${jsonPatchFile.name}:"
 	}
 	*/
-	dir(stashName + "blablablabla") {
+
+	List<File> patchFiles = new ArrayList<>()
+	dir(stashName) {
 		unstash stashName
-		log("Unstashing within getPatchFilesFrom done!", "getPatchFilesFrom")
 		File[] files = new File(pwd()).listFiles();
-		List<File> patchFiles = new ArrayList<>()
 		if (files != null) {
-			log("Searching for Patch within ${stashName}","getPatchFilesFrom")
+			log("Searching for Patch within ${pwd()}/${stashName}","getPatchFilesFrom")
 			for (File patchFile : files) {
-				log("TO BE DELTED ..... HERE WE ARE")
-				log("FILE NAME -----> ${patchFile.name}")
 				if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
 					log("Patch ${patchFile.name} found and added to the list","getPatchFilesFrom")
 					patchFiles.add(patchFile)
 				}
 			}
 		}
-		return patchFiles
 	}
-
+	return patchFiles
 }
 
 def servicesInPatches(def stashName) {

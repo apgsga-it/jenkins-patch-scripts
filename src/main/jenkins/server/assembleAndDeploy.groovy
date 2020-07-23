@@ -16,7 +16,7 @@ pipeline {
                 // TODO JHE: That should work without specifying the full path, but seems that Jenkins declarative pipeline is using a non-shell script, meaning /etc/profile.d or .bashrc files are not getting interpreted
                 sh("/opt/apg-patch-cli/bin/apscli.sh -cpf ${targetCodeStatus.get(TARGET)},${env.WORKSPACE}")
                 stash name: stashName, includes: "*.json"
-                //sh("rm -f *.json")
+                sh("rm -f *.json")
 
             }
         }
@@ -29,7 +29,6 @@ pipeline {
             }
         }
 
-        /*
         stage("Getting Pkg projects from CVS") {
             steps {
                 script {
@@ -45,7 +44,5 @@ pipeline {
                     }
             }
         }
-
-         */
     }
 }
