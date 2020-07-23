@@ -83,7 +83,9 @@ def coFromBranchCvs(moduleName, type) {
 }
 
 def assembleAndDeploy(def target, def stashName, def targetSystemMappingFile, def serviceInPatches) {
-	unstash stashName
+	dir(stashName) {
+		unstash stashName
+	}
 	log("Following services will be assemble for target ${target} : ${serviceInPatches}","assembleAndDeploy")
 	serviceInPatches.each{s ->
 		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
@@ -91,7 +93,7 @@ def assembleAndDeploy(def target, def stashName, def targetSystemMappingFile, de
 		// TODO JHE: Either serviceName in JSON will be the packager name, or we have to apply such a convention
 		dir("${s}-pkg") {
 			// TODO JHE: Configure gradle.user.home from external place
-			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${stashName} -Dgradle.user.home=/var/jenkins/gradle/home --info --stacktrace"
+			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${env.WORKSPACE}/${stashName} -Dgradle.user.home=/var/jenkins/gradle/home --info --stacktrace"
 			log("Assemble cmd: ${cmd}")
 			sh cmd
 		}
