@@ -44,5 +44,10 @@ pipeline {
                     }
             }
         }
+
+        stage("Cleaning Workspace") {
+            // JHE: The stash can be preserved, but we don't have to keep the folder where stashed files have been extracted
+            sh("rm -rf ${stashName}")
+        }
     }
 }
