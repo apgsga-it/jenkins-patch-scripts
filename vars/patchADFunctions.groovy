@@ -26,6 +26,7 @@ File[] getPatchFilesFrom(String stashName) {
 			log("Searching for Patch within ${stashName}","getPatchFilesFrom")
 			for (File patchFile : files) {
 				log("TO BE DELTED ..... HERE WE ARE")
+				log("FILE NAME -----> ${patchFile.name}")
 				if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
 					log("Patch ${patchFile.name} found and added to the list","getPatchFilesFrom")
 					patchFiles.add(patchFile)
