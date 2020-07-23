@@ -29,33 +29,6 @@ pipeline {
             }
         }
 
-        /*
-        stage("Get list of services within Patche(s)") {
-            steps {
-                script {
-                    serviceInPatches = patchADFunctions.servicesInPatches(stashName)
-                }
-            }
-        }
-
-        stage("Getting Pkg projects from CVS") {
-            steps {
-                script {
-                    patchADFunctions.coPackageProjects(serviceInPatches)
-                }
-            }
-        }
-
-        stage("Assembling and deploying projects") {
-            steps {
-                script {
-                        patchADFunctions.assembleAndDeploy(TARGET,stashName,targetSystemMappingFile,serviceInPatches)
-                    }
-            }
-        }
-
-         */
-
         stage("Cleaning Workspace") {
             // JHE: The stash can be preserved, but we don't have to keep the folder where stashed files have been extracted
             steps {
