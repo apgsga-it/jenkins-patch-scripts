@@ -22,10 +22,10 @@ File[] getPatchFilesFrom(String stashName) {
 		log("Unstashing within getPatchFilesFrom done!", "getPatchFilesFrom")
 		File[] files = new File(".").listFiles();
 		List<File> patchFiles = new ArrayList<>()
-		log("TO BE DELTED ..... HERE WE ARE")
 		if (files != null) {
 			log("Searching for Patch within ${stashName}","getPatchFilesFrom")
 			for (File patchFile : files) {
+				log("TO BE DELTED ..... HERE WE ARE")
 				if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
 					log("Patch ${patchFile.name} found and added to the list","getPatchFilesFrom")
 					patchFiles.add(patchFile)
