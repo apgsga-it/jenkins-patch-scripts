@@ -20,8 +20,10 @@ File[] getPatchFilesFrom(String stashName) {
 	dir(stashName) {
 		unstash stashName
 	}
+	log("Unstashing within getPatchFilesFrom done!", "getPatchFilesFrom")
 	File[] files = new File(stashName).listFiles();
 	List<File> patchFiles = new ArrayList<>()
+	log("TO BE DELTED ..... HERE WE ARE")
 	if (files != null) {
 		log("Searching for Patch within ${stashName}","getPatchFilesFrom")
 		for (File patchFile : files) {
