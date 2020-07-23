@@ -17,7 +17,7 @@ File[] getPatchFilesFrom(String stashName) {
 		fileNames += "${jsonPatchFile.name}:"
 	}
 	*/
-	dir(stashName) {
+	dir(stashName + "blablablabla") {
 		unstash stashName
 		log("Unstashing within getPatchFilesFrom done!", "getPatchFilesFrom")
 		File[] files = new File(stashName).listFiles();
