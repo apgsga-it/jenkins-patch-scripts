@@ -17,12 +17,16 @@ File[] getPatchFilesFrom(String stashName) {
 		fileNames += "${jsonPatchFile.name}:"
 	}
 	*/
-	unstash stashName
+	dir(stashName) {
+		unstash stashName
+	}
 	File[] files = new File(stashName).listFiles();
 	List<File> patchFiles = new ArrayList<>()
 	if (files != null) {
+		log("Searching for Patch within ${stashName}","getPatchFilesFrom")
 		for (File patchFile : files) {
 			if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
+				log("Patch ${patchFile.name} found and added to the list","getPatchFilesFrom")
 				patchFiles.add(patchFile)
 			}
 		}

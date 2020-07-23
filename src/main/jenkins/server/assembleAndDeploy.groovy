@@ -29,6 +29,7 @@ pipeline {
             }
         }
 
+        /*
         stage("Getting Pkg projects from CVS") {
             steps {
                 script {
@@ -44,5 +45,7 @@ pipeline {
                     }
             }
         }
+
+         */
     }
 }
