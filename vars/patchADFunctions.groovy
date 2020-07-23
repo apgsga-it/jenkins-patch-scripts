@@ -52,6 +52,7 @@ def servicesInPatches(def stashName) {
 	serviceNames
 }
 
+/*
 def coPackageProjects(def servicesToBeCheckoutOut) {
 	log("Packaged project will be checked out for following service: ${servicesToBeCheckoutOut}")
 	lock ("ConcurrentCvsCheckout") {
@@ -61,6 +62,7 @@ def coPackageProjects(def servicesToBeCheckoutOut) {
 		}
 	}
 }
+*/
 
 def coFromBranchCvs(moduleName, type) {
 	// TODO JHE: Obvisously things to be adapted, basically all parameter which will come from patchConfig, I guess
@@ -82,12 +84,34 @@ def coFromBranchCvs(moduleName, type) {
 	log("Checkout of ${moduleName} took ${duration} ms","coFromBranchCvs")
 }
 
+/*
 def assembleAndDeploy(def target, def stashName, def targetSystemMappingFile, def serviceInPatches) {
 	dir(stashName) {
 		unstash stashName
 	}
 	log("Following services will be assemble for target ${target} : ${serviceInPatches}","assembleAndDeploy")
 	serviceInPatches.each{s ->
+		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
+		def deployTarget = getInstallTargetFor(s,target,targetSystemMappingFile)
+		// TODO JHE: Either serviceName in JSON will be the packager name, or we have to apply such a convention
+		dir("${s}-pkg") {
+			// TODO JHE: Configure gradle.user.home from external place
+			def cmd = "./gradlew clean ${taskNames} -PtargetHost=${deployTarget} -PbuildTyp=CLONED -PbaseVersion=1.0 -PinstallTarget=${target.toUpperCase()} -PcloneTargetPath=${env.WORKSPACE}/${stashName} -Dgradle.user.home=/var/jenkins/gradle/home --info --stacktrace"
+			log("Assemble cmd: ${cmd}")
+			sh cmd
+		}
+	}
+}
+ */
+
+def assembleAndDeploy(def target, def stashName, def targetSystemMappingFile) {
+	dir(stashName) {
+		unstash stashName
+	}
+	def serviceInPatches = servicesInPatches(stashName)
+	log("Following services will be assemble for target ${target} : ${serviceInPatches}","assembleAndDeploy")
+	serviceInPatches.each{s ->
+		coFromBranchCvs("${s}-pkg", 'microservice')
 		def taskNames = serviceTypeFor(s,target,targetSystemMappingFile).equalsIgnoreCase("linuxbasedwindowsfilesystem") ? "buildZip deployZip" : "buildRpm deployRpm"
 		def deployTarget = getInstallTargetFor(s,target,targetSystemMappingFile)
 		// TODO JHE: Either serviceName in JSON will be the packager name, or we have to apply such a convention
