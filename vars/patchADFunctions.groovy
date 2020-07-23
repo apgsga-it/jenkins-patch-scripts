@@ -20,6 +20,7 @@ File[] getPatchFilesFrom(String stashName) {
 	dir(stashName + "blablablabla") {
 		unstash stashName
 		log("Unstashing within getPatchFilesFrom done!", "getPatchFilesFrom")
+		log("pwd() = " + pwd())
 		File[] files = new File("../${stashName}").listFiles();
 		List<File> patchFiles = new ArrayList<>()
 		if (files != null) {
