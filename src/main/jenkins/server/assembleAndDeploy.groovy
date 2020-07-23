@@ -23,7 +23,9 @@ pipeline {
 
         stage("Assemble And Deploy") {
             steps {
-                patchADFunctions.assembleAndDeploy(TARGET,stashName,targetSystemMappingFile)
+                script {
+                    patchADFunctions.assembleAndDeploy(TARGET, stashName, targetSystemMappingFile)
+                }
             }
         }
 
