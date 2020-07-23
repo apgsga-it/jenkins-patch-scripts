@@ -19,28 +19,26 @@ File[] getPatchFilesFrom(String stashName) {
 	*/
 	dir(stashName) {
 		unstash stashName
-	}
-	log("Unstashing within getPatchFilesFrom done!", "getPatchFilesFrom")
-	File[] files = new File(stashName).listFiles();
-	List<File> patchFiles = new ArrayList<>()
-	log("TO BE DELTED ..... HERE WE ARE")
-	if (files != null) {
-		log("Searching for Patch within ${stashName}","getPatchFilesFrom")
-		for (File patchFile : files) {
-			if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
-				log("Patch ${patchFile.name} found and added to the list","getPatchFilesFrom")
-				patchFiles.add(patchFile)
+		log("Unstashing within getPatchFilesFrom done!", "getPatchFilesFrom")
+		File[] files = new File(".").listFiles();
+		List<File> patchFiles = new ArrayList<>()
+		log("TO BE DELTED ..... HERE WE ARE")
+		if (files != null) {
+			log("Searching for Patch within ${stashName}","getPatchFilesFrom")
+			for (File patchFile : files) {
+				if(patchFile.name ==~ ~/Patch[0-9]*.json/) {
+					log("Patch ${patchFile.name} found and added to the list","getPatchFilesFrom")
+					patchFiles.add(patchFile)
+				}
 			}
 		}
+		return patchFiles
 	}
-	return patchFiles
+
 }
 
 def servicesInPatches(def stashName) {
 	log("Getting services names from stashed patch Files. Stash name = ${stashName}")
-	dir(stashName) {
-		unstash stashName
-	}
 	Set<String> serviceNames = []
 	List<File> patchFiles = getPatchFilesFrom(stashName)
 	patchFiles.each { patchFile ->
@@ -52,6 +50,7 @@ def servicesInPatches(def stashName) {
 			}
 		}
 	}
+	log("serviceNames in Patches : ${serviceNames}","servicesInPatches")
 	serviceNames
 }
 
