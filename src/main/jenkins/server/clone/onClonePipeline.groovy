@@ -67,7 +67,7 @@ private def getStatusName(def env) {
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	
 	// By default, if the target is not part of the "standard workflow" (Informatiktest,Anwendertest,Produktion), we assume the basis for patch installation is "Produktion"
-	def status = patchStatus
+	def status = env.patchStatus
 	
 	jsonSystemTargets.stageMappings.each{ stageMapping ->
 		if(stageMapping.target.equalsIgnoreCase(env)) {
