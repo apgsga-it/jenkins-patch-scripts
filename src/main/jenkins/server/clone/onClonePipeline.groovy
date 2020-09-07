@@ -7,7 +7,7 @@ def target = env.target
 
 // Force status to be looked for into cm_patch_install_sequence_f View.
 // If null, then "produktion"
-def patchStatus = env.patchStatus != null ? env.patchStatus : "Produktion"
+patchStatus = env.patchStatus != null ? env.patchStatus : "Produktion"
 
 patchfunctions.log("Parameter ... source = ${source} , target = ${target} , patchStatus = ${patchStatus}")
 
@@ -67,7 +67,7 @@ private def getStatusName(def env) {
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	
 	// By default, if the target is not part of the "standard workflow" (Informatiktest,Anwendertest,Produktion), we assume the basis for patch installation is "Produktion"
-	def status = env.patchStatus
+	def status = patchStatus
 	
 	jsonSystemTargets.stageMappings.each{ stageMapping ->
 		if(stageMapping.target.equalsIgnoreCase(env)) {
