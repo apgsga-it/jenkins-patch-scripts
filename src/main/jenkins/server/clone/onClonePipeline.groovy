@@ -5,7 +5,11 @@ import groovy.json.JsonSlurperClassic
 def source = env.source
 def target = env.target
 
-patchfunctions.log("Parameter ... source = ${source} , target = ${target}")
+// Force status to be looked for into cm_patch_install_sequence_f View.
+// If null, then "produktion"
+def patchStatus = env.patchStatus != null ? env.patchStatus : "Produktion"
+
+patchfunctions.log("Parameter ... source = ${source} , target = ${target} , patchStatus = ${patchStatus}")
 
 stage("onclone") {
 	
@@ -63,14 +67,15 @@ private def getStatusName(def env) {
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	
 	// By default, if the target is not part of the "standard workflow" (Informatiktest,Anwendertest,Produktion), we assume the basis for patch installation is "Produktion"
-	def status = "Produktion"
+	def status = patchStatus
 	
 	jsonSystemTargets.stageMappings.each{ stageMapping ->
 		if(stageMapping.target.equalsIgnoreCase(env)) {
 			status = stageMapping.name
 		}
 	}
-	
+
+	patchfunctions.log("Status returned from getStatusName for ${env} = ${status}")
 	return status
 }
 
