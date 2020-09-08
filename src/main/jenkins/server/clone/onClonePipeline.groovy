@@ -125,5 +125,5 @@ private def getPatchListFile(def target) {
 	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${patchStatus}"
 	def result = sh (returnStdout: true, script: cmd).trim()
 	assert result : patchfunctions.log("Error while getting list of patch to be re-installed on ${target}")
-	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled${status}.json")
+	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled${patchStatus}.json")
 }
