@@ -24,7 +24,7 @@ stage("onclone") {
 		}
 
 		// As source environment, only the PROD defined environment is allowed
-		def status = getStatusName(source)
+		def status = getStatusNameFromTargetSystemMapping(source)
 		if(status != null) { 
 			assert status.toString().equalsIgnoreCase("produktion") : patchfunctions.log("When cloning, source parameter can only be the one define as production target.") 
 		}
@@ -61,13 +61,13 @@ stage("onclone") {
 	}
 }
 
-private def getStatusName(def env) {
+private def getStatusNameFromTargetSystemMapping(def env) {
 	def targetSystemFile = new File("/etc/opt/apg-patch-common/TargetSystemMappings.json")
 	assert targetSystemFile.exists() : patchfunctions.log("/etc/opt/apg-patch-common/TargetSystemMappings.json doesn't exist or is not accessible!")
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
 	
 	// By default, if the target is not part of the "standard workflow" (Informatiktest,Anwendertest,Produktion), we assume the basis for patch installation is "Produktion"
-	def status = patchStatus
+	def status = "Produktion"
 	
 	jsonSystemTargets.stageMappings.each{ stageMapping ->
 		if(stageMapping.target.equalsIgnoreCase(env)) {
@@ -75,7 +75,7 @@ private def getStatusName(def env) {
 		}
 	}
 
-	patchfunctions.log("Status returned from getStatusName for ${env} = ${status}")
+	patchfunctions.log("Status returned from getStatusNameFromTargetSystemMapping for ${env} = ${status}")
 	return status
 }
 
@@ -122,8 +122,7 @@ private def getPatchConfig(def patch, def target) {
 
 private def getPatchListFile(def target) {
 	// We first call apsDbCli in order to produce a file containing the list of patch to be re-installed.
-	def status = getStatusName(target)
-	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${status}"
+	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${patchStatus}"
 	def result = sh (returnStdout: true, script: cmd).trim()
 	assert result : patchfunctions.log("Error while getting list of patch to be re-installed on ${target}")
 	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled${status}.json")
