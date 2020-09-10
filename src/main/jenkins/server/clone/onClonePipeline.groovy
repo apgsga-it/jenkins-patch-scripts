@@ -5,7 +5,11 @@ import groovy.json.JsonSlurperClassic
 def source = env.source
 def target = env.target
 
-patchfunctions.log("Parameter ... source = ${source} , target = ${target}")
+// Force status to be looked for into cm_patch_install_sequence_f View.
+// If null, then "produktion"
+patchStatus = env.patchStatus != null ? env.patchStatus : "Produktion"
+
+patchfunctions.log("Parameter ... source = ${source} , target = ${target} , patchStatus = ${patchStatus}")
 
 stage("onclone") {
 	
@@ -20,7 +24,7 @@ stage("onclone") {
 		}
 
 		// As source environment, only the PROD defined environment is allowed
-		def status = getStatusName(source)
+		def status = getStatusNameFromTargetSystemMapping(source)
 		if(status != null) { 
 			assert status.toString().equalsIgnoreCase("produktion") : patchfunctions.log("When cloning, source parameter can only be the one define as production target.") 
 		}
@@ -57,7 +61,7 @@ stage("onclone") {
 	}
 }
 
-private def getStatusName(def env) {
+private def getStatusNameFromTargetSystemMapping(def env) {
 	def targetSystemFile = new File("/etc/opt/apg-patch-common/TargetSystemMappings.json")
 	assert targetSystemFile.exists() : patchfunctions.log("/etc/opt/apg-patch-common/TargetSystemMappings.json doesn't exist or is not accessible!")
 	def jsonSystemTargets = new JsonSlurper().parseText(targetSystemFile.text)
@@ -70,7 +74,8 @@ private def getStatusName(def env) {
 			status = stageMapping.name
 		}
 	}
-	
+
+	patchfunctions.log("Status returned from getStatusNameFromTargetSystemMapping for ${env} = ${status}")
 	return status
 }
 
@@ -117,9 +122,8 @@ private def getPatchConfig(def patch, def target) {
 
 private def getPatchListFile(def target) {
 	// We first call apsDbCli in order to produce a file containing the list of patch to be re-installed.
-	def status = getStatusName(target)
-	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${status}"
+	def cmd = "/opt/apg-patch-cli/bin/apsdbcli.sh -lpac ${patchStatus}"
 	def result = sh (returnStdout: true, script: cmd).trim()
 	assert result : patchfunctions.log("Error while getting list of patch to be re-installed on ${target}")
-	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled${status}.json")
+	return new File("/var/opt/apg-patch-cli/patchToBeReinstalled${patchStatus}.json")
 }
