@@ -19,7 +19,9 @@ def installDeploymentArtifacts(patchConfig) {
 			// JHE (29.10.2019): DB part is not yet ready to be installed with SSH
 			// installerFactory('it21-db', patchConfig.currentTarget).call()
 			node {
-				installDbPatch(patchConfig,patchfunctions.getCoPatchDbFolderName(patchConfig),"zip",getHost("it21-db",patchConfig.currentTarget),getType("it21-db",patchConfig.currentTarget))
+				if(patchConfig.installDockerServices || !patchConfig.dbObjects.empty) {
+					installDbPatch(patchConfig, patchfunctions.getCoPatchDbFolderName(patchConfig), "zip", getHost("it21-db", patchConfig.currentTarget), getType("it21-db", patchConfig.currentTarget))
+				}
 			}
 		}
 	}
