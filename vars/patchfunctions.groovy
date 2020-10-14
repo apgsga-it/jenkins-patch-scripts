@@ -231,11 +231,21 @@ def patchBuildsConcurrent(patchConfig) {
 	node {
 		deleteDir()
 		lock("${patchConfig.serviceName}${patchConfig.currentTarget}Build") {
-			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
-			nextRevision(patchConfig)
-			generateVersionProperties(patchConfig)
-			buildAndReleaseModulesConcurrent(patchConfig)
-			saveRevisions(patchConfig)
+			if(patchConfig.installJadasAndGui) {
+				coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+				nextRevision(patchConfig)
+				generateVersionProperties(patchConfig)
+				buildAndReleaseModulesConcurrent(patchConfig)
+				saveRevisions(patchConfig)
+			}
+			else if(patchConfig.installDockerServices || !patchConfig.dbObjects.empty){
+				log("Patch does not contain any Java Artefact, build will only increase revision number","patchBuildsConcurrent")
+				nextRevision(patchConfig)
+				saveRevisions(patchConfig)
+			}
+			else {
+				log("Patch is empty, nothing to do !!","patchBuildsConcurrent")
+			}
 		}
 	}
 }
@@ -417,10 +427,14 @@ def updateBom(patchConfig,module) {
 
 def assembleDeploymentArtefacts(patchConfig) {
 	node {
-		coDbModules(patchConfig)
-		dbAssemble(patchConfig)
-		coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
-		assemble(patchConfig)
+		if(patchConfig.installDockerServices || !patchConfig.dbObjects.empty) {
+			coDbModules(patchConfig)
+			dbAssemble(patchConfig)
+		}
+		if(patchConfig.installJadasAndGui) {
+			coFromBranchCvs(patchConfig, 'it21-ui-bundle', 'microservice')
+			assemble(patchConfig)
+		}
 	}
 }
 
