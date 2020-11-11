@@ -507,7 +507,7 @@ def mergeDbObjectOnHead(patchConfig, envName) {
 			log("... ${dbModule} checked out from branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			sh "cvs -d${cvsRoot} tag -F ${dbTagBeforeMerge} ${dbModule}"
 			log("... ${dbModule} tagged ${dbTagBeforeMerge}", "mergeDbObjectOnHead")
-			sh "cvs -d${cvsRoot} up -j ${dbPatchTag} ${dbModule}"
+			sh "cvs -d${cvsRoot} up -d -j ${dbPatchTag} ${dbModule}"
 			log("... ${dbModule} tag \"${dbPatchTag}\" merged to branch \"${dbProdBranch}\"", "mergeDbObjectOnHead")
 			try {
 				sh "cvs -d${cvsRoot} commit -m 'merge ${dbPatchTag} to branch ${dbProdBranch}' ${dbModule}"
